@@ -13,6 +13,7 @@ const uri: string = import.meta.env.VITE_API_URL || '/graphql'
 
 const link: HttpLink = new HttpLink({
   uri,
+  credentials: 'include',
 })
 
 /**
