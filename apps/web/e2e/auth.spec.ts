@@ -65,7 +65,7 @@ test.describe('Authentication Flow', () => {
     await page.getByPlaceholder(/Email/i).fill(testUser.email)
     await page.getByPlaceholder(/Contraseña/i).fill(testUser.password)
     await page.getByRole('button', { name: /Acceder/i }).click()
-    
+
     // Force reload for stability
     await page.reload({ waitUntil: 'networkidle' })
 
@@ -75,7 +75,7 @@ test.describe('Authentication Flow', () => {
 
     // Click logout
     await logoutBtn.click()
-    
+
     // Force reload to ensure state sync
     await page.reload({ waitUntil: 'networkidle' })
 

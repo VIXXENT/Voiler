@@ -28,7 +28,7 @@ export const authConfig: NextAuthConfig = {
         // Mock de autenticación para esta fase
         const email = credentials?.email
         const password = credentials?.password
-        
+
         if (typeof email !== 'string' || typeof password !== 'string') {
           return null
         }

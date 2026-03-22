@@ -12,6 +12,26 @@ import { type User } from '@gemtest/schema'
 import { type User as AuthUser } from '@auth/core/types'
 import { Result, fromPromise } from 'neverthrow'
 
+const isProduction: boolean = process.env.NODE_ENV === 'production'
+
+type CookieOptions = {
+  readonly httpOnly: boolean
+  readonly sameSite: 'lax'
+  readonly path: string
+  readonly secure: boolean
+}
+
+/**
+ * Shared cookie options for all Auth.js cookies.
+ * Ensures consistent behavior across session, callback, and CSRF tokens.
+ */
+const cookieOptions: CookieOptions = {
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  path: '/',
+  secure: isProduction,
+}
+
 type VerificationRequestParams = {
   readonly identifier: string
   readonly url: string
@@ -137,9 +157,26 @@ export const authConfig: AuthConfig = {
     }),
   ],
   session: {
-    strategy: 'database' as const,
+    // Credentials provider does not support 'database' strategy in Auth.js —
+    // it silently falls back to JWT but the session endpoint still queries
+    // the DB, returning null. Use 'jwt' until OAuth providers are added (#4).
+    strategy: 'jwt' as const,
   },
-  useSecureCookies: process.env.NODE_ENV === 'production',
+  useSecureCookies: isProduction,
+  cookies: {
+    sessionToken: {
+      name: 'authjs.session-token',
+      options: cookieOptions,
+    },
+    callbackUrl: {
+      name: 'authjs.callback-url',
+      options: cookieOptions,
+    },
+    csrfToken: {
+      name: 'authjs.csrf-token',
+      options: cookieOptions,
+    },
+  },
   callbacks: {
     /**
      * Enhances the session object with additional user metadata.
@@ -151,17 +188,29 @@ export const authConfig: AuthConfig = {
      * @param params - Object containing the current session and user entities.
      * @returns The augmented session object.
      */
-    // TODO: Replace with Auth.js module augmentation for Session type
+    // TODO: Replace with Auth.js module augmentation for Session type (#3)
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    session: async (params: {
-      readonly session: any
+    jwt: async (params: {
+      readonly token: any
       readonly user: any
     }): Promise<any> => {
+      const { token, user } = params
+      // On initial sign-in, copy user fields into the JWT payload
+      if (user) {
+        token.id = user.id
+        token.role = user.role
+      }
+      return token
+    },
+    session: async (params: {
+      readonly session: any
+      readonly token: any
+    }): Promise<any> => {
       /* eslint-enable @typescript-eslint/no-explicit-any */
-      const { session, user } = params
-      if (session.user) {
-        session.user.id = user.id
-        session.user.role = user.role
+      const { session, token } = params
+      if (session.user && token) {
+        session.user.id = token.id
+        session.user.role = token.role
       }
       return session
     },

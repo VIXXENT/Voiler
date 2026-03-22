@@ -1,0 +1,72 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "API: dev",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["--filter", "@gemtest/api", "dev"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "dev",
+        "reveal": "always",
+        "panel": "dedicated",
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "Web: dev",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["--filter", "@gemtest/web", "dev"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "dev",
+        "reveal": "always",
+        "panel": "dedicated",
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "Dev: Start All",
+      "dependsOn": ["API: dev", "Web: dev"],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "runOptions": {
+        "runOn": "default"
+      }
+    },
+    {
+      "label": "API: debug",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "--import", "tsx",
+        "--inspect=9229",
+        "src/index.ts"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/api",
+        "env": {
+          "NODE_ENV": "development"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "debug",
+        "reveal": "always",
+        "panel": "dedicated",
+        "showReuseMessage": false
+      }
+    }
+  ]
+}

@@ -9,16 +9,17 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    strictPort: true,
     proxy: {
       '/api/auth': {
         target: 'http://localhost:4000',
-        changeOrigin: true,
+        changeOrigin: false,
         secure: false,
         ws: true,
       },
       '/graphql': {
         target: 'http://localhost:4000',
-        changeOrigin: true,
+        changeOrigin: false,
         secure: false,
       },
     },

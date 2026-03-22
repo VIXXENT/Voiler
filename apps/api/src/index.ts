@@ -41,9 +41,10 @@ type ToWebRequestParams = {
 const toWebRequest = (params: ToWebRequestParams): Request => {
   const { req } = params
   // Always use the browser's perceived origin for Auth.js internal logic
-  const protocol: string = 'http'
-  const host: string = 'localhost:5173'
-  const url: string = `${protocol}://${host}${req.originalUrl}`
+  const browserOrigin: string = process.env.AUTH_URL
+    ? new URL(process.env.AUTH_URL).origin
+    : 'http://localhost:5173'
+  const url: string = `${browserOrigin}${req.originalUrl}`
 
   const headers: Headers = new Headers()
   Object.entries(req.headers).forEach(([key, value]): void => {
@@ -55,6 +56,9 @@ const toWebRequest = (params: ToWebRequestParams): Request => {
       headers.append(key, value)
     }
   })
+  // Ensure Host header matches the browser's origin so Auth.js
+  // generates correct cookies and callback URLs with trustHost: true
+  headers.set('host', new URL(browserOrigin).host)
 
   /**
    * Safe body retrieval checking for rawBody property.
