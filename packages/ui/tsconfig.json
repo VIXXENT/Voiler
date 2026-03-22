@@ -1,0 +1,9 @@
+{
+  "extends": "@gemtest/config-ts/base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "esnext"]
+  },
+  "include": ["."],
+  "exclude": ["dist", "build", "node_modules"]
+}

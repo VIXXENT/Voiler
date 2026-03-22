@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# Secrets and credentials
+*.key
+*.pem
+*.pfx
+credentials*
+secrets*
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Runtime/Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache
+.turbo/
+.next/cache/
+.eslintcache
+.prettiercache
+.last_ingest.json
+
+# Local development
+.lancedb/
+.gemini/
+.aider*
+local.db*
+
+# External/temporary
+_EXTERNAL_FILES/
+_docs/
+context_tree/
+_archive/
+
+# Claude-specific
+.claude/
+.agents/
+
+# Test artifacts
+test-results/
+playwright-report/
+
+# Misc
+sync-to-ntfs.sh
+skills-lock.json

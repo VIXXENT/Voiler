@@ -1,0 +1,14 @@
+{
+  "extends": "@gemtest/config-ts/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "baseUrl": ".",
+    "paths": {
+      "@gemtest/*": ["../../packages/*/src/index.js"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

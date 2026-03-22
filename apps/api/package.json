@@ -1,0 +1,37 @@
+{
+  "name": "@gemtest/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.10.0",
+    "@auth/core": "^0.34.3",
+    "@gemtest/schema": "workspace:*",
+    "@libsql/client": "latest",
+    "argon2": "^0.44.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.45.1",
+    "drizzle-zod": "^0.8.3",
+    "express": "^5.2.1",
+    "graphql": "^16.8.1",
+    "nodemailer": "^8.0.1"
+  },
+  "devDependencies": {
+    "@gemtest/config-ts": "workspace:*",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^20.11.0",
+    "@types/nodemailer": "^7.0.11",
+    "drizzle-kit": "^0.31.9",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.3.3"
+  }
+}
