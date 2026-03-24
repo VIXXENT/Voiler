@@ -1,4 +1,6 @@
 import { Auth, type AuthConfig } from '@auth/core'
+import type { Session, User as AuthUser } from '@auth/core/types'
+import type { JWT } from '@auth/core/jwt'
 import Google from '@auth/core/providers/google'
 import GitHub from '@auth/core/providers/github'
 import Credentials from '@auth/core/providers/credentials'
@@ -9,8 +11,8 @@ import { db } from '../db/index.js'
 import { eq } from 'drizzle-orm'
 import * as argon2 from 'argon2'
 import { type User } from '@gemtest/schema'
-import { type User as AuthUser } from '@auth/core/types'
 import { Result, fromPromise } from 'neverthrow'
+import './auth.types.js'
 
 const isProduction: boolean = process.env.NODE_ENV === 'production'
 
@@ -152,6 +154,7 @@ export const authConfig: AuthConfig = {
           email: user.email,
           name: user.name,
           image: user.image,
+          role: user.role,
         }
       },
     }),
@@ -179,38 +182,41 @@ export const authConfig: AuthConfig = {
   },
   callbacks: {
     /**
-     * Enhances the session object with additional user metadata.
+     * Copies user fields into the JWT payload on initial sign-in.
      *
-     * This callback is executed whenever a session is checked. It ensures that the
-     * session object available on the client/server includes custom fields like
-     * the user's role and database ID.
-     *
-     * @param params - Object containing the current session and user entities.
-     * @returns The augmented session object.
+     * @param params - Object containing the JWT token and optionally the user entity.
+     * @returns The augmented JWT token.
      */
-    // TODO: Replace with Auth.js module augmentation for Session type (#3)
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     jwt: async (params: {
-      readonly token: any
-      readonly user: any
-    }): Promise<any> => {
+      readonly token: JWT
+      readonly user?: AuthUser
+    }): Promise<JWT> => {
       const { token, user } = params
-      // On initial sign-in, copy user fields into the JWT payload
       if (user) {
-        token.id = user.id
-        token.role = user.role
+        return { ...token, id: user.id, role: user.role }
       }
       return token
     },
+    /**
+     * Enhances the session object with user ID and role from the JWT.
+     *
+     * @param params - Object containing the current session and JWT token.
+     * @returns The augmented session object.
+     */
     session: async (params: {
-      readonly session: any
-      readonly token: any
-    }): Promise<any> => {
-      /* eslint-enable @typescript-eslint/no-explicit-any */
+      readonly session: Session
+      readonly token: JWT
+    }): Promise<Session> => {
       const { session, token } = params
       if (session.user && token) {
-        session.user.id = token.id
-        session.user.role = token.role
+        return {
+          ...session,
+          user: {
+            ...session.user,
+            id: token.id ?? '',
+            role: token.role ?? 'user',
+          },
+        }
       }
       return session
     },
