@@ -42,7 +42,7 @@ type GetUsersData = {
 }
 
 type HandleRegisterFn = (e: FormEvent) => void
-type HandleLoginFn = (e: FormEvent) => void
+type HandleLoginFn = (e: FormEvent) => Promise<void>
 type ToggleRegisterFn = () => void
 type ToggleLoginViewFn = () => void
 
@@ -61,6 +61,7 @@ const App: React.FC = (): ReactElement => {
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false)
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
+  const [loginError, setLoginError] = useState<string | null>(null)
 
   const { loading, error, data, refetch } = useQuery<GetUsersData>(GET_USERS)
   const [createUser, { loading: creating }] = useMutation(CREATE_USER, {
@@ -93,22 +94,24 @@ const App: React.FC = (): ReactElement => {
    *
    * @param e - The form submission event.
    */
-  const handleLogin: HandleLoginFn = (e: FormEvent): void => {
+  const handleLogin: HandleLoginFn = async (e: FormEvent): Promise<void> => {
     e.preventDefault()
-    signIn('credentials', {
-      email: loginForm.email,
-      password: loginForm.password,
-      redirect: false,
-    }).then((result): void => {
+    setLoginError(null)
+    try {
+      const result: Awaited<ReturnType<typeof signIn>> = await signIn('credentials', {
+        email: loginForm.email,
+        password: loginForm.password,
+        redirect: false,
+      })
       if (result?.error) {
-        console.error('Login failed:', result.error)
+        setLoginError('Invalid credentials. Please try again.')
       } else {
         setIsLoggingIn(false)
         setLoginForm({ email: '', password: '' })
       }
-    }).catch((err: unknown): void => {
-      console.error('Unexpected error during login:', err)
-    })
+    } catch {
+      setLoginError('Network error. Please check your connection.')
+    }
   }
 
   /**
@@ -125,6 +128,7 @@ const App: React.FC = (): ReactElement => {
   const toggleLoginView: ToggleLoginViewFn = (): void => {
     setIsLoggingIn(!isLoggingIn)
     setIsRegistering(false)
+    setLoginError(null)
   }
 
   const isLoadingSession = status === 'loading'
@@ -249,6 +253,11 @@ const App: React.FC = (): ReactElement => {
               <section className="bg-indigo-50 rounded-xl p-6 border border-indigo-100 animate-in fade-in duration-300">
                 <h2 className="text-xl font-bold text-indigo-900 mb-4">Bienvenido de nuevo</h2>
                 <form onSubmit={handleLogin} className="space-y-4">
+                  {loginError && (
+                    <div className="text-red-600 text-sm bg-red-50 p-2 rounded-md border border-red-200">
+                      {loginError}
+                    </div>
+                  )}
                   <input
                     type="email"
                     placeholder="Email"

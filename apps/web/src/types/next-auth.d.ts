@@ -2,16 +2,20 @@ import { type DefaultSession } from 'next-auth'
 
 /**
  * Module augmentation for next-auth to extend User and Session types.
- * This allows safe access to 'id' property without type casting.
+ *
+ * Mirrors the backend Auth.js augmentation so the frontend can safely
+ * access custom fields (id, role) returned by the API session endpoint.
  */
 declare module 'next-auth' {
-  interface Session {
+  type Session = {
     user: {
-      id?: string;
+      readonly id: string
+      readonly role: string
     } & DefaultSession['user']
-  }
+  } & DefaultSession
 
-  interface User {
-    id?: string;
+  type User = {
+    readonly id?: string
+    readonly role?: string
   }
 }
