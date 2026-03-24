@@ -9,7 +9,11 @@ import { Result, fromPromise } from 'neverthrow'
 import { db } from './index.js'
 import { users, accounts, sessions, verificationTokens } from './schema.js'
 import { eq, and } from 'drizzle-orm'
-import { type User as SchemaUser } from '@gemtest/schema'
+import {
+  type User as SchemaUser,
+  type Account as SchemaAccount,
+  type Session as SchemaSession,
+} from '@gemtest/schema'
 
 /**
  * Parameters for the mapUser function.
@@ -33,6 +37,32 @@ const mapUser = (params: MapUserParams): AdapterUser => {
     ...user,
     id: user.id!.toString(),
     emailVerified: user.emailVerified || null,
+  }
+}
+
+/**
+ * Parameters for the mapSession function.
+ */
+type MapSessionParams = {
+  readonly session: SchemaSession
+};
+
+/**
+ * Maps a database session to an Auth.js adapter session.
+ *
+ * Auth.js expects string userId. Our DB stores integer userId.
+ *
+ * @param params - Object containing the session from the database schema.
+ * @returns A session object compatible with the Auth.js AdapterSession interface.
+ */
+type MapSessionFn = (params: MapSessionParams) => AdapterSession
+
+const mapSession: MapSessionFn = (params: MapSessionParams): AdapterSession => {
+  const { session }: MapSessionParams = params
+  return {
+    sessionToken: session.sessionToken,
+    userId: session.userId.toString(),
+    expires: session.expires,
   }
 }
 
@@ -142,14 +172,15 @@ export const DrizzleAdapter: Adapter = {
       return null
     }
 
-    const foundAccount: any = accountResult.value[0]
+    const foundAccount: SchemaAccount | undefined =
+      accountResult.value[0] as SchemaAccount | undefined
     if (!foundAccount) {
       return null
     }
 
     // 2. Find the associated user
     const userResult: Result<unknown[], Error> = await fromPromise(
-      db.select().from(users).where(eq(users.id, foundAccount.userId as number)),
+      db.select().from(users).where(eq(users.id, foundAccount.userId)),
       (err: unknown): Error => new Error(`DB Error getting user for account: ${String(err)}`),
     )
 
@@ -220,7 +251,7 @@ export const DrizzleAdapter: Adapter = {
     readonly expires: Date
   }): Promise<AdapterSession> => {
     const userId: number = parseInt(session.userId, 10)
-    const insertResult: Result<any[], Error> = await fromPromise(
+    const insertResult: Result<unknown[], Error> = await fromPromise(
       db.insert(sessions).values({
         ...session,
         id: crypto.randomUUID(),
@@ -234,11 +265,11 @@ export const DrizzleAdapter: Adapter = {
       throw insertResult.error
     }
 
-    const inserted: any = insertResult.value[0]
-    return {
-      ...inserted,
-      userId: inserted.userId.toString(),
+    const inserted: SchemaSession | undefined = insertResult.value[0] as SchemaSession | undefined
+    if (!inserted) {
+      throw new Error('DB Error: session insert returned empty result')
     }
+    return mapSession({ session: inserted })
   },
 
   /**
@@ -251,7 +282,7 @@ export const DrizzleAdapter: Adapter = {
     sessionToken: string,
   ): Promise<{ session: AdapterSession; user: AdapterUser } | null> => {
     // 1. Get the session
-    const sessionResult: Result<any[], Error> = await fromPromise(
+    const sessionResult: Result<unknown[], Error> = await fromPromise(
       db.select().from(sessions).where(eq(sessions.sessionToken, sessionToken)),
       (err: unknown): Error => new Error(`DB Error getting session: ${String(err)}`),
     )
@@ -261,14 +292,14 @@ export const DrizzleAdapter: Adapter = {
       return null
     }
 
-    const session: any = sessionResult.value[0]
-    if (!session) {
+    const foundSession: SchemaSession | undefined = sessionResult.value[0] as SchemaSession | undefined
+    if (!foundSession) {
       return null
     }
 
     // 2. Get the associated user
     const userResult: Result<unknown[], Error> = await fromPromise(
-      db.select().from(users).where(eq(users.id, session.userId as number)),
+      db.select().from(users).where(eq(users.id, foundSession.userId)),
       (err: unknown): Error => new Error(`DB Error getting user for session: ${String(err)}`),
     )
 
@@ -283,7 +314,7 @@ export const DrizzleAdapter: Adapter = {
     }
 
     return {
-      session: { ...session, userId: session.userId.toString() },
+      session: mapSession({ session: foundSession }),
       user: mapUser({ user: user as SchemaUser }),
     }
   },
@@ -297,7 +328,7 @@ export const DrizzleAdapter: Adapter = {
   updateSession: async (
     session: Partial<AdapterSession> & Pick<AdapterSession, 'sessionToken'>,
   ): Promise<AdapterSession | null | undefined> => {
-    const updateResult: Result<any[], Error> = await fromPromise(
+    const updateResult: Result<unknown[], Error> = await fromPromise(
       db.update(sessions).set({
         ...session,
         userId: session.userId ? parseInt(session.userId, 10) : undefined,
@@ -310,15 +341,12 @@ export const DrizzleAdapter: Adapter = {
       return null
     }
 
-    const updated: any = updateResult.value[0]
+    const updated: SchemaSession | undefined = updateResult.value[0] as SchemaSession | undefined
     if (!updated) {
       return null
     }
 
-    return {
-      ...updated,
-      userId: updated.userId.toString(),
-    }
+    return mapSession({ session: updated })
   },
 
   /**
