@@ -1,0 +1,16 @@
+{
+  "name": "@gemtest/domain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "neverthrow": "^8.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@gemtest/config-ts": "workspace:*",
+    "typescript": "^5.0.0"
+  }
+}
