@@ -59,7 +59,7 @@ Run this checklist on every PR diff:
 [ ] `const` used everywhere — no `let` for immutable bindings
 [ ] No object or array mutation — spread/functional methods used
 [ ] Max 3 levels of indentation respected
-[ ] No cyclomatic complexity > 5 per function
+[ ] Low cyclomatic complexity per function (CLAUDE.md mandate)
 ```
 
 ### Documentation
@@ -67,6 +67,7 @@ Run this checklist on every PR diff:
 [ ] JSDoc on every exported/public function: what/why, @param, @returns, @context
 [ ] Comments explain intent, not mechanics
 [ ] No commented-out dead code
+[ ] Relevant docs updated (docs/*.md, module CLAUDE.md) when PR introduces new features or architectural changes
 ```
 
 ### Architecture (hexagonal)
