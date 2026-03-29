@@ -18,6 +18,5 @@ export const UserSchema = z.object({
   createdAt: z.date().optional(),
 })
 
-// Inferred types for the rest of the system
-export type User = z.infer<typeof UserSchema>;
-export type CreateUserInput = z.infer<typeof UserSchema>;
+/** TypeScript type inferred from {@link UserSchema}. */
+export type User = z.infer<typeof UserSchema>
