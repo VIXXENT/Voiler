@@ -59,6 +59,15 @@ export type ProductionEnvConfig = z.infer<typeof ProductionEnvSchema>;
 export type TestEnvConfig = z.infer<typeof TestEnvSchema>;
 
 /**
+ * Union of all env schema types — used to annotate resolveSchema return.
+ * Allows TypeScript to infer the correct z.infer<> without casting.
+ */
+export type AnyEnvSchema =
+  | typeof BaseEnvSchema
+  | typeof ProductionEnvSchema
+  | typeof TestEnvSchema;
+
+/**
  * The final typed config exported from loadEnv().
  * In development/test it matches BaseEnvConfig; in production, ProductionEnvConfig.
  */

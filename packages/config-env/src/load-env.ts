@@ -13,6 +13,7 @@ import {
   BaseEnvSchema,
   ProductionEnvSchema,
   TestEnvSchema,
+  type AnyEnvSchema,
   type EnvConfig,
 } from './schema.js';
 
@@ -22,7 +23,7 @@ import {
  * @param nodeEnv - Raw NODE_ENV string from process.env (may be undefined)
  * @returns The appropriate Zod schema for validation
  */
-const resolveSchema = (nodeEnv: string | undefined) => {
+const resolveSchema = (nodeEnv: string | undefined): AnyEnvSchema => {
   if (nodeEnv === 'production') return ProductionEnvSchema;
   if (nodeEnv === 'test') return TestEnvSchema;
   return BaseEnvSchema;
@@ -70,5 +71,5 @@ export const loadEnv = (): EnvConfig => {
     );
   }
 
-  return result.data as EnvConfig;
+  return result.data;
 };
