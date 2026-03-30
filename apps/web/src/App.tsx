@@ -1,4 +1,5 @@
 import { Button } from '@gemtest/ui'
+import { type PublicUser } from '@gemtest/schema'
 import {
   useQuery,
   useMutation,
@@ -30,15 +31,9 @@ const CREATE_USER: DocumentNode = gql`
   }
 `
 
-type User = {
-  readonly id: string
-  readonly name: string
-  readonly email: string
-}
-
 type GetUsersData = {
   readonly health: string
-  readonly users: User[]
+  readonly users: PublicUser[]
 }
 
 type HandleRegisterFn = (e: FormEvent) => void
@@ -340,7 +335,7 @@ const App: React.FC = (): ReactElement => {
             )}
             {data?.users && (
               <ul className="space-y-3">
-                {data.users.map((user: User): ReactElement => (
+                {data.users.map((user: PublicUser): ReactElement => (
                   <li
                     key={user.id}
                     className="bg-white p-3 rounded shadow-sm border border-gray-200

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.9.5",
+    "@gemtest/schema": "workspace:*",
     "@gemtest/ui": "workspace:*",
     "graphql": "^16.8.1",
     "next-auth": "5.0.0-beta.30",
