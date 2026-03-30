@@ -15,6 +15,7 @@ import {
 import { authHandler } from './lib/auth.js'
 import { typeDefs } from './graphql/typeDefs.js'
 import { resolvers } from './graphql/resolvers.js'
+import { httpRouter } from './http/index.js'
 
 /**
  * Express application instance.
@@ -123,6 +124,11 @@ const start: StartFn = async (): Promise<void> => {
 
   app.use(express.json({ verify: captureRawBody }))
   app.use(express.urlencoded({ extended: true, verify: captureRawBody }))
+
+  /**
+   * REST HTTP routes (health, webhooks placeholder).
+   */
+  app.use(httpRouter)
 
   /**
    * Auth.js route handler middleware.
