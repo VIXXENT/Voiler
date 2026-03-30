@@ -1,3 +1,11 @@
+/**
+ * @file Auth.js ↔ Drizzle adapter.
+ *
+ * DEVIATION: This file uses `throw` and `try/catch` because the Auth.js
+ * Adapter interface expects thrown errors — it does not understand neverthrow
+ * Result types. This is an external framework contract we cannot change.
+ * The `throw` mandate from CLAUDE.md does not apply at this boundary.
+ */
 import {
   type Adapter,
   type AdapterUser,

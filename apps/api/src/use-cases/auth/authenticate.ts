@@ -1,7 +1,8 @@
 import { errAsync, okAsync } from 'neverthrow'
 import type { ResultAsync } from 'neverthrow'
 import { createEmail, userNotFound } from '@gemtest/domain'
-import type { UserEntity } from '@gemtest/domain'
+import type { UserEntity, Email } from '@gemtest/domain'
+import type { UserWithPassword } from '@gemtest/core'
 import type {
   AppError,
   IUserRepository,
@@ -49,6 +50,21 @@ export type AuthResult = {
 const TOKEN_TTL_SECONDS: number = 3600
 
 // ---------------------------------------------------------------------------
+// Internal helpers (flatten .andThen() nesting)
+// ---------------------------------------------------------------------------
+
+/** Rejects null records with a UserNotFound error. */
+const ensureUserExists: (
+  params: { readonly record: UserWithPassword | null; readonly email: string },
+) => ResultAsync<UserWithPassword, AppError> = (params) => {
+  const { record, email } = params
+  if (record === null) {
+    return errAsync(userNotFound(email))
+  }
+  return okAsync(record)
+}
+
+// ---------------------------------------------------------------------------
 // Use case factory
 // ---------------------------------------------------------------------------
 
@@ -94,36 +110,30 @@ export const authenticateUseCase: (
     // TypeScript narrows emailResult to Ok<Email, DomainError> after the guard
     const validEmail: Email = emailResult.value
 
-    // 2. Look up user with password hash (auth-only operation)
+    // 2. Look up user with password hash
     return userRepository
       .findByEmailWithPassword(validEmail)
-      .andThen((record) => {
-        if (record === null) {
-          return errAsync(userNotFound(email))
+      .andThen((record) => ensureUserExists({ record, email }))
+      // 3. Verify password
+      .andThen((record) =>
+        passwordService
+          .verify({ plaintext: password, hash: record.passwordHash })
+          .map((isValid) => ({ record, isValid })),
+      )
+      // 4. Reject bad password
+      .andThen(({ record, isValid }) => {
+        if (!isValid) {
+          return errAsync(
+            validationError({ message: 'Invalid email or password' }),
+          )
         }
         return okAsync(record)
       })
+      // 5. Generate JWT token
       .andThen((record) =>
-        // 3. Verify plain-text password against stored hash
-        passwordService
-          .verify({ plaintext: password, hash: record.passwordHash })
-          .andThen((isValid) => {
-            if (!isValid) {
-              return errAsync(
-                validationError({ message: 'Invalid email or password' }),
-              )
-            }
-            // 4. Generate JWT token
-            return tokenService
-              .generate({ sub: record.id, expiresInSeconds: TOKEN_TTL_SECONDS })
-              .map((token) => {
-                const authResult: AuthResult = {
-                  token,
-                  user: record,
-                }
-                return authResult
-              })
-          }),
+        tokenService
+          .generate({ sub: record.id, expiresInSeconds: TOKEN_TTL_SECONDS })
+          .map((token): AuthResult => ({ token, user: record })),
       )
   }
 }

@@ -2,7 +2,11 @@ import { z } from 'zod'
 
 /**
  * SOURCE OF TRUTH: User schema for the entire monorepo.
- * Any change here will be detected by Drizzle and React.
+ *
+ * Why: Single canonical definition shared by Drizzle (DB columns via zodToSqliteTable),
+ * React (form validation), and GraphQL resolvers. Any change here propagates automatically.
+ *
+ * @see {@link User} for the inferred TypeScript type.
  */
 // eslint-disable-next-line @typescript-eslint/typedef
 export const UserSchema = z.object({

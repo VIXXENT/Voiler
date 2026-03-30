@@ -11,6 +11,15 @@ import { users } from '../../db/schema.js'
 import type * as schema from '../../db/schema.js'
 
 // ---------------------------------------------------------------------------
+// Type bridge note
+// ---------------------------------------------------------------------------
+// Drizzle's `zodToSqliteTable` returns dynamically-typed tables (`ReturnType<typeof sqliteTable>`)
+// which lose column-level type information. The `as UserRow[]` and `as string` casts below
+// are structural bridges at the ORM boundary — they are safe because the runtime values
+// match the asserted types (verified by the Zod schema that defines the table).
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
 // Internal types
 // ---------------------------------------------------------------------------
 
@@ -110,7 +119,13 @@ type DrizzleUserRepositoryDeps = {
 // Async helpers (use async/await to satisfy no-restricted-syntax rule)
 // ---------------------------------------------------------------------------
 
-/** Extracts the first row from an insert-returning result or throws. */
+/**
+ * Extracts the first row from an insert-returning result or throws.
+ *
+ * Why throw here: This helper runs inside a `fromPromise()` wrapper, which
+ * catches the thrown error and converts it to `Err(AppError)`. This is the
+ * idiomatic neverthrow pattern for adapting imperative DB code to Result types.
+ */
 const firstOrThrow: (rows: UserRow[]) => UserRow = (rows) => {
   const row: UserRow | undefined = rows[0]
   if (row === undefined) {

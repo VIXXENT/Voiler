@@ -27,12 +27,12 @@ src/
 
 ## Domain error variants
 
-`DomainError` is a discriminated union (tag: `_tag`):
+`DomainError` is a discriminated union (discriminant: `tag`):
 - `UserNotFound` — lookup by id or email returned nothing
 - `UserAlreadyExists` — email collision on create
-- `InvalidCredentials` — wrong password or missing user on auth
 - `InvalidEmail` — email failed format validation
-- `InvalidPassword` — password failed strength/length rules
+- `InvalidPassword` — password failed length rules
+- `WeakPassword` — password failed complexity rules (letter + digit)
 
 ## Dependencies
 
@@ -44,6 +44,6 @@ src/
 - No `throw`, no `try/catch`, no `ResultAsync` — this layer only defines types.
 - All entity fields are `readonly` — mutations produce new values via spread.
 - Branded types enforce nominal typing: never bypass with `as UserId` casting.
-- `DomainError` variants must use `_tag` as discriminant (not `type` or `kind`).
+- `DomainError` variants must use `tag` as discriminant (not `_tag`, `type`, or `kind`).
 - Do not import from `@gemtest/core`, `@gemtest/schema`, or any app package.
 - See root CLAUDE.md for global coding standards.
