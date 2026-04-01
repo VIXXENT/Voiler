@@ -1,0 +1,9 @@
+{
+  "extends": "@gemtest/config-ts/base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"]
+  },
+  "include": ["src"]
+}
