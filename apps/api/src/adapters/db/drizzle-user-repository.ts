@@ -74,6 +74,7 @@ const createDrizzleUserRepository: (
         .values({
           name: data.name,
           email: data.email,
+          passwordHash: data.passwordHash,
           role: data.role ?? 'user',
         })
         .returning(),
@@ -210,5 +211,39 @@ const createDrizzleUserRepository: (
   }
 }
 
-export { createDrizzleUserRepository }
+/**
+ * Create a function that retrieves a user's password hash by email.
+ *
+ * @remarks
+ * Separated from IUserRepository to avoid exposing password
+ * hashes through the domain entity. Used only by the
+ * authenticate use case.
+ */
+const createFindPasswordHash: (
+  params: CreateDrizzleUserRepositoryParams,
+) => (params: { email: string }) => ResultAsync<string | null, AppError> = (
+  repoParams,
+) => {
+  const { db } = repoParams
+
+  return (queryParams) => {
+    return ResultAsync.fromPromise(
+      db
+        .select({ passwordHash: User.passwordHash })
+        .from(User)
+        .where(eq(User.email, queryParams.email)),
+      (cause) =>
+        infrastructureError({
+          message: 'Failed to find password hash',
+          cause,
+        }),
+    ).map((rows) => {
+      const first: { passwordHash: string } | undefined = rows[0]
+
+      return first?.passwordHash ?? null
+    })
+  }
+}
+
+export { createDrizzleUserRepository, createFindPasswordHash }
 export type { CreateDrizzleUserRepositoryParams }
