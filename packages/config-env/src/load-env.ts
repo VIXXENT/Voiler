@@ -14,6 +14,7 @@ import { envSchema } from './schema.js'
  */
 const loadEnv = (): EnvConfig => {
   config()
+  config({ path: '../../.env' })
 
   const result: z.SafeParseReturnType<unknown, EnvConfig> = envSchema.safeParse(process.env)
 

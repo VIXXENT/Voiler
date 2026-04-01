@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { defineConfig } from 'drizzle-kit'
 
 /**
@@ -8,7 +9,7 @@ import { defineConfig } from 'drizzle-kit'
  * Schema is read from the db/schema.ts barrel file.
  */
 export default defineConfig({
-  schema: './src/db/schema.ts',
+  schema: '../../packages/schema/src/entities/*.ts',
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
