@@ -7,3 +7,4 @@
  * New tables from @voiler/schema must be re-exported here.
  */
 export { User } from '@voiler/schema'
+export { AuditLog } from '../logging/audit-log.repository.js'
