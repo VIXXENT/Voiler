@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "composite": false
+  },
+  "references": [
+    { "path": "apps/api" },
+    { "path": "packages/config-env" },
+    { "path": "packages/schema" },
+    { "path": "packages/domain" },
+    { "path": "packages/core" },
+    { "path": "packages/ui" }
+  ]
+}
