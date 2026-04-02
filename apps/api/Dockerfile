@@ -62,7 +62,7 @@ COPY apps/api/package.json             apps/api/
 # Install production dependencies only (includes native argon2 rebuild)
 RUN apk add --no-cache python3 make g++ \
   && pnpm install --frozen-lockfile --prod \
-  && apk del make g++
+  && apk del python3 make g++
 
 # Copy compiled output from builder
 COPY --from=builder /app/packages/config-env/dist  packages/config-env/dist
@@ -70,6 +70,9 @@ COPY --from=builder /app/packages/domain/dist      packages/domain/dist
 COPY --from=builder /app/packages/core/dist        packages/core/dist
 COPY --from=builder /app/packages/schema/dist      packages/schema/dist
 COPY --from=builder /app/apps/api/dist             apps/api/dist
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
 
 EXPOSE 4000
 

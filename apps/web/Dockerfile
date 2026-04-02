@@ -44,6 +44,9 @@ WORKDIR /app
 # The Nitro bundle in .output/ includes all server dependencies
 COPY --from=builder /app/apps/web/.output .output
 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 EXPOSE 3000
 
 CMD ["node", ".output/server/index.mjs"]
