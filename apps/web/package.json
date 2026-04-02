@@ -28,6 +28,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@voiler/api": "workspace:*",
+    "@playwright/test": "^1.52.0",
     "@voiler/config-ts": "workspace:*",
     "typescript": "^5.7.0"
   }
