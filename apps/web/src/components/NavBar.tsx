@@ -9,6 +9,12 @@ const NavBar = () => {
 
   const isAuthenticated: boolean = Boolean(session.data)
 
+  const userRole: string | undefined =
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    session.data?.user?.role as string | undefined
+
+  const isAdmin: boolean = userRole === 'admin'
+
   return (
     <nav className="border-b border-gray-200 bg-white">
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
@@ -24,6 +30,20 @@ const NavBar = () => {
               >
                 Dashboard
               </Link>
+              <Link
+                to="/settings/sessions"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Sessions
+              </Link>
+              {isAdmin && (
+                <Link
+                  to="/admin/users"
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                >
+                  Admin
+                </Link>
+              )}
               <span className="text-sm text-gray-600">
                 {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
                 {session.data?.user?.name ?? 'User'}

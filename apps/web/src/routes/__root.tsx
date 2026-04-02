@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 
+import { ImpersonationBanner } from '~/components/ImpersonationBanner'
 import { NavBar } from '~/components/NavBar'
 import { createTrpcClient, trpc } from '~/lib/trpc'
 import '~/styles.css'
@@ -18,6 +19,7 @@ const RootLayout = () => (
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-gray-50">
+        <ImpersonationBanner />
         <NavBar />
         <main className="container mx-auto px-4 py-8">
           <Outlet />
