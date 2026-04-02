@@ -46,15 +46,14 @@ const makeMockFindPasswordHash = (): ((params: {
 
 describe('authenticate use case', () => {
   it('returns Ok(AuthResult) on happy path', async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const fakeUser = makeFakeUser()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const repo = makeMockRepo()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const passwordService = makeMockPasswordService()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const tokenService = makeMockTokenService()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const findPasswordHash = makeMockFindPasswordHash()
 
     vi.mocked(repo.findByEmail).mockReturnValue(okAsync(fakeUser))
@@ -62,7 +61,6 @@ describe('authenticate use case', () => {
     vi.mocked(passwordService.verify).mockReturnValue(okAsync(true))
     vi.mocked(tokenService.generate).mockReturnValue(okAsync('jwt-token-123'))
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const useCase = createAuthenticate({
       userRepository: repo,
       passwordService,
@@ -70,7 +68,6 @@ describe('authenticate use case', () => {
       findPasswordHash,
     })
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = await useCase({
       email: 'test@example.com',
       password: 'Pass1234',
@@ -84,20 +81,18 @@ describe('authenticate use case', () => {
   })
 
   it('returns Err(InvalidPassword) when user not found — no enumeration', async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const repo = makeMockRepo()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const passwordService = makeMockPasswordService()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const tokenService = makeMockTokenService()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const findPasswordHash = makeMockFindPasswordHash()
 
     vi.mocked(repo.findByEmail).mockReturnValue(okAsync(null))
     // Dummy hash runs to equalize timing
     vi.mocked(passwordService.hash).mockReturnValue(okAsync('dummy-hash'))
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const useCase = createAuthenticate({
       userRepository: repo,
       passwordService,
@@ -105,7 +100,6 @@ describe('authenticate use case', () => {
       findPasswordHash,
     })
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = await useCase({
       email: 'test@example.com',
       password: 'Pass1234',
@@ -125,22 +119,20 @@ describe('authenticate use case', () => {
   })
 
   it('returns Err(InvalidPassword) on wrong password', async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const fakeUser = makeFakeUser()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const repo = makeMockRepo()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const passwordService = makeMockPasswordService()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const tokenService = makeMockTokenService()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const findPasswordHash = makeMockFindPasswordHash()
 
     vi.mocked(repo.findByEmail).mockReturnValue(okAsync(fakeUser))
     vi.mocked(findPasswordHash).mockReturnValue(okAsync('stored-hash'))
     vi.mocked(passwordService.verify).mockReturnValue(okAsync(false))
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const useCase = createAuthenticate({
       userRepository: repo,
       passwordService,
@@ -148,7 +140,6 @@ describe('authenticate use case', () => {
       findPasswordHash,
     })
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = await useCase({
       email: 'test@example.com',
       password: 'WrongPass1',
@@ -161,18 +152,16 @@ describe('authenticate use case', () => {
   })
 
   it('returns Err when token generation fails', async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const fakeUser = makeFakeUser()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const repo = makeMockRepo()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const passwordService = makeMockPasswordService()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const tokenService = makeMockTokenService()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const findPasswordHash = makeMockFindPasswordHash()
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const tokenError = infrastructureError({
       message: 'token gen failed',
     })
@@ -182,7 +171,6 @@ describe('authenticate use case', () => {
     vi.mocked(passwordService.verify).mockReturnValue(okAsync(true))
     vi.mocked(tokenService.generate).mockReturnValue(errAsync(tokenError))
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const useCase = createAuthenticate({
       userRepository: repo,
       passwordService,
@@ -190,7 +178,6 @@ describe('authenticate use case', () => {
       findPasswordHash,
     })
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = await useCase({
       email: 'test@example.com',
       password: 'Pass1234',

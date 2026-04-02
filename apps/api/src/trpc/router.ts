@@ -20,14 +20,12 @@ interface CreateAppRouterParams {
  * sub-routers into a single namespace.
  */
 const createAppRouter: (params: CreateAppRouterParams) => ReturnType<typeof router> = (params) => {
-  // eslint-disable-next-line @typescript-eslint/typedef
   const userRouter = createUserRouter(params.user)
-  // eslint-disable-next-line @typescript-eslint/typedef
+
   const sessionRouter = createSessionRouter(params.session)
-  // eslint-disable-next-line @typescript-eslint/typedef
+
   const adminRouter = createAdminRouter(params.admin)
 
-  // eslint-disable-next-line @typescript-eslint/typedef
   const appRouter = router({
     user: userRouter,
     session: sessionRouter,

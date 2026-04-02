@@ -40,7 +40,6 @@ const createAuthRouter: (params: CreateAuthRouterParams) => ReturnType<typeof ro
 ) => {
   const { authenticate } = params
 
-  // eslint-disable-next-line @typescript-eslint/typedef
   const authRouter = router({
     login: publicProcedure.input(LoginInputSchema).mutation(async (opts) => {
       const result: Awaited<ReturnType<typeof authenticate>> = await authenticate({

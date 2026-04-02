@@ -25,7 +25,7 @@ const SessionsPage = () => {
   const loadSessions: () => Promise<void> = async () => {
     setLoading(true)
     setError(undefined)
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const result = await authClient.listSessions()
     if (result.error) {
       setError((result.error as { message?: string }).message ?? 'Failed to load sessions')
@@ -197,10 +197,8 @@ const SessionsPage = () => {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/typedef
 const Route = createFileRoute('/settings/sessions')({
   beforeLoad: async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const session = await authClient.getSession()
     if (!session.data) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error

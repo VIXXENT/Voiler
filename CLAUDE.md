@@ -30,12 +30,13 @@ Monorepo boilerplate for web applications (with or without frontend), optimized 
 ### Code Quality
 
 - **No semicolons** — project uses no-semicolon style.
-- **Explicit type annotations on ALL `const`** — use `// eslint-disable-next-line @typescript-eslint/typedef` for Zod schemas.
+- **Trust TS inference** — do NOT annotate types when TS infers correctly. DO annotate when initializing objects destined as function arguments (pre-validation: error points to the wrong property, not the call site).
+- **Explicit return types** on exported functions.
 - **Max 1 parameter per arrow function** — always wrap in object params.
 - **Arrow functions** mandatory for logic and components.
 - **`const` over `let`**, no object/array mutation.
 - **Trailing commas** in multi-line structures.
-- **Max 100 char lines.**
+- **Line length:** Prettier (`printWidth: 100`) handles formatting. No hard ESLint limit.
 - **JSDoc** on all exported functions.
 
 ### TypeScript

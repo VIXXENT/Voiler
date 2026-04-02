@@ -133,7 +133,7 @@ const createDrizzleUserRepository: (
   }
 
   const findByEmail: IUserRepository['findByEmail'] = (findParams) => {
-    const rawEmail: string = String(findParams.email)
+    const rawEmail = String(findParams.email)
 
     return ResultAsync.fromPromise(
       db.select().from(User).where(eq(User.email, rawEmail)),

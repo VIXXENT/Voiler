@@ -25,7 +25,7 @@ interface CreateAdminRouterParams {
 /**
  * Zod schema for the impersonate input.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const ImpersonateInputSchema = z.object({
   userId: z.string().min(1),
 })
@@ -44,7 +44,6 @@ const createAdminRouter: (params: CreateAdminRouterParams) => ReturnType<typeof 
 ) => {
   const { impersonateUser, stopImpersonating } = params
 
-  // eslint-disable-next-line @typescript-eslint/typedef
   const adminRouter = router({
     impersonate: adminProcedure.input(ImpersonateInputSchema).mutation(async (opts) => {
       try {

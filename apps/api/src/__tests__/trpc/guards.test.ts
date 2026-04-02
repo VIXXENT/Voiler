@@ -9,7 +9,7 @@ import { router, authedProcedure, adminProcedure, devProcedure } from '../../trp
  * Minimal test router that exposes each guard
  * as a simple query returning a string.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const testRouter = router({
   authedOnly: authedProcedure.query(() => 'authed-ok'),
   adminOnly: adminProcedure.query(() => 'admin-ok'),
@@ -58,7 +58,6 @@ const makeContext = (params: {
 describe('tRPC guard middleware', () => {
   describe('authedProcedure', () => {
     it('allows through with valid user and session', async () => {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const caller = testRouter.createCaller(
         makeContext({
           user: makeMockUser({ role: 'user' }),
@@ -66,13 +65,11 @@ describe('tRPC guard middleware', () => {
         }),
       )
 
-      // eslint-disable-next-line @typescript-eslint/typedef
       const result = await caller.authedOnly()
       expect(result).toBe('authed-ok')
     })
 
     it('throws UNAUTHORIZED with null user', async () => {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const caller = testRouter.createCaller(
         makeContext({
           user: null,
@@ -88,7 +85,6 @@ describe('tRPC guard middleware', () => {
     })
 
     it('throws UNAUTHORIZED with null session', async () => {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const caller = testRouter.createCaller(
         makeContext({
           user: makeMockUser({ role: 'user' }),
@@ -106,7 +102,6 @@ describe('tRPC guard middleware', () => {
 
   describe('adminProcedure', () => {
     it('allows through with role admin', async () => {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const caller = testRouter.createCaller(
         makeContext({
           user: makeMockUser({ role: 'admin' }),
@@ -114,13 +109,11 @@ describe('tRPC guard middleware', () => {
         }),
       )
 
-      // eslint-disable-next-line @typescript-eslint/typedef
       const result = await caller.adminOnly()
       expect(result).toBe('admin-ok')
     })
 
     it('throws FORBIDDEN with role user', async () => {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const caller = testRouter.createCaller(
         makeContext({
           user: makeMockUser({ role: 'user' }),
@@ -136,7 +129,6 @@ describe('tRPC guard middleware', () => {
     })
 
     it('throws FORBIDDEN with role dev', async () => {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const caller = testRouter.createCaller(
         makeContext({
           user: makeMockUser({ role: 'dev' }),
@@ -154,7 +146,6 @@ describe('tRPC guard middleware', () => {
 
   describe('devProcedure', () => {
     it('allows through with role dev', async () => {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const caller = testRouter.createCaller(
         makeContext({
           user: makeMockUser({ role: 'dev' }),
@@ -162,13 +153,11 @@ describe('tRPC guard middleware', () => {
         }),
       )
 
-      // eslint-disable-next-line @typescript-eslint/typedef
       const result = await caller.devOnly()
       expect(result).toBe('dev-ok')
     })
 
     it('allows through with role admin (superset)', async () => {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const caller = testRouter.createCaller(
         makeContext({
           user: makeMockUser({ role: 'admin' }),
@@ -176,13 +165,11 @@ describe('tRPC guard middleware', () => {
         }),
       )
 
-      // eslint-disable-next-line @typescript-eslint/typedef
       const result = await caller.devOnly()
       expect(result).toBe('dev-ok')
     })
 
     it('throws FORBIDDEN with role user', async () => {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const caller = testRouter.createCaller(
         makeContext({
           user: makeMockUser({ role: 'user' }),

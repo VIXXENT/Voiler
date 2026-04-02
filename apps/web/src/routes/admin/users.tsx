@@ -14,7 +14,6 @@ interface AdminUserRow {
 
 /** Admin user list page with impersonation support. */
 const AdminUsersPage = () => {
-  // eslint-disable-next-line @typescript-eslint/typedef
   const session = authClient.useSession()
 
   const [impersonating, setImpersonating] = useState<string | null>(null)
@@ -133,10 +132,8 @@ const AdminUsersPage = () => {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/typedef
 const Route = createFileRoute('/admin/users')({
   beforeLoad: async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const session = await authClient.getSession()
     if (!session.data) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error

@@ -6,7 +6,7 @@ import type { DbClient } from '../db/index.js'
  * Audit log table for tracking use-case executions
  * and request-level actions across the application.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const AuditLog = pgTable('audit_log', {
   id: uuid('id').defaultRandom().primaryKey(),
   requestId: text('request_id').notNull(),

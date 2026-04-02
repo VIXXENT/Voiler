@@ -7,12 +7,12 @@ import { AuditLog } from './audit-log.repository.js'
 /**
  * Default maximum age for audit log entries in days.
  */
-const DEFAULT_MAX_AGE_DAYS: number = 30
+const DEFAULT_MAX_AGE_DAYS = 30
 
 /**
  * Milliseconds in a single day.
  */
-const MS_PER_DAY: number = 86_400_000
+const MS_PER_DAY = 86_400_000
 
 /**
  * Parameters for the audit log cleanup operation.

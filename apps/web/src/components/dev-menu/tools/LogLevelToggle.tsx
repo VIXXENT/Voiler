@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 /** Storage key for persisted log level configuration. */
-const STORAGE_KEY: string = 'voiler:log-levels'
+const STORAGE_KEY = 'voiler:log-levels'
 
 /** Log categories available for filtering. */
 type LogCategory = 'api' | 'auth' | 'general' | 'router'
@@ -56,7 +56,6 @@ const CATEGORIES: readonly {
 const LogLevelToggle = () => {
   const [levels, setLevels] = useState(readLevels)
 
-  // eslint-disable-next-line @typescript-eslint/typedef
   const toggle = useCallback(
     (category: LogCategory) => {
       const next: LogLevels = {

@@ -19,7 +19,7 @@ import { createAppRouter } from './trpc/router.js'
  * Maximum request body size in bytes (1 MB).
  * Prevents payload-based DoS attacks.
  */
-const MAX_BODY_SIZE: number = 1_048_576
+const MAX_BODY_SIZE = 1_048_576
 
 /**
  * Server start timestamp for uptime calculation.
@@ -30,19 +30,19 @@ const startTime: number = Date.now()
  * Load and validate environment variables.
  * Exits process immediately if validation fails.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const env = loadEnv()
 
 /**
  * Create database connection.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const db = createDb({ databaseUrl: env.DATABASE_URL })
 
 /**
  * Create the DI container with all wired use cases.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const container = createContainer({
   db,
 })
@@ -64,7 +64,7 @@ const allowedOrigins: string[] =
  * Create the Better Auth instance.
  * Handles authentication routes at /api/auth/*.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const auth = createAuth({
   db,
   secret: env.AUTH_SECRET,
@@ -87,7 +87,7 @@ const auth = createAuth({
  * 6. Body limit (reject oversized payloads)
  * 7. Routes
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const app = new Hono()
 
 // --- Middleware ---
@@ -132,7 +132,7 @@ app.use('*', async (c, next) => {
     await next()
     return
   }
-  // eslint-disable-next-line @typescript-eslint/typedef
+
   const session = await auth.api.getSession({
     headers: c.req.raw.headers,
   })
@@ -142,11 +142,10 @@ app.use('*', async (c, next) => {
 })
 
 // --- Routes ---
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const healthRoute = createHealthRoute({ db, startTime })
 app.route('/', healthRoute)
 
-// eslint-disable-next-line @typescript-eslint/typedef
 const appRouter = createAppRouter({
   user: {
     createUser: container.createUser,
@@ -182,7 +181,6 @@ const appRouter = createAppRouter({
   },
 })
 
-// eslint-disable-next-line @typescript-eslint/typedef
 const trpcRoute = createTrpcRoute({
   appRouter,
   db,

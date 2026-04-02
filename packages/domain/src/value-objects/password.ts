@@ -14,10 +14,10 @@ interface CreatePasswordParams {
   value: string
 }
 
-const MIN_LENGTH: number = 8
-const MAX_LENGTH: number = 128
-const HAS_LETTER: RegExp = /[a-zA-Z]/
-const HAS_DIGIT: RegExp = /\d/
+const MIN_LENGTH = 8
+const MAX_LENGTH = 128
+const HAS_LETTER = /[a-zA-Z]/
+const HAS_DIGIT = /\d/
 
 /**
  * Validate and create a Password value object.

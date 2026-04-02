@@ -26,19 +26,16 @@ const makeMockRepo = (): IUserRepository => ({
 
 describe('getUser use case', () => {
   it('returns Ok(UserEntity) when user is found', async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const fakeUser = makeFakeUser()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const repo = makeMockRepo()
 
     vi.mocked(repo.findById).mockReturnValue(okAsync(fakeUser))
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const useCase = createGetUser({
       userRepository: repo,
     })
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = await useCase({ id: 'user-1' })
 
     expect(result.isOk()).toBe(true)
@@ -51,17 +48,14 @@ describe('getUser use case', () => {
   })
 
   it('returns Ok(null) when user is not found', async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const repo = makeMockRepo()
 
     vi.mocked(repo.findById).mockReturnValue(okAsync(null))
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const useCase = createGetUser({
       userRepository: repo,
     })
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = await useCase({ id: 'nonexistent' })
 
     expect(result.isOk()).toBe(true)

@@ -6,7 +6,6 @@ import { authClient } from '~/lib/auth'
 
 /** Authenticated dashboard showing the current user and user list. */
 const DashboardPage = () => {
-  // eslint-disable-next-line @typescript-eslint/typedef
   const session = authClient.useSession()
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -34,10 +33,8 @@ const DashboardPage = () => {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/typedef
 const Route = createFileRoute('/dashboard')({
   beforeLoad: async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const session = await authClient.getSession()
     if (!session.data) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error

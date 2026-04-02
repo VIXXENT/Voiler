@@ -46,7 +46,7 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   const { db } = params
 
   // --- Adapters ---
-  // eslint-disable-next-line @typescript-eslint/typedef
+
   const userRepository = createDrizzleUserRepository({
     db,
   })

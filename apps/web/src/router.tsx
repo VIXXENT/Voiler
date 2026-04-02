@@ -8,7 +8,6 @@ import { routeTree } from './routeTree.gen'
  * router entry.
  */
 const getRouter = () => {
-  // eslint-disable-next-line @typescript-eslint/typedef
   const router = createRouter({ routeTree })
   return router
 }

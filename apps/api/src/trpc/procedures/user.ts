@@ -84,7 +84,6 @@ const createUserRouter: (params: CreateUserRouterParams) => ReturnType<typeof ro
 ) => {
   const { createUser, getUser, listUsers } = params
 
-  // eslint-disable-next-line @typescript-eslint/typedef
   const userRouter = router({
     create: publicProcedure.input(CreateUserInputSchema).mutation(async (opts) => {
       const result: Awaited<ReturnType<typeof createUser>> = await createUser({

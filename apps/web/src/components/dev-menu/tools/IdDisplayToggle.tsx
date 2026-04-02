@@ -1,7 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react'
 
 /** Storage key for the ID display toggle. */
-const STORAGE_KEY: string = 'voiler:show-ids'
+const STORAGE_KEY = 'voiler:show-ids'
 
 /** Read the current show-ids flag from localStorage. */
 const getSnapshot = (): boolean => {
@@ -32,10 +32,8 @@ const useShowIds = (): boolean => useSyncExternalStore(subscribe, getSnapshot, g
  * Persists state in localStorage.
  */
 const IdDisplayToggle = () => {
-  // eslint-disable-next-line @typescript-eslint/typedef
   const showIds = useShowIds()
 
-  // eslint-disable-next-line @typescript-eslint/typedef
   const toggle = useCallback(() => {
     const next: string = showIds ? 'false' : 'true'
     globalThis.localStorage.setItem(STORAGE_KEY, next)

@@ -25,7 +25,6 @@ const LandingPage = () => (
   </div>
 )
 
-// eslint-disable-next-line @typescript-eslint/typedef
 const Route = createFileRoute('/')({
   component: LandingPage,
 })

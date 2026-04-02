@@ -16,7 +16,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/typedef
+
   const navigate = useNavigate()
 
   const isLogin: boolean = mode === 'login'
@@ -32,7 +32,6 @@ const AuthForm = ({ mode }: AuthFormProps) => {
     setLoading(true)
 
     if (isLogin) {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const result = await authClient.signIn.email({
         email,
         password,
@@ -43,7 +42,6 @@ const AuthForm = ({ mode }: AuthFormProps) => {
         return
       }
     } else {
-      // eslint-disable-next-line @typescript-eslint/typedef
       const result = await authClient.signUp.email({
         name,
         email,

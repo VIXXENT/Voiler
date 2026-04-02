@@ -26,15 +26,8 @@ const config = tseslint.config(
       // --- Semicolons ---
       semi: ['error', 'never'],
 
-      // --- Type annotations (typedef requires explicit, no-inferrable conflicts) ---
-      '@typescript-eslint/no-inferrable-types': 'off',
-      '@typescript-eslint/typedef': [
-        'error',
-        {
-          variableDeclaration: true,
-          variableDeclarationIgnoreFunction: true,
-        },
-      ],
+      // --- Type annotations: trust TS inference, annotate exported signatures ---
+      '@typescript-eslint/no-inferrable-types': 'error',
 
       // --- No any ---
       '@typescript-eslint/no-explicit-any': 'error',
@@ -52,18 +45,7 @@ const config = tseslint.config(
       // --- Curly braces ---
       curly: ['error', 'all'],
 
-      // --- Max line length ---
-      'max-len': [
-        'error',
-        {
-          code: 100,
-          ignoreUrls: true,
-          ignoreStrings: true,
-          ignoreTemplateLiterals: true,
-          ignoreRegExpLiterals: true,
-          ignoreComments: false,
-        },
-      ],
+      // --- Line length: Prettier handles formatting (printWidth: 100) ---
 
       // --- Imports ---
       'import-x/order': [

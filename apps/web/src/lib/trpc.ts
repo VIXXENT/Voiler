@@ -10,7 +10,7 @@ import type { AppRouter } from '@voiler/api/src/trpc/router.js'
  * This does not affect runtime behaviour.
  * TODO(plan-d): resolve cross-package tRPC type export.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const trpc = createTRPCReact<AppRouter>()
 
 /**

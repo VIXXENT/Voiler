@@ -4,7 +4,6 @@ import { createPassword } from '../../value-objects/password'
 
 describe('createPassword', () => {
   it('returns Ok(Password) for valid password with 8+ chars', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = createPassword({
       value: 'Pass1234',
     })
@@ -16,7 +15,6 @@ describe('createPassword', () => {
   })
 
   it('returns Err(InvalidPassword) when too short', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = createPassword({ value: 'Ab1' })
 
     expect(result.isErr()).toBe(true)
@@ -26,7 +24,6 @@ describe('createPassword', () => {
   })
 
   it('returns Err(WeakPassword) when no digit present', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = createPassword({
       value: 'Abcdefgh',
     })
@@ -38,7 +35,6 @@ describe('createPassword', () => {
   })
 
   it('returns Err(WeakPassword) when no letter present', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = createPassword({
       value: '12345678',
     })
@@ -50,7 +46,6 @@ describe('createPassword', () => {
   })
 
   it('returns Err(InvalidPassword) for empty string', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = createPassword({ value: '' })
 
     expect(result.isErr()).toBe(true)

@@ -30,7 +30,7 @@ interface CreateSessionRouterParams {
 /**
  * Zod schema for the revoke-session input.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const RevokeSessionInputSchema = z.object({
   token: z.string().min(1),
 })
@@ -51,7 +51,6 @@ const createSessionRouter: (params: CreateSessionRouterParams) => ReturnType<typ
 ) => {
   const { listSessions, revokeSession, revokeOtherSessions, revokeSessions } = params
 
-  // eslint-disable-next-line @typescript-eslint/typedef
   const sessionRouter = router({
     list: authedProcedure.query(async (opts) => {
       try {

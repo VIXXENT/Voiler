@@ -22,7 +22,7 @@ interface RoleGateProps {
  */
 const RoleGate = (props: RoleGateProps) => {
   const { role, children, fallback } = props
-  // eslint-disable-next-line @typescript-eslint/typedef
+
   const session = authClient.useSession()
 
   if (session.isPending) {

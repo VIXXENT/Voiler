@@ -25,7 +25,6 @@ interface CreateTrpcRouteParams {
 const createTrpcRoute: (params: CreateTrpcRouteParams) => Hono = (params) => {
   const { appRouter, db } = params
 
-  // eslint-disable-next-line @typescript-eslint/typedef
   const trpcApp = new Hono()
 
   trpcApp.use(

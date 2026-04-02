@@ -16,7 +16,7 @@ const ALLOWED_ROLES: ReadonlySet<string> = new Set(['admin', 'dev'])
  */
 const DevMenu = () => {
   const [open, setOpen] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/typedef
+
   const session = authClient.useSession()
 
   const userRole: string | undefined =
@@ -25,7 +25,6 @@ const DevMenu = () => {
 
   const hasAccess: boolean = userRole !== undefined && ALLOWED_ROLES.has(userRole)
 
-  // eslint-disable-next-line @typescript-eslint/typedef
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.ctrlKey && e.shiftKey && e.key === 'D') {
       e.preventDefault()

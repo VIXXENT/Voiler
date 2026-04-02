@@ -39,7 +39,7 @@ interface AuthenticateParams {
 }
 
 /** Token expiration: 24 hours in seconds. */
-const TOKEN_EXPIRY_SECONDS: number = 86_400
+const TOKEN_EXPIRY_SECONDS = 86_400
 
 /**
  * Factory that builds a use case for authenticating a

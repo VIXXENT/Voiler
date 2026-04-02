@@ -56,26 +56,26 @@ const createContext: (params: CreateContextParams) => HonoTRPCContext = (params)
 /**
  * Initialise tRPC with the application context type.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const t = initTRPC.context<TRPCContext>().create()
 
 /**
  * Create a tRPC router.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const router = t.router
 
 /**
  * Public procedure — no authentication required.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const publicProcedure = t.procedure
 
 /**
  * Authenticated procedure — rejects with 401 if no session.
  * Narrows context to `AuthedTRPCContext` for downstream use.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const authedProcedure = t.procedure.use(async (opts) => {
   if (!opts.ctx.user || !opts.ctx.session) {
     throw new TRPCError({
@@ -97,7 +97,7 @@ const authedProcedure = t.procedure.use(async (opts) => {
  * Admin procedure — rejects with 403 if role is not 'admin'.
  * Requires authentication first.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const adminProcedure = authedProcedure.use(async (opts) => {
   if (opts.ctx.user.role !== 'admin') {
     throw new TRPCError({
@@ -114,7 +114,7 @@ const adminProcedure = authedProcedure.use(async (opts) => {
  * Admin is a superset of dev access.
  * Requires authentication first.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
+
 const devProcedure = authedProcedure.use(async (opts) => {
   const role: string | undefined = opts.ctx.user.role
   if (role !== 'dev' && role !== 'admin') {

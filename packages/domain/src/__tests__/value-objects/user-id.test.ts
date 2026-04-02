@@ -4,7 +4,6 @@ import { createUserId } from '../../value-objects/user-id'
 
 describe('createUserId', () => {
   it('returns Ok(UserId) for a non-empty string', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = createUserId({ value: 'abc-123' })
 
     expect(result.isOk()).toBe(true)
@@ -14,7 +13,6 @@ describe('createUserId', () => {
   })
 
   it('returns Err for an empty string', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = createUserId({ value: '' })
 
     expect(result.isErr()).toBe(true)
@@ -24,7 +22,6 @@ describe('createUserId', () => {
   })
 
   it('returns Err for a string containing only whitespace', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = createUserId({ value: '   ' })
 
     expect(result.isErr()).toBe(true)

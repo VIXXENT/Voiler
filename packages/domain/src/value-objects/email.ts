@@ -18,7 +18,7 @@ interface CreateEmailParams {
  * Basic email regex: must contain `@` with non-empty local
  * and domain parts, and the domain must have a dot.
  */
-const EMAIL_REGEX: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /**
  * Validate and create an Email value object.

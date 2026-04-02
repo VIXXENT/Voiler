@@ -6,11 +6,10 @@ import { useTranslation } from '~/lib/i18n'
 
 /** Navigation bar showing auth state and navigation links. */
 const NavBar = () => {
-  // eslint-disable-next-line @typescript-eslint/typedef
   const session = authClient.useSession()
   const { t } = useTranslation()
 
-  const isAuthenticated: boolean = Boolean(session.data)
+  const isAuthenticated = Boolean(session.data)
 
   const userRole: string | undefined =
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

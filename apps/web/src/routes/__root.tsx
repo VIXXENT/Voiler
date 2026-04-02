@@ -14,14 +14,11 @@ import '~/styles.css'
  * Clients are created inside useState to avoid SSR cross-request leakage.
  */
 const RootLayout = () => {
-  // eslint-disable-next-line @typescript-eslint/typedef
   const [queryClient] = useState(() => new QueryClient())
-  /* eslint-disable @typescript-eslint/typedef,
-     @typescript-eslint/no-unsafe-assignment,
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment,
      @typescript-eslint/no-unsafe-return */
   const [trpcClient] = useState(() => createTrpcClient())
-  /* eslint-enable @typescript-eslint/typedef,
-     @typescript-eslint/no-unsafe-assignment,
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment,
      @typescript-eslint/no-unsafe-return */
 
   return (
@@ -45,7 +42,6 @@ const RootLayout = () => {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/typedef
 const Route = createRootRoute({
   component: RootLayout,
 })

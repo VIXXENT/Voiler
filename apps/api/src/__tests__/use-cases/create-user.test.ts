@@ -27,19 +27,16 @@ const makeMockRepo = (): IUserRepository => ({
 
 describe('createUser use case', () => {
   it('returns Ok(UserEntity) on happy path', async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const fakeUser = makeFakeUser()
-    // eslint-disable-next-line @typescript-eslint/typedef
+
     const repo = makeMockRepo()
 
     vi.mocked(repo.create).mockReturnValue(okAsync(fakeUser))
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const useCase = createCreateUser({
       userRepository: repo,
     })
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = await useCase({
       name: 'Test User',
       email: 'test@example.com',
@@ -59,7 +56,6 @@ describe('createUser use case', () => {
   })
 
   it('returns Err when repository create fails', async () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const repo = makeMockRepo()
 
     const repoError: AppError = infrastructureError({
@@ -68,12 +64,10 @@ describe('createUser use case', () => {
 
     vi.mocked(repo.create).mockReturnValue(errAsync(repoError))
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const useCase = createCreateUser({
       userRepository: repo,
     })
 
-    // eslint-disable-next-line @typescript-eslint/typedef
     const result = await useCase({
       name: 'Test',
       email: 'test@example.com',

@@ -25,7 +25,7 @@ interface HealthResponse {
  */
 const createHealthRoute = (params: HealthRouteParams): Hono => {
   const { db, startTime } = params
-  // eslint-disable-next-line @typescript-eslint/typedef
+
   const route = new Hono()
 
   route.get('/health', async (c) => {

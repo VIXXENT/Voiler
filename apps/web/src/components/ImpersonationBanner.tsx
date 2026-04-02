@@ -7,7 +7,6 @@ import { authClient } from '~/lib/auth'
  * user's name/email and a button to stop impersonating.
  */
 const ImpersonationBanner = () => {
-  // eslint-disable-next-line @typescript-eslint/typedef
   const session = authClient.useSession()
 
   // Better Auth stores impersonation metadata on the

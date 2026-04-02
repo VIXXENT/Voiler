@@ -10,7 +10,6 @@ import {
 
 describe('DomainError constructors', () => {
   it('invalidEmail creates correct tag and message', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const error = invalidEmail('bad email')
 
     expect(error.tag).toBe('InvalidEmail')
@@ -18,7 +17,6 @@ describe('DomainError constructors', () => {
   })
 
   it('invalidPassword creates correct tag and message', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const error = invalidPassword('too short')
 
     expect(error.tag).toBe('InvalidPassword')
@@ -26,7 +24,6 @@ describe('DomainError constructors', () => {
   })
 
   it('weakPassword creates correct tag and message', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const error = weakPassword('needs digit')
 
     expect(error.tag).toBe('WeakPassword')
@@ -34,7 +31,6 @@ describe('DomainError constructors', () => {
   })
 
   it('userNotFound creates correct tag and message', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const error = userNotFound('no user')
 
     expect(error.tag).toBe('UserNotFound')
@@ -42,7 +38,6 @@ describe('DomainError constructors', () => {
   })
 
   it('userAlreadyExists creates correct tag and message', () => {
-    // eslint-disable-next-line @typescript-eslint/typedef
     const error = userAlreadyExists('duplicate')
 
     expect(error.tag).toBe('UserAlreadyExists')

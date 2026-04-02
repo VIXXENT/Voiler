@@ -39,7 +39,6 @@ const createAuth = (params: CreateAuthParams) => {
     githubClientSecret,
   } = params
 
-  // eslint-disable-next-line @typescript-eslint/typedef
   const auth = betterAuth({
     database: drizzleAdapter(db, { provider: 'pg' }),
     secret,
