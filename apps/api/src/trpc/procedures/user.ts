@@ -16,8 +16,14 @@ interface CreateUserRouterParams {
     name: string
     email: string
     password: string
+    requestId?: string
+    userId?: string
   }) => ResultAsync<UserEntity, AppError>
-  readonly getUser: (params: { id: string }) => ResultAsync<UserEntity | null, AppError>
+  readonly getUser: (params: {
+    id: string
+    requestId?: string
+    userId?: string
+  }) => ResultAsync<UserEntity | null, AppError>
   readonly listUsers: () => ResultAsync<UserEntity[], AppError>
 }
 
@@ -56,10 +62,16 @@ const mapToPublicUser: (params: { entity: UserEntity }) => PublicUser = (params)
  * Used inside `.match()` error branches.
  */
 const throwTrpcError: (params: { error: AppError }) => never = (params) => {
-  throw new TRPCError({
-    code: mapErrorCode({ tag: params.error.tag }),
-    message: params.error.message,
+  const code: TRPCError['code'] = mapErrorCode({
+    tag: params.error.tag,
   })
+
+  // Sanitize infrastructure errors — never leak
+  // internal details (DB messages, stack traces).
+  const message: string =
+    params.error.tag === 'InfrastructureError' ? 'Internal server error' : params.error.message
+
+  throw new TRPCError({ code, message })
 }
 
 /**

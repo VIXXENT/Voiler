@@ -9,6 +9,7 @@ import {
   createFindPasswordHash,
 } from './adapters/db/drizzle-user-repository.js'
 import type { DbClient } from './db/index.js'
+import { withAuditLog, type AuditableParams } from './logging/use-case-logger.js'
 import type { AuthResult } from './use-cases/auth/authenticate.js'
 import { createAuthenticate } from './use-cases/auth/authenticate.js'
 import { createCreateUser } from './use-cases/user/create-user.js'
@@ -30,17 +31,23 @@ interface CreateContainerParams {
  * injection into tRPC procedures.
  */
 interface Container {
-  readonly createUser: (params: {
-    name: string
-    email: string
-    password: string
-  }) => ResultAsync<UserEntity, AppError>
-  readonly getUser: (params: { id: string }) => ResultAsync<UserEntity | null, AppError>
+  readonly createUser: (
+    params: {
+      name: string
+      email: string
+      password: string
+    } & AuditableParams,
+  ) => ResultAsync<UserEntity, AppError>
+  readonly getUser: (
+    params: { id: string } & AuditableParams,
+  ) => ResultAsync<UserEntity | null, AppError>
   readonly listUsers: () => ResultAsync<UserEntity[], AppError>
-  readonly authenticate: (params: {
-    email: string
-    password: string
-  }) => ResultAsync<AuthResult, AppError>
+  readonly authenticate: (
+    params: {
+      email: string
+      password: string
+    } & AuditableParams,
+  ) => ResultAsync<AuthResult, AppError>
 }
 
 /**
@@ -69,23 +76,49 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
     db,
   })
 
-  // --- Use Cases ---
-  const createUser: Container['createUser'] = createCreateUser({
+  // --- Use Cases (raw) ---
+  const rawCreateUser: Container['createUser'] = createCreateUser({
     userRepository,
     passwordService,
   })
 
-  const getUser: Container['getUser'] = createGetUser({
+  const rawGetUser: Container['getUser'] = createGetUser({
     userRepository,
   })
 
-  const listUsers: Container['listUsers'] = createListUsers({ userRepository })
+  const rawListUsers: Container['listUsers'] = createListUsers({ userRepository })
 
-  const authenticate: Container['authenticate'] = createAuthenticate({
+  const rawAuthenticate: Container['authenticate'] = createAuthenticate({
     userRepository,
     passwordService,
     tokenService,
     findPasswordHash,
+  })
+
+  // --- Wrap with audit logging ---
+  const createUser: Container['createUser'] = withAuditLog({
+    name: 'user.create',
+    useCase: rawCreateUser,
+    getEntityId: (result) => String(result.id),
+    db,
+  })
+
+  const getUser: Container['getUser'] = withAuditLog({
+    name: 'user.get',
+    useCase: rawGetUser,
+    getEntityId: (result) => (result ? String(result.id) : undefined),
+    db,
+  })
+
+  // listUsers is a read-all query with no params —
+  // audit logging is not applicable (no entity to track).
+  const listUsers: Container['listUsers'] = rawListUsers
+
+  const authenticate: Container['authenticate'] = withAuditLog({
+    name: 'auth.authenticate',
+    useCase: rawAuthenticate,
+    getEntityId: (result) => String(result.user.id),
+    db,
   })
 
   return {

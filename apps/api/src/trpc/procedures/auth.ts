@@ -23,6 +23,8 @@ interface CreateAuthRouterParams {
   readonly authenticate: (params: {
     email: string
     password: string
+    requestId?: string
+    userId?: string
   }) => ResultAsync<AuthUseCaseResult, AppError>
 }
 

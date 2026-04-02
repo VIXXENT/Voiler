@@ -83,7 +83,7 @@ describe('authenticate use case', () => {
     }
   })
 
-  it('returns Err(UserNotFound) when user not found', async () => {
+  it('returns Err(InvalidPassword) when user not found — no enumeration', async () => {
     // eslint-disable-next-line @typescript-eslint/typedef
     const repo = makeMockRepo()
     // eslint-disable-next-line @typescript-eslint/typedef
@@ -94,6 +94,8 @@ describe('authenticate use case', () => {
     const findPasswordHash = makeMockFindPasswordHash()
 
     vi.mocked(repo.findByEmail).mockReturnValue(okAsync(null))
+    // Dummy hash runs to equalize timing
+    vi.mocked(passwordService.hash).mockReturnValue(okAsync('dummy-hash'))
 
     // eslint-disable-next-line @typescript-eslint/typedef
     const useCase = createAuthenticate({
@@ -111,8 +113,15 @@ describe('authenticate use case', () => {
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {
-      expect(result.error.tag).toBe('UserNotFound')
+      // Must NOT reveal UserNotFound — prevents
+      // user enumeration attacks.
+      expect(result.error.tag).toBe('InvalidPassword')
+      expect(result.error.message).toBe('Invalid credentials')
     }
+    // Verify dummy hash was called for timing
+    expect(passwordService.hash).toHaveBeenCalledWith({
+      plaintext: 'Pass1234',
+    })
   })
 
   it('returns Err(InvalidPassword) on wrong password', async () => {

@@ -2,7 +2,6 @@ import type { AppError, IPasswordService, ITokenService, IUserRepository } from 
 import {
   createEmail,
   invalidPassword,
-  userNotFound,
   type DomainError,
   type Email,
   type UserEntity,
@@ -67,13 +66,25 @@ export const createAuthenticate: (
     .findByEmail({ email: brandedEmail })
     .andThen((user): ResultAsync<AuthResult, AppError> => {
       if (user === null) {
-        return errAsync<AuthResult, AppError>(userNotFound('User not found'))
+        // Run dummy hash to equalize timing with
+        // the real verify path (~300ms argon2).
+        return passwordService
+          .hash({ plaintext: password })
+          .andThen(
+            (): ResultAsync<AuthResult, AppError> =>
+              errAsync<AuthResult, AppError>(invalidPassword('Invalid credentials')),
+          )
       }
 
       return findPasswordHash({ email })
         .andThen((hash): ResultAsync<boolean, AppError> => {
           if (hash === null) {
-            return errAsync<boolean, AppError>(userNotFound('User not found'))
+            return passwordService
+              .hash({ plaintext: password })
+              .andThen(
+                (): ResultAsync<boolean, AppError> =>
+                  errAsync<boolean, AppError>(invalidPassword('Invalid credentials')),
+              )
           }
 
           return passwordService.verify({

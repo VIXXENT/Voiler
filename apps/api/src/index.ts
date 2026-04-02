@@ -71,6 +71,8 @@ const app = new Hono()
 
 // --- Middleware ---
 app.use('*', createRateLimiter())
+// Stricter rate limit for auth endpoints (5 req/min)
+app.use('/trpc/auth.*', createRateLimiter({ windowMs: 60_000, max: 5 }))
 app.use('*', requestLogger())
 app.use('*', securityHeaders())
 app.use(
