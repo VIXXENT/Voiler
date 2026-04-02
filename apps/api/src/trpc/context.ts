@@ -15,6 +15,7 @@ interface TRPCContext {
   readonly requestId: string
   readonly user: AuthUser | null
   readonly session: AuthSession | null
+  readonly headers: Headers
 }
 
 /**
@@ -24,6 +25,7 @@ interface TRPCContext {
 interface AuthedTRPCContext extends TRPCContext {
   readonly user: AuthUser
   readonly session: AuthSession
+  readonly headers: Headers
 }
 
 /**
@@ -34,6 +36,7 @@ interface CreateContextParams {
   readonly requestId: string
   readonly user: AuthUser | null
   readonly session: AuthSession | null
+  readonly headers: Headers
 }
 
 /**
@@ -44,6 +47,7 @@ const createContext: (params: CreateContextParams) => TRPCContext = (params) => 
   requestId: params.requestId,
   user: params.user,
   session: params.session,
+  headers: params.headers,
 })
 
 /**

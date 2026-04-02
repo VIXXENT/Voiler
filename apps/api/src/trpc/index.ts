@@ -41,6 +41,7 @@ const createTrpcRoute: (params: CreateTrpcRouteParams) => Hono = (params) => {
           requestId,
           user: c.get('user') ?? null,
           session: c.get('session') ?? null,
+          headers: c.req.raw.headers,
         }
 
         return createContext(ctxParams)

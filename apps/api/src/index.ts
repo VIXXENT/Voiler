@@ -146,6 +146,22 @@ const appRouter = createAppRouter({
   auth: {
     authenticate: container.authenticate,
   },
+  session: {
+    listSessions: (p) => auth.api.listSessions({ headers: p.headers }),
+    revokeSession: (p) =>
+      auth.api.revokeSession({
+        headers: p.headers,
+        body: { token: p.token },
+      }),
+    revokeOtherSessions: (p) =>
+      auth.api.revokeOtherSessions({
+        headers: p.headers,
+      }),
+    revokeSessions: (p) =>
+      auth.api.revokeSessions({
+        headers: p.headers,
+      }),
+  },
 })
 
 // eslint-disable-next-line @typescript-eslint/typedef
