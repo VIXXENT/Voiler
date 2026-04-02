@@ -25,6 +25,10 @@ const RoleGate = (props: RoleGateProps) => {
   // eslint-disable-next-line @typescript-eslint/typedef
   const session = authClient.useSession()
 
+  if (session.isPending) {
+    return fallback !== undefined ? <>{fallback}</> : null
+  }
+
   const userRole: string | undefined =
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     session.data?.user?.role as string | undefined
