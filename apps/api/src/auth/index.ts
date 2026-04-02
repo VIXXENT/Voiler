@@ -11,6 +11,10 @@ interface CreateAuthParams {
   readonly db: DbClient
   readonly secret: string
   readonly trustedOrigins?: string[]
+  readonly googleClientId?: string
+  readonly googleClientSecret?: string
+  readonly githubClientId?: string
+  readonly githubClientSecret?: string
 }
 
 /**
@@ -25,7 +29,15 @@ interface CreateAuthParams {
  * @returns Configured Better Auth instance.
  */
 const createAuth = (params: CreateAuthParams) => {
-  const { db, secret, trustedOrigins = [] } = params
+  const {
+    db,
+    secret,
+    trustedOrigins = [],
+    googleClientId,
+    googleClientSecret,
+    githubClientId,
+    githubClientSecret,
+  } = params
 
   // eslint-disable-next-line @typescript-eslint/typedef
   const auth = betterAuth({
@@ -34,6 +46,24 @@ const createAuth = (params: CreateAuthParams) => {
     trustedOrigins,
     emailAndPassword: {
       enabled: true,
+    },
+    socialProviders: {
+      ...(googleClientId && googleClientSecret
+        ? {
+            google: {
+              clientId: googleClientId,
+              clientSecret: googleClientSecret,
+            },
+          }
+        : {}),
+      ...(githubClientId && githubClientSecret
+        ? {
+            github: {
+              clientId: githubClientId,
+              clientSecret: githubClientSecret,
+            },
+          }
+        : {}),
     },
     user: {
       additionalFields: {

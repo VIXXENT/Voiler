@@ -28,6 +28,10 @@ const envSchema = z.object({
       AUTH_SECRET_MIN_LENGTH,
       `AUTH_SECRET must be at least ${String(AUTH_SECRET_MIN_LENGTH)} characters`,
     ),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GITHUB_CLIENT_ID: z.string().optional(),
+  GITHUB_CLIENT_SECRET: z.string().optional(),
 })
 
 type EnvSchema = typeof envSchema
