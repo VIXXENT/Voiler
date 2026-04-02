@@ -174,6 +174,17 @@ const appRouter = createAppRouter({
         headers: p.headers,
       }),
   },
+  admin: {
+    impersonateUser: (p) =>
+      auth.api.impersonateUser({
+        headers: p.headers,
+        body: { userId: p.userId },
+      }),
+    stopImpersonating: (p) =>
+      auth.api.stopImpersonating({
+        headers: p.headers,
+      }),
+  },
 })
 
 // eslint-disable-next-line @typescript-eslint/typedef
