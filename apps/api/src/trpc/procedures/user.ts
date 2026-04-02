@@ -37,6 +37,7 @@ const mapErrorCode: (params: { tag: AppError['tag'] }) => TRPCError['code'] = (p
       return 'CONFLICT'
     case 'InvalidEmail':
     case 'InvalidPassword':
+    case 'InvalidUserId':
     case 'WeakPassword':
     case 'ValidationError':
       return 'BAD_REQUEST'

@@ -28,11 +28,12 @@ const createRateLimiter = (config?: RateLimiterConfig): MiddlewareHandler => {
     limit: max,
     standardHeaders: 'draft-6',
     keyGenerator: (c) => {
-      const forwardedFor: string | undefined = c.req.header('x-forwarded-for')
-      const realIp: string | undefined = c.req.header('x-real-ip')
-      const fallback = '127.0.0.1'
+      const forwardedFor = c.req.header('x-forwarded-for')
+      const realIp = c.req.header('x-real-ip')
 
-      return forwardedFor?.split(',')[0]?.trim() ?? realIp ?? fallback
+      // Use last IP in X-Forwarded-For (set by the trusted reverse proxy)
+      const ips = forwardedFor?.split(',').map((ip) => ip.trim())
+      return ips?.at(-1) ?? realIp ?? '127.0.0.1'
     },
   })
 

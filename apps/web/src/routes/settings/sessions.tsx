@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { authClient } from '~/lib/auth'
 
@@ -18,11 +18,8 @@ const SessionsPage = () => {
   const [error, setError] = useState<string | undefined>(undefined)
   const [revoking, setRevoking] = useState<string | null>(null)
 
-  /**
-   * Load sessions from the auth client.
-   * Called on initial mount via useEffect.
-   */
-  const loadSessions: () => Promise<void> = async () => {
+  /** Fetch sessions from the auth client and update state. */
+  const loadSessions = useCallback(async () => {
     setLoading(true)
     setError(undefined)
 
@@ -33,11 +30,11 @@ const SessionsPage = () => {
       setSessions((result.data as SessionEntry[] | null) ?? [])
     }
     setLoading(false)
-  }
+  }, [])
 
   useEffect(() => {
     void loadSessions()
-  }, [])
+  }, [loadSessions])
 
   /** Revoke a single session by token. */
   const handleRevoke: (params: { token: string }) => Promise<void> = async (params) => {

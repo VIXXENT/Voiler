@@ -30,7 +30,7 @@ export const createEmail: (params: CreateEmailParams) => Result<Email, DomainErr
   const trimmed: string = value.trim().toLowerCase()
 
   if (!EMAIL_REGEX.test(trimmed)) {
-    return err(invalidEmail(`"${value}" is not a valid email address`))
+    return err(invalidEmail('Invalid email address format'))
   }
 
   return ok(trimmed as Email)

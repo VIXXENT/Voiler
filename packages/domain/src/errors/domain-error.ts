@@ -7,6 +7,7 @@
 export type DomainError =
   | { readonly tag: 'InvalidEmail'; readonly message: string }
   | { readonly tag: 'InvalidPassword'; readonly message: string }
+  | { readonly tag: 'InvalidUserId'; readonly message: string }
   | { readonly tag: 'WeakPassword'; readonly message: string }
   | { readonly tag: 'UserNotFound'; readonly message: string }
   | { readonly tag: 'UserAlreadyExists'; readonly message: string }
@@ -26,6 +27,12 @@ export const invalidPassword: (message: string) => DomainError = (message) => ({
 /** Create a WeakPassword domain error. */
 export const weakPassword: (message: string) => DomainError = (message) => ({
   tag: 'WeakPassword',
+  message,
+})
+
+/** Create an InvalidUserId domain error. */
+export const invalidUserId = (message: string): DomainError => ({
+  tag: 'InvalidUserId',
   message,
 })
 

@@ -1,7 +1,7 @@
 import { ok, err, type Result } from 'neverthrow'
 
 import type { DomainError } from '../errors/domain-error'
-import { userNotFound } from '../errors/domain-error'
+import { invalidUserId } from '../errors/domain-error'
 import type { Brand } from '../types/brand'
 
 /** A branded string representing a unique user identifier. */
@@ -25,7 +25,7 @@ export const createUserId: (params: CreateUserIdParams) => Result<UserId, Domain
   const { value } = params
 
   if (value.trim().length === 0) {
-    return err(userNotFound('UserId must be a non-empty string'))
+    return err(invalidUserId('UserId must be a non-empty string'))
   }
 
   return ok(value as UserId)

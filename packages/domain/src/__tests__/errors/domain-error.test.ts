@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest'
 import {
   invalidEmail,
   invalidPassword,
+  invalidUserId,
   weakPassword,
   userNotFound,
   userAlreadyExists,
@@ -28,6 +29,13 @@ describe('DomainError constructors', () => {
 
     expect(error.tag).toBe('WeakPassword')
     expect(error.message).toBe('needs digit')
+  })
+
+  it('invalidUserId creates correct tag and message', () => {
+    const error = invalidUserId('empty id')
+
+    expect(error.tag).toBe('InvalidUserId')
+    expect(error.message).toBe('empty id')
   })
 
   it('userNotFound creates correct tag and message', () => {

@@ -17,7 +17,7 @@ describe('createUserId', () => {
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {
-      expect(result.error.tag).toBe('UserNotFound')
+      expect(result.error.tag).toBe('InvalidUserId')
     }
   })
 
@@ -26,7 +26,7 @@ describe('createUserId', () => {
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {
-      expect(result.error.tag).toBe('UserNotFound')
+      expect(result.error.tag).toBe('InvalidUserId')
     }
   })
 })
