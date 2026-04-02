@@ -54,43 +54,74 @@ const createSessionRouter: (params: CreateSessionRouterParams) => ReturnType<typ
   // eslint-disable-next-line @typescript-eslint/typedef
   const sessionRouter = router({
     list: authedProcedure.query(async (opts) => {
-      const sessions: SessionRecord[] = await listSessions({
-        headers: opts.ctx.headers,
-      })
+      try {
+        const sessions: SessionRecord[] = await listSessions({
+          headers: opts.ctx.headers,
+        })
 
-      return sessions
+        return sessions
+      } catch {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to list sessions',
+        })
+      }
     }),
 
     revoke: authedProcedure.input(RevokeSessionInputSchema).mutation(async (opts) => {
-      const result: { status: boolean } = await revokeSession({
-        headers: opts.ctx.headers,
-        token: opts.input.token,
-      })
+      try {
+        const result: { status: boolean } = await revokeSession({
+          headers: opts.ctx.headers,
+          token: opts.input.token,
+        })
 
-      if (!result.status) {
+        if (!result.status) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Session not found or already revoked',
+          })
+        }
+
+        return result
+      } catch (error: unknown) {
+        if (error instanceof TRPCError) {
+          throw error
+        }
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Session not found or already revoked',
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to revoke session',
         })
       }
-
-      return result
     }),
 
     revokeOthers: authedProcedure.mutation(async (opts) => {
-      const result: { status: boolean } = await revokeOtherSessions({
-        headers: opts.ctx.headers,
-      })
+      try {
+        const result: { status: boolean } = await revokeOtherSessions({
+          headers: opts.ctx.headers,
+        })
 
-      return result
+        return result
+      } catch {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to revoke other sessions',
+        })
+      }
     }),
 
     revokeAll: authedProcedure.mutation(async (opts) => {
-      const result: { status: boolean } = await revokeSessions({
-        headers: opts.ctx.headers,
-      })
+      try {
+        const result: { status: boolean } = await revokeSessions({
+          headers: opts.ctx.headers,
+        })
 
-      return result
+        return result
+      } catch {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to revoke all sessions',
+        })
+      }
     }),
   })
 

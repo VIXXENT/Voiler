@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 
 import { writeAuditLog } from '../../logging/index.js'
@@ -46,10 +47,17 @@ const createAdminRouter: (params: CreateAdminRouterParams) => ReturnType<typeof 
   // eslint-disable-next-line @typescript-eslint/typedef
   const adminRouter = router({
     impersonate: adminProcedure.input(ImpersonateInputSchema).mutation(async (opts) => {
-      await impersonateUser({
-        headers: opts.ctx.headers,
-        userId: opts.input.userId,
-      })
+      try {
+        await impersonateUser({
+          headers: opts.ctx.headers,
+          userId: opts.input.userId,
+        })
+      } catch {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to impersonate user',
+        })
+      }
 
       writeAuditLog({
         db: opts.ctx.db,
@@ -68,9 +76,16 @@ const createAdminRouter: (params: CreateAdminRouterParams) => ReturnType<typeof 
     }),
 
     stopImpersonating: authedProcedure.mutation(async (opts) => {
-      await stopImpersonating({
-        headers: opts.ctx.headers,
-      })
+      try {
+        await stopImpersonating({
+          headers: opts.ctx.headers,
+        })
+      } catch {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to stop impersonating',
+        })
+      }
 
       writeAuditLog({
         db: opts.ctx.db,

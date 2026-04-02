@@ -1,8 +1,6 @@
 import { router } from './context.js'
 import type { CreateAdminRouterParams } from './procedures/admin.js'
 import { createAdminRouter } from './procedures/admin.js'
-import type { CreateAuthRouterParams } from './procedures/auth.js'
-import { createAuthRouter } from './procedures/auth.js'
 import type { CreateSessionRouterParams } from './procedures/session.js'
 import { createSessionRouter } from './procedures/session.js'
 import type { CreateUserRouterParams } from './procedures/user.js'
@@ -13,7 +11,6 @@ import { createUserRouter } from './procedures/user.js'
  */
 interface CreateAppRouterParams {
   readonly user: CreateUserRouterParams
-  readonly auth: CreateAuthRouterParams
   readonly session: CreateSessionRouterParams
   readonly admin: CreateAdminRouterParams
 }
@@ -26,8 +23,6 @@ const createAppRouter: (params: CreateAppRouterParams) => ReturnType<typeof rout
   // eslint-disable-next-line @typescript-eslint/typedef
   const userRouter = createUserRouter(params.user)
   // eslint-disable-next-line @typescript-eslint/typedef
-  const authRouter = createAuthRouter(params.auth)
-  // eslint-disable-next-line @typescript-eslint/typedef
   const sessionRouter = createSessionRouter(params.session)
   // eslint-disable-next-line @typescript-eslint/typedef
   const adminRouter = createAdminRouter(params.admin)
@@ -35,7 +30,6 @@ const createAppRouter: (params: CreateAppRouterParams) => ReturnType<typeof rout
   // eslint-disable-next-line @typescript-eslint/typedef
   const appRouter = router({
     user: userRouter,
-    auth: authRouter,
     session: sessionRouter,
     admin: adminRouter,
   })

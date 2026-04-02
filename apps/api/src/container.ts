@@ -2,16 +2,9 @@ import type { AppError } from '@voiler/core'
 import type { UserEntity } from '@voiler/domain'
 import type { ResultAsync } from 'neverthrow'
 
-import { createArgon2PasswordService } from './adapters/auth/argon2-password-service.js'
-import { createJwtTokenService } from './adapters/auth/jwt-token-service.js'
-import {
-  createDrizzleUserRepository,
-  createFindPasswordHash,
-} from './adapters/db/drizzle-user-repository.js'
+import { createDrizzleUserRepository } from './adapters/db/drizzle-user-repository.js'
 import type { DbClient } from './db/index.js'
 import { withAuditLog, type AuditableParams } from './logging/use-case-logger.js'
-import type { AuthResult } from './use-cases/auth/authenticate.js'
-import { createAuthenticate } from './use-cases/auth/authenticate.js'
 import { createCreateUser } from './use-cases/user/create-user.js'
 import { createGetUser } from './use-cases/user/get-user.js'
 import { createListUsers } from './use-cases/user/list-users.js'
@@ -21,7 +14,6 @@ import { createListUsers } from './use-cases/user/list-users.js'
  */
 interface CreateContainerParams {
   readonly db: DbClient
-  readonly authSecret: string
 }
 
 /**
@@ -41,12 +33,6 @@ interface Container {
     params: { id: string } & AuditableParams,
   ) => ResultAsync<UserEntity | null, AppError>
   readonly listUsers: () => ResultAsync<UserEntity[], AppError>
-  readonly authenticate: (
-    params: {
-      email: string
-      password: string
-    } & AuditableParams,
-  ) => ResultAsync<AuthResult, AppError>
 }
 
 /**
@@ -57,21 +43,11 @@ interface Container {
  * interfaces defined in @voiler/core.
  */
 const createContainer: (params: CreateContainerParams) => Container = (params) => {
-  const { db, authSecret } = params
+  const { db } = params
 
   // --- Adapters ---
   // eslint-disable-next-line @typescript-eslint/typedef
   const userRepository = createDrizzleUserRepository({
-    db,
-  })
-  // eslint-disable-next-line @typescript-eslint/typedef
-  const passwordService = createArgon2PasswordService()
-  // eslint-disable-next-line @typescript-eslint/typedef
-  const tokenService = createJwtTokenService({
-    secret: authSecret,
-  })
-  // eslint-disable-next-line @typescript-eslint/typedef
-  const findPasswordHash = createFindPasswordHash({
     db,
   })
 
@@ -85,13 +61,6 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   })
 
   const rawListUsers: Container['listUsers'] = createListUsers({ userRepository })
-
-  const rawAuthenticate: Container['authenticate'] = createAuthenticate({
-    userRepository,
-    passwordService,
-    tokenService,
-    findPasswordHash,
-  })
 
   // --- Wrap with audit logging ---
   const createUser: Container['createUser'] = withAuditLog({
@@ -112,18 +81,10 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   // audit logging is not applicable (no entity to track).
   const listUsers: Container['listUsers'] = rawListUsers
 
-  const authenticate: Container['authenticate'] = withAuditLog({
-    name: 'auth.authenticate',
-    useCase: rawAuthenticate,
-    getEntityId: (result) => String(result.user.id),
-    db,
-  })
-
   return {
     createUser,
     getUser,
     listUsers,
-    authenticate,
   }
 }
 

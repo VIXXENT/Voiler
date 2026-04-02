@@ -45,7 +45,6 @@ const db = createDb({ databaseUrl: env.DATABASE_URL })
 // eslint-disable-next-line @typescript-eslint/typedef
 const container = createContainer({
   db,
-  authSecret: env.AUTH_SECRET,
 })
 
 /**
@@ -93,8 +92,7 @@ const app = new Hono()
 
 // --- Middleware ---
 app.use('*', createRateLimiter())
-// Stricter rate limit for auth endpoints (5 req/min)
-app.use('/trpc/auth.*', createRateLimiter({ windowMs: 60_000, max: 5 }))
+// Stricter rate limit for auth endpoints (10 req/min)
 app.use('/api/auth/*', createRateLimiter({ windowMs: 60_000, max: 10 }))
 app.use('*', requestLogger())
 app.use('*', securityHeaders())
@@ -154,9 +152,6 @@ const appRouter = createAppRouter({
     createUser: container.createUser,
     getUser: container.getUser,
     listUsers: container.listUsers,
-  },
-  auth: {
-    authenticate: container.authenticate,
   },
   session: {
     listSessions: (p) => auth.api.listSessions({ headers: p.headers }),
