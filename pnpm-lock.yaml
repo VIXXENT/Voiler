@@ -158,6 +158,24 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
 
+  modules/email:
+    dependencies:
+      '@voiler/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      neverthrow:
+        specifier: ^8.2.0
+        version: 8.2.0
+
+  modules/payments:
+    dependencies:
+      '@voiler/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      neverthrow:
+        specifier: ^8.2.0
+        version: 8.2.0
+
   packages/config-env:
     dependencies:
       dotenv:

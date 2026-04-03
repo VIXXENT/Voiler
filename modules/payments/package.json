@@ -1,0 +1,11 @@
+{
+  "name": "@voiler/mod-payments",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "neverthrow": "^8.2.0",
+    "@voiler/core": "workspace:*"
+  }
+}
