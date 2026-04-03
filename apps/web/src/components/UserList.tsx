@@ -8,6 +8,40 @@ interface UserRow {
   readonly role: string
 }
 
+/** Returns true if value is a UserRow. */
+const isUserRow = (value: unknown): value is UserRow =>
+  typeof value === 'object' &&
+  value !== null &&
+  'id' in value &&
+  'name' in value &&
+  'email' in value &&
+  'role' in value &&
+  typeof (value as UserRow).id === 'string' &&
+  typeof (value as UserRow).name === 'string' &&
+  typeof (value as UserRow).email === 'string' &&
+  typeof (value as UserRow).role === 'string'
+
+/** Returns true if value is a UserRow array. */
+const isUserRowArray = (value: unknown): value is UserRow[] =>
+  Array.isArray(value) && value.every(isUserRow)
+
+/** Extracts a message string from an unknown error value. */
+const extractMessage = (value: unknown): string | undefined => {
+  if (value === null || value === undefined) {
+    return undefined
+  }
+  if (typeof value === 'object' && 'message' in value) {
+    const msg: unknown = (value as { message: unknown }).message
+    if (typeof msg === 'string') {
+      return msg
+    }
+  }
+  if (typeof value === 'string') {
+    return value
+  }
+  return undefined
+}
+
 // TODO: i18n — replace hardcoded strings with t() calls
 /** Displays a table of users fetched via tRPC. */
 const UserList = () => {
@@ -23,10 +57,9 @@ const UserList = () => {
       @typescript-eslint/no-unsafe-call,
       @typescript-eslint/no-unsafe-member-access */
 
-  const users: UserRow[] | undefined = data as UserRow[] | undefined
+  const users: UserRow[] | undefined = isUserRowArray(data) ? data : undefined
 
-  const errorMessage: string | undefined =
-    error !== null && error !== undefined ? (error as { message: string }).message : undefined
+  const errorMessage: string | undefined = extractMessage(error)
 
   if (isLoading) {
     return <p className="text-sm text-gray-500">Loading users...</p>

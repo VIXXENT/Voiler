@@ -2,6 +2,18 @@ import { useTranslation } from '~/lib/i18n'
 import type { Locale, LocaleOption } from '~/lib/i18n'
 
 /**
+ * Returns true if the given string is a valid Locale code,
+ * narrowing the type for safe use with setLocale.
+ */
+const isLocale = (params: {
+  readonly value: string
+  readonly options: readonly LocaleOption[]
+}): boolean => {
+  const { value, options } = params
+  return options.some((opt: LocaleOption) => opt.code === value)
+}
+
+/**
  * Dropdown to switch the active locale. Currently
  * only English is available; the control is disabled
  * until more locales are added.
@@ -15,7 +27,11 @@ const LocaleSwitcher = () => {
   const handleChange: (e: React.ChangeEvent<HTMLSelectElement>) => void = (
     e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
-    setLocale(e.target.value as Locale)
+    const value: string = e.target.value
+    if (isLocale({ value, options: availableLocales })) {
+      // value is guaranteed to be a valid Locale by the guard above
+      setLocale(value as Locale)
+    }
   }
 
   return (

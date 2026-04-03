@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react'
 
-import { authClient } from '~/lib/auth'
-
-/** Valid application roles. */
-type AppRole = 'admin' | 'dev' | 'user'
+import { authClient, sessionRole } from '~/lib/auth'
+import type { AppRole } from '~/lib/auth'
 
 /** Props for the RoleGate component. */
 interface RoleGateProps {
@@ -29,21 +27,17 @@ const RoleGate = (props: RoleGateProps) => {
     return fallback !== undefined ? <>{fallback}</> : null
   }
 
-  const userRole: string | undefined =
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    session.data?.user?.role as string | undefined
+  const userRole: AppRole | undefined = sessionRole({ user: session.data?.user })
 
   const hasAccess: boolean = (() => {
     if (userRole === 'admin') {
       return true
     }
     if (role === 'dev') {
-      return userRole === 'dev' || userRole === 'admin'
+      return userRole === 'dev'
     }
-    if (role === 'user') {
-      return userRole !== undefined
-    }
-    return userRole === role
+    // role is 'user' or 'admin'; admin was handled above, so any authenticated user qualifies
+    return userRole !== undefined
   })()
 
   if (hasAccess) {

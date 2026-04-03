@@ -4,10 +4,11 @@ import { IdDisplayToggle } from './tools/IdDisplayToggle'
 import { LogLevelToggle } from './tools/LogLevelToggle'
 import { RequestInspector } from './tools/RequestInspector'
 
-import { authClient } from '~/lib/auth'
+import { authClient, sessionRole } from '~/lib/auth'
+import type { AppRole } from '~/lib/auth'
 
 /** Roles allowed to access the dev menu. */
-const ALLOWED_ROLES: ReadonlySet<string> = new Set(['admin', 'dev'])
+const ALLOWED_ROLES: ReadonlySet<AppRole> = new Set<AppRole>(['admin', 'dev'])
 
 /**
  * Developer panel accessible via Ctrl+Shift+D.
@@ -19,9 +20,7 @@ const DevMenu = () => {
 
   const session = authClient.useSession()
 
-  const userRole: string | undefined =
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    session.data?.user?.role as string | undefined
+  const userRole: AppRole | undefined = sessionRole({ user: session.data?.user })
 
   const hasAccess: boolean = userRole !== undefined && ALLOWED_ROLES.has(userRole)
 

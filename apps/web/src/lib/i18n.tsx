@@ -26,7 +26,7 @@ const AVAILABLE_LOCALES: readonly LocaleOption[] = [{ code: 'en', label: 'Englis
 
 /** Map of locale code to message dictionary. */
 const MESSAGE_MAP: Record<Locale, Messages> = {
-  en: en as Messages,
+  en: en satisfies Messages,
 }
 
 /** Default locale used at application start. */

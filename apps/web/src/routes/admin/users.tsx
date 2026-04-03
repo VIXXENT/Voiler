@@ -12,6 +12,40 @@ interface AdminUserRow {
   readonly role: string
 }
 
+/** Returns true if value matches AdminUserRow shape. */
+const isAdminUserRow = (value: unknown): value is AdminUserRow =>
+  typeof value === 'object' &&
+  value !== null &&
+  'id' in value &&
+  'name' in value &&
+  'email' in value &&
+  'role' in value &&
+  typeof (value as AdminUserRow).id === 'string' &&
+  typeof (value as AdminUserRow).name === 'string' &&
+  typeof (value as AdminUserRow).email === 'string' &&
+  typeof (value as AdminUserRow).role === 'string'
+
+/** Returns true if value is an AdminUserRow array. */
+const isAdminUserRowArray = (value: unknown): value is AdminUserRow[] =>
+  Array.isArray(value) && value.every(isAdminUserRow)
+
+/** Extracts a message string from an unknown error value. */
+const extractMessage = (value: unknown): string | undefined => {
+  if (value === null || value === undefined) {
+    return undefined
+  }
+  if (typeof value === 'object' && 'message' in value) {
+    const msg: unknown = (value as { message: unknown }).message
+    if (typeof msg === 'string') {
+      return msg
+    }
+  }
+  if (typeof value === 'string') {
+    return value
+  }
+  return undefined
+}
+
 /** Admin user list page with impersonation support. */
 const AdminUsersPage = () => {
   const session = authClient.useSession()
@@ -30,10 +64,9 @@ const AdminUsersPage = () => {
       @typescript-eslint/no-unsafe-call,
       @typescript-eslint/no-unsafe-member-access */
 
-  const users: AdminUserRow[] | undefined = data as AdminUserRow[] | undefined
+  const users: AdminUserRow[] | undefined = isAdminUserRowArray(data) ? data : undefined
 
-  const errorMessage: string | undefined =
-    error !== null && error !== undefined ? (error as { message: string }).message : undefined
+  const errorMessage: string | undefined = extractMessage(error)
 
   const currentUserId: string | undefined = session.data?.user.id
 

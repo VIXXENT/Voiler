@@ -22,6 +22,22 @@ const DEFAULT_LEVELS: LogLevels = {
   router: true,
 }
 
+/**
+ * Returns true if the parsed value has the shape of LogLevels,
+ * narrowing the type without a bare cast.
+ */
+const isLogLevels = (value: unknown): value is LogLevels =>
+  typeof value === 'object' &&
+  value !== null &&
+  'api' in value &&
+  'auth' in value &&
+  'general' in value &&
+  'router' in value &&
+  typeof (value as LogLevels).api === 'boolean' &&
+  typeof (value as LogLevels).auth === 'boolean' &&
+  typeof (value as LogLevels).general === 'boolean' &&
+  typeof (value as LogLevels).router === 'boolean'
+
 /** Read persisted log levels from localStorage. */
 const readLevels = (): LogLevels => {
   const raw: string | null = globalThis.localStorage.getItem(STORAGE_KEY)
@@ -29,7 +45,8 @@ const readLevels = (): LogLevels => {
     return DEFAULT_LEVELS
   }
   try {
-    return JSON.parse(raw) as LogLevels
+    const parsed: unknown = JSON.parse(raw)
+    return isLogLevels(parsed) ? parsed : DEFAULT_LEVELS
   } catch {
     return DEFAULT_LEVELS
   }

@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router'
 
 import { LocaleSwitcher } from '~/components/LocaleSwitcher'
-import { authClient } from '~/lib/auth'
+import { authClient, sessionRole } from '~/lib/auth'
+import type { AppRole } from '~/lib/auth'
 import { useTranslation } from '~/lib/i18n'
 
 /** Navigation bar showing auth state and navigation links. */
@@ -11,9 +12,7 @@ const NavBar = () => {
 
   const isAuthenticated = Boolean(session.data)
 
-  const userRole: string | undefined =
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    session.data?.user?.role as string | undefined
+  const userRole: AppRole | undefined = sessionRole({ user: session.data?.user })
 
   const isAdmin: boolean = userRole === 'admin'
 
