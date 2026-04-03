@@ -4,7 +4,7 @@ import { z } from 'zod'
  * Minimum length for AUTH_SECRET to ensure cryptographic security.
  * 32 characters provides at least 192 bits of entropy with base64.
  */
-const AUTH_SECRET_MIN_LENGTH: number = 32
+const AUTH_SECRET_MIN_LENGTH = 32
 
 /**
  * Zod schema for environment variable validation.
@@ -14,7 +14,6 @@ const AUTH_SECRET_MIN_LENGTH: number = 32
  * AUTH_SECRET must be at least 32 characters for session signing security.
  * DATABASE_URL must be a valid PostgreSQL connection string.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),

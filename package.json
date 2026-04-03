@@ -18,10 +18,12 @@
     "test:e2e": "playwright test --config apps/web/playwright.config.ts",
     "db:up": "docker compose up db -d",
     "db:down": "docker compose down",
-    "preview": "docker compose -f docker-compose.prod.yml up --build"
+    "preview": "docker compose -f docker-compose.prod.yml up --build",
+    "init-project": "tsx scripts/create-project.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@inquirer/prompts": "^8.3.2",
     "@playwright/test": "^1.59.1",
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
