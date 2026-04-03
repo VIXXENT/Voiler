@@ -3,6 +3,10 @@ import type { UserEntity } from '@voiler/domain'
 import type { ResultAsync } from 'neverthrow'
 
 import { createDrizzleUserRepository } from './adapters/db/drizzle-user-repository.js'
+// [MODULE:payments] import { createStubPaymentService } from '@voiler/mod-payments'
+// [MODULE:payments] import type { IPaymentService } from '@voiler/mod-payments'
+// [MODULE:email] import { createStubEmailService } from '@voiler/mod-email'
+// [MODULE:email] import type { IEmailService } from '@voiler/mod-email'
 import type { DbClient } from './db/index.js'
 import { withAuditLog, type AuditableParams } from './logging/use-case-logger.js'
 import { createCreateUser } from './use-cases/user/create-user.js'
@@ -33,6 +37,8 @@ interface Container {
     params: { id: string } & AuditableParams,
   ) => ResultAsync<UserEntity | null, AppError>
   readonly listUsers: () => ResultAsync<UserEntity[], AppError>
+  // [MODULE:payments] readonly paymentService: IPaymentService
+  // [MODULE:email] readonly emailService: IEmailService
 }
 
 /**
@@ -46,6 +52,9 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   const { db } = params
 
   // --- Adapters ---
+
+  // [MODULE:payments] const paymentService = createStubPaymentService()
+  // [MODULE:email] const emailService = createStubEmailService()
 
   const userRepository = createDrizzleUserRepository({
     db,
@@ -85,6 +94,8 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
     createUser,
     getUser,
     listUsers,
+    // [MODULE:payments] paymentService,
+    // [MODULE:email] emailService,
   }
 }
 

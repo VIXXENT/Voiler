@@ -21,6 +21,8 @@
     "@voiler/config-env": "workspace:*",
     "@voiler/core": "workspace:*",
     "@voiler/domain": "workspace:*",
+    "@voiler/mod-email": "workspace:*",
+    "@voiler/mod-payments": "workspace:*",
     "@voiler/schema": "workspace:*",
     "argon2": "^0.44.0",
     "better-auth": "^1.5.6",

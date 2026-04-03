@@ -1,1 +1,5 @@
-{"name":"payments","description":"Stripe payment processing (checkout sessions, webhooks)","envVars":["STRIPE_SECRET_KEY","STRIPE_WEBHOOK_SECRET"]}
+{
+  "name": "payments",
+  "description": "Stripe payment processing (checkout sessions, webhooks)",
+  "envVars": ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]
+}

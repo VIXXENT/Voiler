@@ -5,6 +5,10 @@ import type { CreateSessionRouterParams } from './procedures/session.js'
 import { createSessionRouter } from './procedures/session.js'
 import type { CreateUserRouterParams } from './procedures/user.js'
 import { createUserRouter } from './procedures/user.js'
+// [MODULE:payments] import type { CreatePaymentRouterParams } from './procedures/payments.js'
+// [MODULE:payments] import { createPaymentRouter } from './procedures/payments.js'
+// [MODULE:email] import type { CreateEmailRouterParams } from './procedures/email.js'
+// [MODULE:email] import { createEmailRouter } from './procedures/email.js'
 
 /**
  * Dependencies for the root tRPC router.
@@ -13,6 +17,8 @@ interface CreateAppRouterParams {
   readonly user: CreateUserRouterParams
   readonly session: CreateSessionRouterParams
   readonly admin: CreateAdminRouterParams
+  // [MODULE:payments] readonly payment: CreatePaymentRouterParams
+  // [MODULE:email] readonly email: CreateEmailRouterParams
 }
 
 /**
@@ -26,10 +32,15 @@ const createAppRouter: (params: CreateAppRouterParams) => ReturnType<typeof rout
 
   const adminRouter = createAdminRouter(params.admin)
 
+  // [MODULE:payments] const paymentRouter = createPaymentRouter(params.payment)
+  // [MODULE:email] const emailRouter = createEmailRouter(params.email)
+
   const appRouter = router({
     user: userRouter,
     session: sessionRouter,
     admin: adminRouter,
+    // [MODULE:payments] payment: paymentRouter,
+    // [MODULE:email] email: emailRouter,
   })
 
   return appRouter

@@ -1,1 +1,5 @@
-{"name":"email","description":"Transactional email via SMTP","envVars":["SMTP_HOST","SMTP_PORT","SMTP_USER","SMTP_PASS","EMAIL_FROM"]}
+{
+  "name": "email",
+  "description": "Transactional email via SMTP",
+  "envVars": ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "EMAIL_FROM"]
+}

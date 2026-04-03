@@ -10,14 +10,15 @@ real Stripe credentials and replace stubs with live adapters.
 
 ## Environment Variables
 
-| Variable               | Description                          |
-| ---------------------- | ------------------------------------ |
-| `STRIPE_SECRET_KEY`    | Stripe secret key (sk_live_... or sk_test_...) |
-| `STRIPE_WEBHOOK_SECRET`| Stripe webhook signing secret        |
+| Variable                | Description                                    |
+| ----------------------- | ---------------------------------------------- |
+| `STRIPE_SECRET_KEY`     | Stripe secret key (sk*live*... or sk*test*...) |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret                  |
 
 ## Activation
 
 Run `pnpm init-project` and select the `payments` module to:
+
 1. Add env vars to `.env`
 2. Replace stub service with real Stripe adapter
 3. Register router in the API container
