@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server'
 import type { EmailResult, IEmailService } from '@voiler/mod-email'
 import { z } from 'zod'
 
@@ -27,7 +28,7 @@ const createEmailRouter = (params: CreateEmailRouterParams) => {
         return result.match(
           (r: EmailResult) => ({ messageId: r.messageId }),
           (error: { readonly message: string }) => {
-            throw new Error(error.message)
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message })
           },
         )
       }),

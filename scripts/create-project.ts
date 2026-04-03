@@ -19,7 +19,7 @@ const TARGET_EXTENSIONS: ReadonlyArray<string> = [
   '.mts',
 ]
 
-const TARGET_FILENAMES: ReadonlyArray<string> = ['Dockerfile']
+const TARGET_FILENAMES: ReadonlyArray<string> = ['Dockerfile', '.env.example']
 
 type ModuleDefinition = {
   readonly name: string

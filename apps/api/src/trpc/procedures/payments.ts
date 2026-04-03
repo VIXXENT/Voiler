@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server'
 import type { CheckoutSession, IPaymentService } from '@voiler/mod-payments'
 import { z } from 'zod'
 
@@ -27,7 +28,7 @@ const createPaymentRouter = (params: CreatePaymentRouterParams) => {
         return result.match(
           (session: CheckoutSession) => session,
           (error: { readonly message: string }) => {
-            throw new Error(error.message)
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message })
           },
         )
       }),
@@ -49,7 +50,7 @@ const createPaymentRouter = (params: CreatePaymentRouterParams) => {
         return result.match(
           () => ({ received: true }),
           (error: { readonly message: string }) => {
-            throw new Error(error.message)
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message })
           },
         )
       }),
