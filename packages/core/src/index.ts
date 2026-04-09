@@ -37,3 +37,9 @@ export type {
   ITaskAssigneeRepository,
   TaskAssigneeRecord,
 } from './repositories/task-assignee.repository'
+
+export type {
+  CreateMemberData,
+  IProjectMemberRepository,
+  ProjectMemberRecord,
+} from './repositories/project-member.repository'
