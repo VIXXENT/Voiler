@@ -6,4 +6,13 @@
  * drizzle-kit reads this file for migration generation.
  * New tables from @voiler/schema must be re-exported here.
  */
-export { User, Session, Account, Verification, AuditLog } from '@voiler/schema'
+export {
+  User,
+  Session,
+  Account,
+  Verification,
+  AuditLog,
+  Project,
+  Task,
+  TaskAssignee,
+} from '@voiler/schema'
