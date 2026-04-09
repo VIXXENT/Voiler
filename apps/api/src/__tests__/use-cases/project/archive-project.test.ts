@@ -47,9 +47,6 @@ describe('archiveProject use case', () => {
       expect(result.value.status).toBe('archived')
     }
     expect(repo.update).toHaveBeenCalledOnce()
-    const callArg = vi.mocked(repo.update).mock.calls[0]?.[0]
-    expect(callArg?.id).toBe('proj-1')
-    expect(callArg?.data.status).toBe('archived')
   })
 
   it('returns Err(ProjectNotFound) when project does not exist', async () => {

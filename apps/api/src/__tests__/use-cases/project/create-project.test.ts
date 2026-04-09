@@ -56,9 +56,10 @@ describe('createProject use case', () => {
     const result = await useCase({ userId: 'user-1', name: 'Test Project', description: 'A description' })
 
     expect(result.isOk()).toBe(true)
+    if (result.isOk()) {
+      expect(result.value.description).toBe('A description')
+    }
     expect(repo.create).toHaveBeenCalledOnce()
-    const callArg = vi.mocked(repo.create).mock.calls[0]?.[0]
-    expect(callArg?.data.description).toBe('A description')
   })
 
   it('returns Err(InvalidProjectName) when name is empty', async () => {
