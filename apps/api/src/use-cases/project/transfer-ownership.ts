@@ -1,4 +1,9 @@
-import type { AppError, IProjectMemberRepository, IProjectRepository, ProjectRecord } from '@voiler/core'
+import type {
+  AppError,
+  IProjectMemberRepository,
+  IProjectRepository,
+  ProjectRecord,
+} from '@voiler/core'
 import { insufficientPermission, memberNotFound, projectNotFound } from '@voiler/domain'
 import { errAsync, type ResultAsync } from 'neverthrow'
 
@@ -47,32 +52,34 @@ export const createTransferOwnership: (
         return errAsync(insufficientPermission('Only the owner can transfer ownership'))
       }
 
-      return memberRepository.findMembership({ projectId, userId: newOwnerId }).andThen((membership) => {
-        if (membership === null) {
-          return errAsync(memberNotFound('New owner must be a current member'))
-        }
+      return memberRepository
+        .findMembership({ projectId, userId: newOwnerId })
+        .andThen((membership) => {
+          if (membership === null) {
+            return errAsync(memberNotFound('New owner must be a current member'))
+          }
 
-        const oldOwnerId = project.ownerId
+          const oldOwnerId = project.ownerId
 
-        return memberRepository
-          .removeMember({ projectId, userId: newOwnerId })
-          .andThen(() =>
-            memberRepository.addMember({
-              data: {
-                id: crypto.randomUUID(),
-                projectId,
-                userId: oldOwnerId,
-                role: 'member',
-                joinedAt: new Date(),
-              },
-            }),
-          )
-          .andThen(() =>
-            projectRepository.update({
-              id: projectId,
-              data: { ownerId: newOwnerId, updatedAt: new Date() },
-            }),
-          )
-      })
+          return memberRepository
+            .removeMember({ projectId, userId: newOwnerId })
+            .andThen(() =>
+              memberRepository.addMember({
+                data: {
+                  id: crypto.randomUUID(),
+                  projectId,
+                  userId: oldOwnerId,
+                  role: 'member',
+                  joinedAt: new Date(),
+                },
+              }),
+            )
+            .andThen(() =>
+              projectRepository.update({
+                id: projectId,
+                data: { ownerId: newOwnerId, updatedAt: new Date() },
+              }),
+            )
+        })
     })
   }

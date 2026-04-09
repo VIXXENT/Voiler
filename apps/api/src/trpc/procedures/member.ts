@@ -105,19 +105,17 @@ const createMemberRouter: (params: CreateMemberRouterParams) => ReturnType<typeo
         )
       }),
 
-    list: authedProcedure
-      .input(z.object({ projectId: z.string().min(1) }))
-      .query(async (opts) => {
-        const result: Awaited<ReturnType<typeof listProjectMembers>> = await listProjectMembers({
-          userId: opts.ctx.user.id,
-          projectId: opts.input.projectId,
-        })
+    list: authedProcedure.input(z.object({ projectId: z.string().min(1) })).query(async (opts) => {
+      const result: Awaited<ReturnType<typeof listProjectMembers>> = await listProjectMembers({
+        userId: opts.ctx.user.id,
+        projectId: opts.input.projectId,
+      })
 
-        return result.match(
-          (records) => records.map((record) => mapToPublicMember({ record })),
-          (error) => throwTrpcError({ error }),
-        )
-      }),
+      return result.match(
+        (records) => records.map((record) => mapToPublicMember({ record })),
+        (error) => throwTrpcError({ error }),
+      )
+    }),
 
     updateRole: authedProcedure.input(UpdateMemberRoleInputSchema).mutation(async (opts) => {
       const result: Awaited<ReturnType<typeof updateMemberRole>> = await updateMemberRole({

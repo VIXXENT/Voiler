@@ -1,4 +1,9 @@
-import type { IProjectMemberRepository, IProjectRepository, ProjectMemberRecord, ProjectRecord } from '@voiler/core'
+import type {
+  IProjectMemberRepository,
+  IProjectRepository,
+  ProjectMemberRecord,
+  ProjectRecord,
+} from '@voiler/core'
 import { infrastructureError } from '@voiler/core'
 import { errAsync, okAsync } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'
@@ -58,7 +63,10 @@ describe('listProjectMembers use case', () => {
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
     vi.mocked(memberRepo.findByProject).mockReturnValue(okAsync([fakeMember]))
 
-    const useCase = createListProjectMembers({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createListProjectMembers({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
     expect(result.isOk()).toBe(true)
@@ -77,7 +85,10 @@ describe('listProjectMembers use case', () => {
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(fakeMember))
     vi.mocked(memberRepo.findByProject).mockReturnValue(okAsync([fakeMember]))
 
-    const useCase = createListProjectMembers({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createListProjectMembers({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-2', projectId: 'proj-1' })
 
     expect(result.isOk()).toBe(true)
@@ -92,7 +103,10 @@ describe('listProjectMembers use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(null))
 
-    const useCase = createListProjectMembers({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createListProjectMembers({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
     expect(result.isErr()).toBe(true)
@@ -108,7 +122,10 @@ describe('listProjectMembers use case', () => {
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
 
-    const useCase = createListProjectMembers({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createListProjectMembers({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-99', projectId: 'proj-1' })
 
     expect(result.isErr()).toBe(true)
@@ -121,9 +138,14 @@ describe('listProjectMembers use case', () => {
   it('propagates infrastructure errors from findById', async () => {
     const projectRepo = makeMockProjectRepo()
     const memberRepo = makeMockMemberRepo()
-    vi.mocked(projectRepo.findById).mockReturnValue(errAsync(infrastructureError({ message: 'DB error' })))
+    vi.mocked(projectRepo.findById).mockReturnValue(
+      errAsync(infrastructureError({ message: 'DB error' })),
+    )
 
-    const useCase = createListProjectMembers({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createListProjectMembers({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
     expect(result.isErr()).toBe(true)

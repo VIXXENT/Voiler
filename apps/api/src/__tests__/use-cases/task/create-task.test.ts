@@ -167,7 +167,13 @@ describe('createTask use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(memberRepo.findMembership).mockReturnValue(
-      okAsync({ id: 'm-1', projectId: 'proj-1', userId: 'user-2', role: 'viewer', joinedAt: new Date() }),
+      okAsync({
+        id: 'm-1',
+        projectId: 'proj-1',
+        userId: 'user-2',
+        role: 'viewer',
+        joinedAt: new Date(),
+      }),
     )
 
     const useCase = createCreateTask({

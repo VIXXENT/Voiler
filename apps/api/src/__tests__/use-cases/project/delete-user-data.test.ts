@@ -49,7 +49,10 @@ describe('deleteUserData use case', () => {
     vi.mocked(projectRepo.findByOwner).mockReturnValue(okAsync([makeFakeProject()]))
     vi.mocked(projectRepo.deleteWithCascade).mockReturnValue(okAsync(undefined))
 
-    const useCase = createDeleteUserData({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createDeleteUserData({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1' })
 
     expect(result.isOk()).toBe(true)
@@ -64,7 +67,10 @@ describe('deleteUserData use case', () => {
     vi.mocked(memberRepo.deleteByUser).mockReturnValue(okAsync(undefined))
     vi.mocked(projectRepo.findByOwner).mockReturnValue(okAsync([]))
 
-    const useCase = createDeleteUserData({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createDeleteUserData({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1' })
 
     expect(result.isOk()).toBe(true)
@@ -80,7 +86,10 @@ describe('deleteUserData use case', () => {
     vi.mocked(projectRepo.findByOwner).mockReturnValue(okAsync([makeFakeProject(), project2]))
     vi.mocked(projectRepo.deleteWithCascade).mockReturnValue(okAsync(undefined))
 
-    const useCase = createDeleteUserData({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createDeleteUserData({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1' })
 
     expect(result.isOk()).toBe(true)
@@ -90,9 +99,14 @@ describe('deleteUserData use case', () => {
   it('propagates infrastructure errors from deleteByUser', async () => {
     const projectRepo = makeMockProjectRepo()
     const memberRepo = makeMockMemberRepo()
-    vi.mocked(memberRepo.deleteByUser).mockReturnValue(errAsync(infrastructureError({ message: 'DB error' })))
+    vi.mocked(memberRepo.deleteByUser).mockReturnValue(
+      errAsync(infrastructureError({ message: 'DB error' })),
+    )
 
-    const useCase = createDeleteUserData({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createDeleteUserData({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1' })
 
     expect(result.isErr()).toBe(true)
@@ -106,9 +120,14 @@ describe('deleteUserData use case', () => {
     const projectRepo = makeMockProjectRepo()
     const memberRepo = makeMockMemberRepo()
     vi.mocked(memberRepo.deleteByUser).mockReturnValue(okAsync(undefined))
-    vi.mocked(projectRepo.findByOwner).mockReturnValue(errAsync(infrastructureError({ message: 'DB error' })))
+    vi.mocked(projectRepo.findByOwner).mockReturnValue(
+      errAsync(infrastructureError({ message: 'DB error' })),
+    )
 
-    const useCase = createDeleteUserData({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createDeleteUserData({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1' })
 
     expect(result.isErr()).toBe(true)
@@ -123,9 +142,14 @@ describe('deleteUserData use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(memberRepo.deleteByUser).mockReturnValue(okAsync(undefined))
     vi.mocked(projectRepo.findByOwner).mockReturnValue(okAsync([makeFakeProject()]))
-    vi.mocked(projectRepo.deleteWithCascade).mockReturnValue(errAsync(infrastructureError({ message: 'DB error' })))
+    vi.mocked(projectRepo.deleteWithCascade).mockReturnValue(
+      errAsync(infrastructureError({ message: 'DB error' })),
+    )
 
-    const useCase = createDeleteUserData({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createDeleteUserData({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1' })
 
     expect(result.isErr()).toBe(true)

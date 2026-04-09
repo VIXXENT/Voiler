@@ -1,4 +1,9 @@
-import type { AppError, IProjectMemberRepository, IProjectRepository, ProjectMemberRecord } from '@voiler/core'
+import type {
+  AppError,
+  IProjectMemberRepository,
+  IProjectRepository,
+  ProjectMemberRecord,
+} from '@voiler/core'
 import {
   alreadyMember,
   insufficientPermission,
@@ -52,20 +57,22 @@ export const createInviteToProject: (
         return errAsync(roleResult.error)
       }
 
-      return memberRepository.findMembership({ projectId, userId: targetUserId }).andThen((existing) => {
-        if (existing !== null) {
-          return errAsync(alreadyMember('User is already a member'))
-        }
+      return memberRepository
+        .findMembership({ projectId, userId: targetUserId })
+        .andThen((existing) => {
+          if (existing !== null) {
+            return errAsync(alreadyMember('User is already a member'))
+          }
 
-        return memberRepository.addMember({
-          data: {
-            id: crypto.randomUUID(),
-            projectId,
-            userId: targetUserId,
-            role,
-            joinedAt: new Date(),
-          },
+          return memberRepository.addMember({
+            data: {
+              id: crypto.randomUUID(),
+              projectId,
+              userId: targetUserId,
+              role,
+              joinedAt: new Date(),
+            },
+          })
         })
-      })
     })
   }

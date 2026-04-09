@@ -39,9 +39,16 @@ export interface IProjectMemberRepository {
   /** List all members of a project. */
   findByProject: (params: { projectId: string }) => ResultAsync<ProjectMemberRecord[], AppError>
   /** Find a specific user's membership in a project. Returns null if not a member. */
-  findMembership: (params: { projectId: string; userId: string }) => ResultAsync<ProjectMemberRecord | null, AppError>
+  findMembership: (params: {
+    projectId: string
+    userId: string
+  }) => ResultAsync<ProjectMemberRecord | null, AppError>
   /** Update a member's role. */
-  updateRole: (params: { projectId: string; userId: string; role: 'member' | 'viewer' }) => ResultAsync<ProjectMemberRecord, AppError>
+  updateRole: (params: {
+    projectId: string
+    userId: string
+    role: 'member' | 'viewer'
+  }) => ResultAsync<ProjectMemberRecord, AppError>
   /** Delete all memberships for a project (used in cascade delete). */
   deleteByProject: (params: { projectId: string }) => ResultAsync<void, AppError>
   /** Delete all memberships for a user (used when deleting a user account). */

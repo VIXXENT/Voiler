@@ -32,30 +32,33 @@ interface RemoveFromProjectParams {
  */
 export const createRemoveFromProject: (
   deps: RemoveFromProjectDeps,
-) => (params: RemoveFromProjectParams) => ResultAsync<void, AppError> =
-  (deps) => (params) => {
-    const { projectRepository, memberRepository } = deps
-    const { userId, projectId, targetUserId } = params
+) => (params: RemoveFromProjectParams) => ResultAsync<void, AppError> = (deps) => (params) => {
+  const { projectRepository, memberRepository } = deps
+  const { userId, projectId, targetUserId } = params
 
-    return projectRepository.findById({ id: projectId }).andThen((project) => {
-      if (project === null) {
-        return errAsync(projectNotFound(`Project ${projectId} not found`))
-      }
+  return projectRepository.findById({ id: projectId }).andThen((project) => {
+    if (project === null) {
+      return errAsync(projectNotFound(`Project ${projectId} not found`))
+    }
 
-      if (targetUserId === project.ownerId) {
-        return errAsync(cannotRemoveOwner('Cannot remove the project owner'))
-      }
+    if (targetUserId === project.ownerId) {
+      return errAsync(cannotRemoveOwner('Cannot remove the project owner'))
+    }
 
-      if (userId !== project.ownerId && userId !== targetUserId) {
-        return errAsync(insufficientPermission('Only the owner or the member themselves can remove a member'))
-      }
+    if (userId !== project.ownerId && userId !== targetUserId) {
+      return errAsync(
+        insufficientPermission('Only the owner or the member themselves can remove a member'),
+      )
+    }
 
-      return memberRepository.findMembership({ projectId, userId: targetUserId }).andThen((membership) => {
+    return memberRepository
+      .findMembership({ projectId, userId: targetUserId })
+      .andThen((membership) => {
         if (membership === null) {
           return errAsync(memberNotFound(`User ${targetUserId} is not a member of this project`))
         }
 
         return memberRepository.removeMember({ projectId, userId: targetUserId })
       })
-    })
-  }
+  })
+}

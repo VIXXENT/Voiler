@@ -30,9 +30,11 @@ interface CanPerformActionParams {
  * The `membershipRole` parameter should be the role from the ProjectMemberRecord for this user,
  * or null if they are not a member.
  */
-export const resolveProjectRole: (
-  params: ResolveProjectRoleParams,
-) => ProjectRole | null = ({ userId, ownerId, membershipRole }) => {
+export const resolveProjectRole: (params: ResolveProjectRoleParams) => ProjectRole | null = ({
+  userId,
+  ownerId,
+  membershipRole,
+}) => {
   if (userId === ownerId) {
     return 'owner'
   }
@@ -51,9 +53,10 @@ export const resolveProjectRole: (
  *
  * Returns Err(InsufficientPermission) when the role lacks the required access.
  */
-export const canPerformAction: (
-  params: CanPerformActionParams,
-) => Result<void, DomainError> = ({ role, action }) => {
+export const canPerformAction: (params: CanPerformActionParams) => Result<void, DomainError> = ({
+  role,
+  action,
+}) => {
   if (role === 'owner') {
     return ok(undefined)
   }
@@ -61,15 +64,11 @@ export const canPerformAction: (
     if (action === 'read' || action === 'mutate') {
       return ok(undefined)
     }
-    return err(
-      insufficientPermission(`Role 'member' cannot perform action '${action}'`),
-    )
+    return err(insufficientPermission(`Role 'member' cannot perform action '${action}'`))
   }
   // viewer
   if (action === 'read') {
     return ok(undefined)
   }
-  return err(
-    insufficientPermission(`Role 'viewer' cannot perform action '${action}'`),
-  )
+  return err(insufficientPermission(`Role 'viewer' cannot perform action '${action}'`))
 }

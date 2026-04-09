@@ -24,15 +24,14 @@ interface DeleteUserDataParams {
  */
 export const createDeleteUserData: (
   deps: DeleteUserDataDeps,
-) => (params: DeleteUserDataParams) => ResultAsync<void, AppError> =
-  (deps) => (params) => {
-    const { projectRepository, memberRepository } = deps
-    const { userId } = params
+) => (params: DeleteUserDataParams) => ResultAsync<void, AppError> = (deps) => (params) => {
+  const { projectRepository, memberRepository } = deps
+  const { userId } = params
 
-    return memberRepository.deleteByUser({ userId }).andThen(() =>
-      projectRepository.findByOwner({ ownerId: userId }).andThen((projects) => {
-        const deletions = projects.map((p) => projectRepository.deleteWithCascade({ id: p.id }))
-        return ResultAsync.combine(deletions).map(() => undefined)
-      }),
-    )
-  }
+  return memberRepository.deleteByUser({ userId }).andThen(() =>
+    projectRepository.findByOwner({ ownerId: userId }).andThen((projects) => {
+      const deletions = projects.map((p) => projectRepository.deleteWithCascade({ id: p.id }))
+      return ResultAsync.combine(deletions).map(() => undefined)
+    }),
+  )
+}

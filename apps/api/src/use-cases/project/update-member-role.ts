@@ -1,4 +1,9 @@
-import type { AppError, IProjectMemberRepository, IProjectRepository, ProjectMemberRecord } from '@voiler/core'
+import type {
+  AppError,
+  IProjectMemberRepository,
+  IProjectRepository,
+  ProjectMemberRecord,
+} from '@voiler/core'
 import {
   cannotRemoveOwner,
   insufficientPermission,
@@ -57,12 +62,14 @@ export const createUpdateMemberRole: (
         return errAsync(roleResult.error)
       }
 
-      return memberRepository.findMembership({ projectId, userId: targetUserId }).andThen((membership) => {
-        if (membership === null) {
-          return errAsync(memberNotFound(`User ${targetUserId} is not a member of this project`))
-        }
+      return memberRepository
+        .findMembership({ projectId, userId: targetUserId })
+        .andThen((membership) => {
+          if (membership === null) {
+            return errAsync(memberNotFound(`User ${targetUserId} is not a member of this project`))
+          }
 
-        return memberRepository.updateRole({ projectId, userId: targetUserId, role: newRole })
-      })
+          return memberRepository.updateRole({ projectId, userId: targetUserId, role: newRole })
+        })
     })
   }

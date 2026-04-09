@@ -1,10 +1,10 @@
-import type { AppError, IProjectMemberRepository, IProjectRepository, ProjectRecord } from '@voiler/core'
-import {
-  canPerformAction,
-  notAMember,
-  projectNotFound,
-  resolveProjectRole,
-} from '@voiler/domain'
+import type {
+  AppError,
+  IProjectMemberRepository,
+  IProjectRepository,
+  ProjectRecord,
+} from '@voiler/core'
+import { canPerformAction, notAMember, projectNotFound, resolveProjectRole } from '@voiler/domain'
 import { errAsync, okAsync, type ResultAsync } from 'neverthrow'
 
 /**

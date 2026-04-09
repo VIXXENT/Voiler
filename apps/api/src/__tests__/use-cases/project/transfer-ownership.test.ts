@@ -1,4 +1,9 @@
-import type { IProjectMemberRepository, IProjectRepository, ProjectMemberRecord, ProjectRecord } from '@voiler/core'
+import type {
+  IProjectMemberRepository,
+  IProjectRepository,
+  ProjectMemberRecord,
+  ProjectRecord,
+} from '@voiler/core'
 import { infrastructureError } from '@voiler/core'
 import { errAsync, okAsync } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'
@@ -61,7 +66,10 @@ describe('transferOwnership use case', () => {
     vi.mocked(memberRepo.addMember).mockReturnValue(okAsync(makeFakeMember()))
     vi.mocked(projectRepo.update).mockReturnValue(okAsync(updatedProject))
 
-    const useCase = createTransferOwnership({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createTransferOwnership({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', newOwnerId: 'user-2' })
 
     expect(result.isOk()).toBe(true)
@@ -78,7 +86,10 @@ describe('transferOwnership use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(null))
 
-    const useCase = createTransferOwnership({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createTransferOwnership({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', newOwnerId: 'user-2' })
 
     expect(result.isErr()).toBe(true)
@@ -93,7 +104,10 @@ describe('transferOwnership use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
 
-    const useCase = createTransferOwnership({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createTransferOwnership({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-99', projectId: 'proj-1', newOwnerId: 'user-2' })
 
     expect(result.isErr()).toBe(true)
@@ -109,7 +123,10 @@ describe('transferOwnership use case', () => {
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
 
-    const useCase = createTransferOwnership({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createTransferOwnership({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', newOwnerId: 'user-2' })
 
     expect(result.isErr()).toBe(true)
@@ -124,9 +141,14 @@ describe('transferOwnership use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(makeFakeMember()))
-    vi.mocked(memberRepo.removeMember).mockReturnValue(errAsync(infrastructureError({ message: 'DB error' })))
+    vi.mocked(memberRepo.removeMember).mockReturnValue(
+      errAsync(infrastructureError({ message: 'DB error' })),
+    )
 
-    const useCase = createTransferOwnership({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createTransferOwnership({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', newOwnerId: 'user-2' })
 
     expect(result.isErr()).toBe(true)
@@ -142,9 +164,14 @@ describe('transferOwnership use case', () => {
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(makeFakeMember()))
     vi.mocked(memberRepo.removeMember).mockReturnValue(okAsync(undefined))
-    vi.mocked(memberRepo.addMember).mockReturnValue(errAsync(infrastructureError({ message: 'DB error' })))
+    vi.mocked(memberRepo.addMember).mockReturnValue(
+      errAsync(infrastructureError({ message: 'DB error' })),
+    )
 
-    const useCase = createTransferOwnership({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const useCase = createTransferOwnership({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', newOwnerId: 'user-2' })
 
     expect(result.isErr()).toBe(true)

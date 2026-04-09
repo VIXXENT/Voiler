@@ -165,7 +165,13 @@ describe('unassignFromTask use case', () => {
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(memberRepo.findMembership).mockReturnValue(
-      okAsync({ id: 'm-1', projectId: 'proj-1', userId: 'user-2', role: 'viewer', joinedAt: new Date() }),
+      okAsync({
+        id: 'm-1',
+        projectId: 'proj-1',
+        userId: 'user-2',
+        role: 'viewer',
+        joinedAt: new Date(),
+      }),
     )
 
     const useCase = createUnassignFromTask({

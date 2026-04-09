@@ -70,7 +70,13 @@ describe('getProject use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(repo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(memberRepo.findMembership).mockReturnValue(
-      okAsync({ id: 'm-1', projectId: 'proj-1', userId: 'user-2', role: 'member', joinedAt: new Date() }),
+      okAsync({
+        id: 'm-1',
+        projectId: 'proj-1',
+        userId: 'user-2',
+        role: 'member',
+        joinedAt: new Date(),
+      }),
     )
 
     const useCase = createGetProject({ projectRepository: repo, memberRepository: memberRepo })
@@ -85,7 +91,13 @@ describe('getProject use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(repo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(memberRepo.findMembership).mockReturnValue(
-      okAsync({ id: 'm-1', projectId: 'proj-1', userId: 'user-3', role: 'viewer', joinedAt: new Date() }),
+      okAsync({
+        id: 'm-1',
+        projectId: 'proj-1',
+        userId: 'user-3',
+        role: 'viewer',
+        joinedAt: new Date(),
+      }),
     )
 
     const useCase = createGetProject({ projectRepository: repo, memberRepository: memberRepo })
