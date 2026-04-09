@@ -1,4 +1,4 @@
-import type { AppError } from '@voiler/core'
+import type { AppError, ProjectMemberRecord } from '@voiler/core'
 import type { UserEntity } from '@voiler/domain'
 import { createStubPaymentService } from '@voiler/mod-payments'
 import type { IPaymentService } from '@voiler/mod-payments'
@@ -20,13 +20,19 @@ import {
   createCreateUser,
   createDeleteProject,
   createDeleteTask,
+  createDeleteUserData,
   createGetProject,
   createGetUser,
+  createInviteToProject,
+  createListProjectMembers,
   createListProjectTasks,
   createListUserProjects,
   createListUsers,
+  createRemoveFromProject,
+  createTransferOwnership,
   createTransitionTaskStatus,
   createUnassignFromTask,
+  createUpdateMemberRole,
   createUpdateTask,
 } from './use-cases/index.js'
 
@@ -127,6 +133,44 @@ interface Container {
       targetUserId: string
     } & AuditableParams,
   ) => ResultAsync<void, AppError>
+  // --- Member use-cases ---
+  readonly inviteToProject: (
+    params: {
+      userId: string
+      projectId: string
+      targetUserId: string
+      role: 'member' | 'viewer'
+    } & AuditableParams,
+  ) => ResultAsync<ProjectMemberRecord, AppError>
+  readonly removeFromProject: (
+    params: {
+      userId: string
+      projectId: string
+      targetUserId: string
+    } & AuditableParams,
+  ) => ResultAsync<void, AppError>
+  readonly listProjectMembers: (params: {
+    userId: string
+    projectId: string
+  }) => ResultAsync<ProjectMemberRecord[], AppError>
+  readonly updateMemberRole: (
+    params: {
+      userId: string
+      projectId: string
+      targetUserId: string
+      newRole: 'member' | 'viewer'
+    } & AuditableParams,
+  ) => ResultAsync<ProjectMemberRecord, AppError>
+  readonly transferOwnership: (
+    params: {
+      userId: string
+      projectId: string
+      newOwnerId: string
+    } & AuditableParams,
+  ) => ResultAsync<ProjectRecord, AppError>
+  readonly deleteUserData: (
+    params: { userId: string } & AuditableParams,
+  ) => ResultAsync<void, AppError>
 }
 
 /**
@@ -192,6 +236,14 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
     projectRepository,
     memberRepository,
   })
+
+  // --- Member use-cases (raw) ---
+  const rawInviteToProject = createInviteToProject({ projectRepository, memberRepository })
+  const rawRemoveFromProject = createRemoveFromProject({ projectRepository, memberRepository })
+  const rawListProjectMembers = createListProjectMembers({ projectRepository, memberRepository })
+  const rawUpdateMemberRole = createUpdateMemberRole({ projectRepository, memberRepository })
+  const rawTransferOwnership = createTransferOwnership({ projectRepository, memberRepository })
+  const rawDeleteUserData = createDeleteUserData({ projectRepository, memberRepository })
 
   // --- Wrap with audit logging ---
   const createUser: Container['createUser'] = withAuditLog({
@@ -283,6 +335,43 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
     db,
   })
 
+  // --- Member: mutating use-cases wrapped, read-only raw ---
+  const inviteToProject: Container['inviteToProject'] = withAuditLog({
+    name: 'member.invite',
+    useCase: rawInviteToProject,
+    getEntityId: (result) => result.id,
+    db,
+  })
+
+  const removeFromProject: Container['removeFromProject'] = withAuditLog({
+    name: 'member.remove',
+    useCase: rawRemoveFromProject,
+    db,
+  })
+
+  // read-only — no audit log
+  const listProjectMembers: Container['listProjectMembers'] = rawListProjectMembers
+
+  const updateMemberRole: Container['updateMemberRole'] = withAuditLog({
+    name: 'member.updateRole',
+    useCase: rawUpdateMemberRole,
+    getEntityId: (result) => result.id,
+    db,
+  })
+
+  const transferOwnership: Container['transferOwnership'] = withAuditLog({
+    name: 'member.transferOwnership',
+    useCase: rawTransferOwnership,
+    getEntityId: (result) => result.id,
+    db,
+  })
+
+  const deleteUserData: Container['deleteUserData'] = withAuditLog({
+    name: 'member.deleteUserData',
+    useCase: rawDeleteUserData,
+    db,
+  })
+
   return {
     createUser,
     getUser,
@@ -300,6 +389,12 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
     listProjectTasks,
     assignToTask,
     unassignFromTask,
+    inviteToProject,
+    removeFromProject,
+    listProjectMembers,
+    updateMemberRole,
+    transferOwnership,
+    deleteUserData,
   }
 }
 

@@ -203,6 +203,13 @@ const appRouter = createAppRouter({
     assignToTask: container.assignToTask,
     unassignFromTask: container.unassignFromTask,
   },
+  member: {
+    inviteToProject: container.inviteToProject,
+    removeFromProject: container.removeFromProject,
+    listProjectMembers: container.listProjectMembers,
+    updateMemberRole: container.updateMemberRole,
+    transferOwnership: container.transferOwnership,
+  },
 })
 
 const trpcRoute = createTrpcRoute({
