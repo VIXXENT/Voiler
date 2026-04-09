@@ -64,9 +64,15 @@ const createDrizzleProjectMemberRepository: (
             eq(ProjectMember.projectId, removeParams.projectId),
             eq(ProjectMember.userId, removeParams.userId),
           ),
-        ),
+        )
+        .returning(),
       (cause) => infrastructureError({ message: 'Failed to remove project member', cause }),
-    ).map(() => undefined)
+    ).andThen((rows) => {
+      if (rows.length === 0) {
+        return errAsync(infrastructureError({ message: 'Remove member affected 0 rows' }))
+      }
+      return okAsync(undefined)
+    })
   }
 
   const findByProject: IProjectMemberRepository['findByProject'] = (findParams) => {

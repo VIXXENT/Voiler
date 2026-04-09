@@ -48,14 +48,11 @@ export const createUpdateTask: (
   const { taskRepository, projectRepository, memberRepository } = deps
   const { userId, taskId, title, description, priority, dueDate } = params
 
-  let validatedTitle: string | undefined
-  if (title !== undefined) {
-    const titleResult = validateTaskTitle({ title })
-    if (titleResult.isErr()) {
-      return errAsync(titleResult.error)
-    }
-    validatedTitle = titleResult.value
+  const titleResult = title !== undefined ? validateTaskTitle({ title }) : null
+  if (titleResult?.isErr()) {
+    return errAsync(titleResult.error)
   }
+  const validatedTitle = titleResult?.isOk() ? titleResult.value : undefined
 
   return taskRepository.findById({ id: taskId }).andThen((task) => {
     if (!task) {
