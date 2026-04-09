@@ -17,3 +17,12 @@ export { createGetProject } from './project/get-project.js'
 export { createListUserProjects } from './project/list-user-projects.js'
 export { createArchiveProject } from './project/archive-project.js'
 export { createDeleteProject } from './project/delete-project.js'
+
+// Task
+export { createCreateTask } from './task/create-task.js'
+export { createUpdateTask } from './task/update-task.js'
+export { createTransitionTaskStatus } from './task/transition-task-status.js'
+export { createDeleteTask } from './task/delete-task.js'
+export { createListProjectTasks } from './task/list-project-tasks.js'
+export { createAssignToTask } from './task/assign-to-task.js'
+export { createUnassignFromTask } from './task/unassign-from-task.js'
