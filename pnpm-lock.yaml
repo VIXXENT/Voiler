@@ -59,9 +59,6 @@ importers:
       '@voiler/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@voiler/mod-email':
-        specifier: workspace:*
-        version: link:../../modules/email
       '@voiler/mod-payments':
         specifier: workspace:*
         version: link:../../modules/payments
@@ -166,15 +163,6 @@ importers:
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
-
-  modules/email:
-    dependencies:
-      '@voiler/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      neverthrow:
-        specifier: ^8.2.0
-        version: 8.2.0
 
   modules/payments:
     dependencies:
