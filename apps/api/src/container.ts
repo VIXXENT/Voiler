@@ -1,10 +1,10 @@
 import type { AppError } from '@voiler/core'
 import type { UserEntity } from '@voiler/domain'
+import { createStubPaymentService } from '@voiler/mod-payments'
+import type { IPaymentService } from '@voiler/mod-payments'
 import type { ResultAsync } from 'neverthrow'
 
 import { createDrizzleUserRepository } from './adapters/db/drizzle-user-repository.js'
-import { createStubPaymentService } from '@voiler/mod-payments'
-import type { IPaymentService } from '@voiler/mod-payments'
 import type { DbClient } from './db/index.js'
 import { withAuditLog, type AuditableParams } from './logging/use-case-logger.js'
 import { createCreateUser } from './use-cases/user/create-user.js'

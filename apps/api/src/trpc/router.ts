@@ -1,12 +1,12 @@
 import { router } from './context.js'
 import type { CreateAdminRouterParams } from './procedures/admin.js'
 import { createAdminRouter } from './procedures/admin.js'
+import type { CreatePaymentRouterParams } from './procedures/payments.js'
+import { createPaymentRouter } from './procedures/payments.js'
 import type { CreateSessionRouterParams } from './procedures/session.js'
 import { createSessionRouter } from './procedures/session.js'
 import type { CreateUserRouterParams } from './procedures/user.js'
 import { createUserRouter } from './procedures/user.js'
-import type { CreatePaymentRouterParams } from './procedures/payments.js'
-import { createPaymentRouter } from './procedures/payments.js'
 
 /**
  * Dependencies for the root tRPC router.
