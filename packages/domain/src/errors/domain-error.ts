@@ -11,6 +11,13 @@ export type DomainError =
   | { readonly tag: 'WeakPassword'; readonly message: string }
   | { readonly tag: 'UserNotFound'; readonly message: string }
   | { readonly tag: 'UserAlreadyExists'; readonly message: string }
+  | { readonly tag: 'ProjectNotFound'; readonly message: string }
+  | { readonly tag: 'TaskNotFound'; readonly message: string }
+  | { readonly tag: 'InvalidStatusTransition'; readonly message: string }
+  | { readonly tag: 'InvalidAssignment'; readonly message: string }
+  | { readonly tag: 'InsufficientPermission'; readonly message: string }
+  | { readonly tag: 'InvalidProjectName'; readonly message: string }
+  | { readonly tag: 'InvalidTaskTitle'; readonly message: string }
 
 /** Create an InvalidEmail domain error. */
 export const invalidEmail: (message: string) => DomainError = (message) => ({

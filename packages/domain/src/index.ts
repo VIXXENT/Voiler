@@ -17,6 +17,21 @@ export {
   userNotFound,
   weakPassword,
 } from './errors/domain-error'
+export {
+  projectNotFound,
+  taskNotFound,
+  invalidStatusTransition,
+  invalidAssignment,
+  insufficientPermission,
+  invalidProjectName,
+  invalidTaskTitle,
+} from './errors/project-errors'
+
+// Validation
+export { validateProjectName } from './validation/project-validation'
+export type { TaskStatus } from './validation/task-validation'
+export { validateTaskTitle, canTransitionStatus } from './validation/task-validation'
+export { canAssignResponsible } from './validation/assignment-validation'
 
 // Value objects
 export type { Email } from './value-objects/email'
