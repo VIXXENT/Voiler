@@ -5,7 +5,7 @@ import type {
   TaskAssigneeRecord,
 } from '@voiler/core'
 import { canAssignResponsible, taskNotFound } from '@voiler/domain'
-import { errAsync, type ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, type ResultAsync } from 'neverthrow'
 
 /**
  * Dependencies injected into the assignToTask use case.
@@ -39,12 +39,15 @@ export const createAssignToTask: (
     const { taskRepository, taskAssigneeRepository } = deps
     const { taskId, targetUserId, role } = params
 
-    return taskRepository.findById({ id: taskId }).andThen((task) => {
-      if (!task) {
-        return errAsync(taskNotFound('Task not found'))
-      }
-
-      if (role === 'responsible') {
+    return taskRepository
+      .findById({ id: taskId })
+      .andThen((task) => {
+        if (!task) {
+          return errAsync(taskNotFound('Task not found'))
+        }
+        if (role !== 'responsible') {
+          return okAsync(null)
+        }
         return taskAssigneeRepository.findResponsible({ taskId }).andThen((responsible) => {
           const assignResult = canAssignResponsible({
             currentResponsibleUserId: responsible?.userId ?? null,
@@ -53,26 +56,12 @@ export const createAssignToTask: (
           if (assignResult.isErr()) {
             return errAsync(assignResult.error)
           }
-          return taskAssigneeRepository.assign({
-            data: {
-              id: crypto.randomUUID(),
-              taskId,
-              userId: targetUserId,
-              role,
-              assignedAt: new Date(),
-            },
-          })
+          return okAsync(null)
         })
-      }
-
-      return taskAssigneeRepository.assign({
-        data: {
-          id: crypto.randomUUID(),
-          taskId,
-          userId: targetUserId,
-          role,
-          assignedAt: new Date(),
-        },
       })
-    })
+      .andThen(() =>
+        taskAssigneeRepository.assign({
+          data: { id: crypto.randomUUID(), taskId, userId: targetUserId, role, assignedAt: new Date() },
+        }),
+      )
   }

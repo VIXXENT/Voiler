@@ -33,27 +33,13 @@ export const createUpdateTask: (
   const { taskRepository } = deps
   const { taskId, title, description, priority, dueDate } = params
 
+  let validatedTitle: string | undefined
   if (title !== undefined) {
     const titleResult = validateTaskTitle({ title })
     if (titleResult.isErr()) {
       return errAsync(titleResult.error)
     }
-
-    return taskRepository.findById({ id: taskId }).andThen((task) => {
-      if (!task) {
-        return errAsync(taskNotFound('Task not found'))
-      }
-      return taskRepository.update({
-        id: taskId,
-        data: {
-          title: titleResult.value,
-          ...(description !== undefined ? { description } : {}),
-          ...(priority !== undefined ? { priority } : {}),
-          ...(dueDate !== undefined ? { dueDate } : {}),
-          updatedAt: new Date(),
-        },
-      })
-    })
+    validatedTitle = titleResult.value
   }
 
   return taskRepository.findById({ id: taskId }).andThen((task) => {
@@ -63,6 +49,7 @@ export const createUpdateTask: (
     return taskRepository.update({
       id: taskId,
       data: {
+        ...(validatedTitle !== undefined ? { title: validatedTitle } : {}),
         ...(description !== undefined ? { description } : {}),
         ...(priority !== undefined ? { priority } : {}),
         ...(dueDate !== undefined ? { dueDate } : {}),
