@@ -135,4 +135,22 @@ describe('transferOwnership use case', () => {
     }
     expect(projectRepo.update).not.toHaveBeenCalled()
   })
+
+  it('does not update project if addMember fails mid-chain', async () => {
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(makeFakeMember()))
+    vi.mocked(memberRepo.removeMember).mockReturnValue(okAsync(undefined))
+    vi.mocked(memberRepo.addMember).mockReturnValue(errAsync(infrastructureError({ message: 'DB error' })))
+
+    const useCase = createTransferOwnership({ projectRepository: projectRepo, memberRepository: memberRepo })
+    const result = await useCase({ userId: 'user-1', projectId: 'proj-1', newOwnerId: 'user-2' })
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.tag).toBe('InfrastructureError')
+    }
+    expect(projectRepo.update).not.toHaveBeenCalled()
+  })
 })

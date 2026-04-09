@@ -24,6 +24,12 @@ interface TransferOwnershipParams {
  *
  * The new owner must be a current member. The old owner becomes a regular
  * member after the transfer.
+ *
+ * @remarks
+ * The 3-step mutation (removeMember → addMember → update project) is NOT atomic.
+ * A failure mid-chain may leave the project in an inconsistent state (e.g. new owner
+ * removed from members but ownerId not yet updated). A transactional adapter should
+ * be used for production hardening — tracked as a future improvement.
  */
 export const createTransferOwnership: (
   deps: TransferOwnershipDeps,

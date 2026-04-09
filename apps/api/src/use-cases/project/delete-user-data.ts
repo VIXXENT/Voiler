@@ -1,5 +1,5 @@
 import type { AppError, IProjectMemberRepository, IProjectRepository } from '@voiler/core'
-import { ResultAsync, type ResultAsync as ResultAsyncType } from 'neverthrow'
+import { ResultAsync } from 'neverthrow'
 
 /**
  * Dependencies injected into the deleteUserData use case.
@@ -24,7 +24,7 @@ interface DeleteUserDataParams {
  */
 export const createDeleteUserData: (
   deps: DeleteUserDataDeps,
-) => (params: DeleteUserDataParams) => ResultAsyncType<void, AppError> =
+) => (params: DeleteUserDataParams) => ResultAsync<void, AppError> =
   (deps) => (params) => {
     const { projectRepository, memberRepository } = deps
     const { userId } = params
