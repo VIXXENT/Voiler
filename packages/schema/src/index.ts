@@ -22,6 +22,22 @@ export { Session, Account, Verification } from './entities/auth.js'
 
 export { AuditLog } from './entities/audit-log.js'
 
+export { Project, ProjectSelectSchema, ProjectInsertSchema } from './entities/project.js'
+
+export type { ProjectSelect, ProjectInsert } from './entities/project.js'
+
+export { Task, TaskSelectSchema, TaskInsertSchema } from './entities/task.js'
+
+export type { TaskSelect, TaskInsert } from './entities/task.js'
+
+export {
+  TaskAssignee,
+  TaskAssigneeSelectSchema,
+  TaskAssigneeInsertSchema,
+} from './entities/task-assignee.js'
+
+export type { TaskAssigneeSelect, TaskAssigneeInsert } from './entities/task-assignee.js'
+
 // --- Inputs (tRPC procedure validation) ---
 export { CreateUserInputSchema } from './inputs/create-user.js'
 export type { CreateUserInput } from './inputs/create-user.js'
