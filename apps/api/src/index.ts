@@ -187,6 +187,22 @@ const appRouter = createAppRouter({
       }),
   },
   payment: { paymentService: container.paymentService },
+  project: {
+    createProject: container.createProject,
+    getProject: container.getProject,
+    listUserProjects: container.listUserProjects,
+    archiveProject: container.archiveProject,
+    deleteProject: container.deleteProject,
+  },
+  task: {
+    createTask: container.createTask,
+    updateTask: container.updateTask,
+    transitionTaskStatus: container.transitionTaskStatus,
+    deleteTask: container.deleteTask,
+    listProjectTasks: container.listProjectTasks,
+    assignToTask: container.assignToTask,
+    unassignFromTask: container.unassignFromTask,
+  },
 })
 
 const trpcRoute = createTrpcRoute({

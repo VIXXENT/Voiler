@@ -3,8 +3,12 @@ import type { CreateAdminRouterParams } from './procedures/admin.js'
 import { createAdminRouter } from './procedures/admin.js'
 import type { CreatePaymentRouterParams } from './procedures/payments.js'
 import { createPaymentRouter } from './procedures/payments.js'
+import type { CreateProjectRouterParams } from './procedures/project.js'
+import { createProjectRouter } from './procedures/project.js'
 import type { CreateSessionRouterParams } from './procedures/session.js'
 import { createSessionRouter } from './procedures/session.js'
+import type { CreateTaskRouterParams } from './procedures/task.js'
+import { createTaskRouter } from './procedures/task.js'
 import type { CreateUserRouterParams } from './procedures/user.js'
 import { createUserRouter } from './procedures/user.js'
 
@@ -16,6 +20,8 @@ interface CreateAppRouterParams {
   readonly session: CreateSessionRouterParams
   readonly admin: CreateAdminRouterParams
   readonly payment: CreatePaymentRouterParams
+  readonly project: CreateProjectRouterParams
+  readonly task: CreateTaskRouterParams
 }
 
 /**
@@ -31,11 +37,17 @@ const createAppRouter: (params: CreateAppRouterParams) => ReturnType<typeof rout
 
   const paymentRouter = createPaymentRouter(params.payment)
 
+  const projectRouter = createProjectRouter(params.project)
+
+  const taskRouter = createTaskRouter(params.task)
+
   const appRouter = router({
     user: userRouter,
     session: sessionRouter,
     admin: adminRouter,
     payment: paymentRouter,
+    project: projectRouter,
+    task: taskRouter,
   })
 
   return appRouter
