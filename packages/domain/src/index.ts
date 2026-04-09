@@ -25,6 +25,10 @@ export {
   insufficientPermission,
   invalidProjectName,
   invalidTaskTitle,
+  memberNotFound,
+  alreadyMember,
+  cannotRemoveOwner,
+  notAMember,
 } from './errors/project-errors'
 
 // Validation
@@ -32,6 +36,10 @@ export { validateProjectName } from './validation/project-validation'
 export type { TaskStatus } from './validation/task-validation'
 export { validateTaskTitle, canTransitionStatus } from './validation/task-validation'
 export { canAssignResponsible } from './validation/assignment-validation'
+export type { MemberRole } from './validation/member-validation'
+export { validateMemberRole } from './validation/member-validation'
+export type { ProjectRole } from './validation/permission-validation'
+export { resolveProjectRole, canPerformAction } from './validation/permission-validation'
 
 // Value objects
 export type { Email } from './value-objects/email'

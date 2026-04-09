@@ -40,10 +40,13 @@ const mapErrorCode: (params: { tag: AppError['tag'] }) => TRPCError['code'] = (p
     case 'UserNotFound':
     case 'ProjectNotFound':
     case 'TaskNotFound':
+    case 'MemberNotFound':
       return 'NOT_FOUND'
     case 'UserAlreadyExists':
+    case 'AlreadyMember':
       return 'CONFLICT'
     case 'InsufficientPermission':
+    case 'NotAMember':
       return 'FORBIDDEN'
     case 'InvalidEmail':
     case 'InvalidPassword':
@@ -54,6 +57,7 @@ const mapErrorCode: (params: { tag: AppError['tag'] }) => TRPCError['code'] = (p
     case 'InvalidAssignment':
     case 'InvalidProjectName':
     case 'InvalidTaskTitle':
+    case 'CannotRemoveOwner':
       return 'BAD_REQUEST'
     case 'InfrastructureError':
       return 'INTERNAL_SERVER_ERROR'

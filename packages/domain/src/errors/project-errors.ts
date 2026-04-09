@@ -41,3 +41,27 @@ export const invalidTaskTitle: (message: string) => DomainError = (message) => (
   tag: 'InvalidTaskTitle',
   message,
 })
+
+/** Create a MemberNotFound domain error. */
+export const memberNotFound: (message: string) => DomainError = (message) => ({
+  tag: 'MemberNotFound',
+  message,
+})
+
+/** Create an AlreadyMember domain error. */
+export const alreadyMember: (message: string) => DomainError = (message) => ({
+  tag: 'AlreadyMember',
+  message,
+})
+
+/** Create a CannotRemoveOwner domain error. */
+export const cannotRemoveOwner: (message: string) => DomainError = (message) => ({
+  tag: 'CannotRemoveOwner',
+  message,
+})
+
+/** Create a NotAMember domain error. */
+export const notAMember: (message: string) => DomainError = (message) => ({
+  tag: 'NotAMember',
+  message,
+})

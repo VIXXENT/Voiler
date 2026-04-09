@@ -18,6 +18,10 @@ export type DomainError =
   | { readonly tag: 'InsufficientPermission'; readonly message: string }
   | { readonly tag: 'InvalidProjectName'; readonly message: string }
   | { readonly tag: 'InvalidTaskTitle'; readonly message: string }
+  | { readonly tag: 'MemberNotFound'; readonly message: string }
+  | { readonly tag: 'AlreadyMember'; readonly message: string }
+  | { readonly tag: 'CannotRemoveOwner'; readonly message: string }
+  | { readonly tag: 'NotAMember'; readonly message: string }
 
 /** Create an InvalidEmail domain error. */
 export const invalidEmail: (message: string) => DomainError = (message) => ({
