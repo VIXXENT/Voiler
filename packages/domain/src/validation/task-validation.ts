@@ -1,4 +1,5 @@
 import { ok, err, type Result } from 'neverthrow'
+
 import type { DomainError } from '../errors/domain-error'
 import { invalidTaskTitle, invalidStatusTransition } from '../errors/project-errors'
 
@@ -6,12 +7,12 @@ import { invalidTaskTitle, invalidStatusTransition } from '../errors/project-err
 export type TaskStatus = 'todo' | 'in_progress' | 'done'
 
 /** Parameters for validateTaskTitle. */
-type ValidateTaskTitleParams = {
+interface ValidateTaskTitleParams {
   readonly title: string
 }
 
 /** Parameters for canTransitionStatus. */
-type CanTransitionStatusParams = {
+interface CanTransitionStatusParams {
   readonly from: TaskStatus
   readonly to: TaskStatus
 }
@@ -50,7 +51,7 @@ export const canTransitionStatus: (
   params: CanTransitionStatusParams,
 ) => Result<TaskStatus, DomainError> = ({ from, to }) => {
   const allowed = VALID_TRANSITIONS.get(from)
-  if (allowed === undefined || !allowed.has(to)) {
+  if (!allowed?.has(to)) {
     return err(
       invalidStatusTransition(`Cannot transition task status from '${from}' to '${to}'`),
     )

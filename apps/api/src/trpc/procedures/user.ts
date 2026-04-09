@@ -38,14 +38,22 @@ interface CreateUserRouterParams {
 const mapErrorCode: (params: { tag: AppError['tag'] }) => TRPCError['code'] = (params) => {
   switch (params.tag) {
     case 'UserNotFound':
+    case 'ProjectNotFound':
+    case 'TaskNotFound':
       return 'NOT_FOUND'
     case 'UserAlreadyExists':
       return 'CONFLICT'
+    case 'InsufficientPermission':
+      return 'FORBIDDEN'
     case 'InvalidEmail':
     case 'InvalidPassword':
     case 'InvalidUserId':
     case 'WeakPassword':
     case 'ValidationError':
+    case 'InvalidStatusTransition':
+    case 'InvalidAssignment':
+    case 'InvalidProjectName':
+    case 'InvalidTaskTitle':
       return 'BAD_REQUEST'
     case 'InfrastructureError':
       return 'INTERNAL_SERVER_ERROR'

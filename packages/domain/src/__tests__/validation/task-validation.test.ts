@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { validateTaskTitle, canTransitionStatus } from '../../validation/task-validation'
 import type { TaskStatus } from '../../validation/task-validation'
 
@@ -52,7 +53,7 @@ describe('validateTaskTitle', () => {
 })
 
 describe('canTransitionStatus', () => {
-  const validTransitions: ReadonlyArray<{ from: TaskStatus; to: TaskStatus }> = [
+  const validTransitions: readonly { from: TaskStatus; to: TaskStatus }[] = [
     { from: 'todo', to: 'in_progress' },
     { from: 'in_progress', to: 'done' },
     { from: 'done', to: 'in_progress' },

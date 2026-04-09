@@ -1,9 +1,10 @@
 import { ok, err, type Result } from 'neverthrow'
+
 import type { DomainError } from '../errors/domain-error'
 import { invalidAssignment } from '../errors/project-errors'
 
 /** Parameters for canAssignResponsible. */
-type CanAssignResponsibleParams = {
+interface CanAssignResponsibleParams {
   readonly currentResponsibleUserId: string | null
   readonly newUserId: string
 }

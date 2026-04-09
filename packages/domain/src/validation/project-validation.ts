@@ -1,9 +1,10 @@
 import { ok, err, type Result } from 'neverthrow'
+
 import type { DomainError } from '../errors/domain-error'
 import { invalidProjectName } from '../errors/project-errors'
 
 /** Parameters for validateProjectName. */
-type ValidateProjectNameParams = {
+interface ValidateProjectNameParams {
   readonly name: string
 }
 
