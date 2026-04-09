@@ -16,3 +16,21 @@ export type {
   PaginationParams,
   UpdateUserData,
 } from './repositories/user.repository'
+
+export type {
+  CreateProjectData,
+  IProjectRepository,
+  ProjectRecord,
+  UpdateProjectData,
+} from './repositories/project.repository'
+
+export type {
+  CreateTaskData,
+  ITaskRepository,
+  ListTasksFilters,
+  TaskAssigneeRecord,
+  TaskPriority,
+  TaskRecord,
+  TaskStatus,
+  UpdateTaskData,
+} from './repositories/task.repository'

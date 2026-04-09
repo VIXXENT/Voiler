@@ -11,8 +11,12 @@ export type { Brand } from './types/brand'
 // Domain errors
 export type { DomainError } from './errors/domain-error'
 export {
+  insufficientPermission,
   invalidEmail,
   invalidPassword,
+  invalidTaskTitle,
+  projectNotFound,
+  taskNotFound,
   userAlreadyExists,
   userNotFound,
   weakPassword,
