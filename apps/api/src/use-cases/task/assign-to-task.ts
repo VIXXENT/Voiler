@@ -63,15 +63,15 @@ export const createAssignToTask: (
           return memberRepository
             .findMembership({ projectId: task.projectId, userId })
             .andThen((membership) => {
-              const resolvedRole = resolveProjectRole({
+              const role = resolveProjectRole({
                 userId,
                 ownerId: project.ownerId,
                 membershipRole: membership?.role ?? null,
               })
-              if (resolvedRole === null) {
+              if (role === null) {
                 return errAsync(notAMember('You are not a member of this project'))
               }
-              const permResult = canPerformAction({ role: resolvedRole, action: 'mutate' })
+              const permResult = canPerformAction({ role: role, action: 'mutate' })
               if (permResult.isErr()) {
                 return errAsync(permResult.error)
               }
