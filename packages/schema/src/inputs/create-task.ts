@@ -9,7 +9,7 @@ const CreateTaskInputSchema = z.object({
   projectId: z.string().min(1, 'Project ID is required'),
   title: z.string().min(1, 'Task title is required').max(200),
   description: z.string().max(1000).optional(),
-  priority: z.enum(['low', 'medium', 'high']).default('medium').optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional().default('medium'),
   dueDate: z.date().optional(),
 })
 
