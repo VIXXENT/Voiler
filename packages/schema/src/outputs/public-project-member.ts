@@ -4,7 +4,6 @@ import { z } from 'zod'
  * Zod schema for public ProjectMember output.
  * Safely exposes project member information to clients.
  */
-// eslint-disable-next-line @typescript-eslint/typedef
 const PublicProjectMemberSchema = z.object({
   id: z.string(),
   projectId: z.string(),
