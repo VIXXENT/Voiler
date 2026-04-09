@@ -57,7 +57,7 @@ const mapErrorCode: (params: { tag: AppError['tag'] }) => TRPCError['code'] = (p
     case 'InvalidAssignment':
     case 'InvalidProjectName':
     case 'InvalidTaskTitle':
-    case 'CannotRemoveOwner':
+    case 'CannotRemoveOwner': // domain invariant violation — intentionally 400, not 403
       return 'BAD_REQUEST'
     case 'InfrastructureError':
       return 'INTERNAL_SERVER_ERROR'
