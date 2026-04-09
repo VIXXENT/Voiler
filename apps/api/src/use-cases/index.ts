@@ -17,6 +17,12 @@ export { createGetProject } from './project/get-project.js'
 export { createListUserProjects } from './project/list-user-projects.js'
 export { createArchiveProject } from './project/archive-project.js'
 export { createDeleteProject } from './project/delete-project.js'
+export { createInviteToProject } from './project/invite-to-project.js'
+export { createRemoveFromProject } from './project/remove-from-project.js'
+export { createListProjectMembers } from './project/list-project-members.js'
+export { createUpdateMemberRole } from './project/update-member-role.js'
+export { createTransferOwnership } from './project/transfer-ownership.js'
+export { createDeleteUserData } from './project/delete-user-data.js'
 
 // Task
 export { createCreateTask } from './task/create-task.js'

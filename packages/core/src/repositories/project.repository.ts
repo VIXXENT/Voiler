@@ -36,6 +36,7 @@ export interface CreateProjectData {
 export interface UpdateProjectData {
   readonly name?: string
   readonly description?: string
+  readonly ownerId?: string
   readonly status?: 'active' | 'archived'
   readonly frozen?: boolean
   readonly unfrozenAt?: Date | null

@@ -90,6 +90,7 @@ const createDrizzleProjectRepository: (
     const values: {
       name?: string
       description?: string | null
+      ownerId?: string
       status?: string
       frozen?: boolean
       unfrozenAt?: Date | null
@@ -99,6 +100,7 @@ const createDrizzleProjectRepository: (
       updatedAt: data.updatedAt,
       ...(data.name !== undefined ? { name: data.name } : {}),
       ...(data.description !== undefined ? { description: data.description } : {}),
+      ...(data.ownerId !== undefined ? { ownerId: data.ownerId } : {}),
       ...(data.status !== undefined ? { status: data.status } : {}),
       ...(data.frozen !== undefined ? { frozen: data.frozen } : {}),
       ...(data.unfrozenAt !== undefined ? { unfrozenAt: data.unfrozenAt } : {}),
