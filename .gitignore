@@ -43,3 +43,4 @@ blob-report/
 # Docker
 .docker/
 node-compile-cache/
+tsx-1000/
