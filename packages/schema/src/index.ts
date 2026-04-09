@@ -38,6 +38,14 @@ export {
 
 export type { TaskAssigneeRecord, TaskAssigneeInsert } from './entities/task-assignee.js'
 
+export {
+  ProjectMember,
+  ProjectMemberSelectSchema,
+  ProjectMemberInsertSchema,
+} from './entities/project-member.js'
+
+export type { ProjectMemberRecord, ProjectMemberInsert } from './entities/project-member.js'
+
 // --- Inputs (tRPC procedure validation) ---
 export { CreateUserInputSchema } from './inputs/create-user.js'
 export type { CreateUserInput } from './inputs/create-user.js'
@@ -63,6 +71,15 @@ export type { TransitionTaskStatusInput } from './inputs/transition-task-status.
 export { AssignTaskInputSchema, UnassignTaskInputSchema } from './inputs/assign-task.js'
 export type { AssignTaskInput, UnassignTaskInput } from './inputs/assign-task.js'
 
+export { InviteToProjectInputSchema } from './inputs/invite-to-project.js'
+export type { InviteToProjectInput } from './inputs/invite-to-project.js'
+
+export { UpdateMemberRoleInputSchema } from './inputs/update-member-role.js'
+export type { UpdateMemberRoleInput } from './inputs/update-member-role.js'
+
+export { TransferOwnershipInputSchema } from './inputs/transfer-ownership.js'
+export type { TransferOwnershipInput } from './inputs/transfer-ownership.js'
+
 // --- Outputs (client-safe response schemas) ---
 export { PublicUserSchema } from './outputs/public-user.js'
 export type { PublicUser } from './outputs/public-user.js'
@@ -72,3 +89,6 @@ export type { PublicProject } from './outputs/public-project.js'
 
 export { PublicTaskSchema } from './outputs/public-task.js'
 export type { PublicTask } from './outputs/public-task.js'
+
+export { PublicProjectMemberSchema } from './outputs/public-project-member.js'
+export type { PublicProjectMember } from './outputs/public-project-member.js'

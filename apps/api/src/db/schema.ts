@@ -15,4 +15,5 @@ export {
   Project,
   Task,
   TaskAssignee,
+  ProjectMember,
 } from '@voiler/schema'
