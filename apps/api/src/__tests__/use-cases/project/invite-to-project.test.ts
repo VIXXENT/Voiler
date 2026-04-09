@@ -122,7 +122,7 @@ describe('inviteToProject use case', () => {
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
 
     const useCase = createInviteToProject({ projectRepository: projectRepo, memberRepository: memberRepo })
-    const invalidRole = 'owner' as 'member'
+    const invalidRole = 'owner' as unknown as 'member'
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', targetUserId: 'user-2', role: invalidRole })
 
     expect(result.isErr()).toBe(true)

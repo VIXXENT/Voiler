@@ -120,7 +120,7 @@ describe('updateMemberRole use case', () => {
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
 
     const useCase = createUpdateMemberRole({ projectRepository: projectRepo, memberRepository: memberRepo })
-    const invalidRole = 'admin' as 'member'
+    const invalidRole = 'admin' as unknown as 'member'
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', targetUserId: 'user-2', newRole: invalidRole })
 
     expect(result.isErr()).toBe(true)
