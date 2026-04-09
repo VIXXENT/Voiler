@@ -52,9 +52,15 @@ type ProjectMemberRecord = Omit<z.infer<typeof ProjectMemberSelectSchema>, 'role
 }
 
 /**
+ * TypeScript type for a ProjectMember record as returned by a raw DB select.
+ * Inferred from {@link ProjectMemberSelectSchema}.
+ */
+type ProjectMemberSelect = z.infer<typeof ProjectMemberSelectSchema>
+
+/**
  * TypeScript type for inserting a new ProjectMember record.
  */
 type ProjectMemberInsert = z.infer<typeof ProjectMemberInsertSchema>
 
 export { ProjectMember, ProjectMemberSelectSchema, ProjectMemberInsertSchema }
-export type { ProjectMemberRecord, ProjectMemberInsert }
+export type { ProjectMemberRecord, ProjectMemberSelect, ProjectMemberInsert }
