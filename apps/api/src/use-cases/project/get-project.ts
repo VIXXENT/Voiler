@@ -24,15 +24,14 @@ interface GetProjectParams {
  */
 export const createGetProject: (
   deps: GetProjectDeps,
-) => (params: GetProjectParams) => ResultAsync<ProjectRecord, AppError> =
-  (deps) => (params) => {
-    const { projectRepository } = deps
-    const { projectId } = params
+) => (params: GetProjectParams) => ResultAsync<ProjectRecord, AppError> = (deps) => (params) => {
+  const { projectRepository } = deps
+  const { projectId } = params
 
-    return projectRepository.findById({ id: projectId }).andThen((record) => {
-      if (!record) {
-        return errAsync(projectNotFound('Project not found'))
-      }
-      return okAsync(record)
-    })
-  }
+  return projectRepository.findById({ id: projectId }).andThen((record) => {
+    if (!record) {
+      return errAsync(projectNotFound('Project not found'))
+    }
+    return okAsync(record)
+  })
+}

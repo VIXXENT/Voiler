@@ -1,4 +1,10 @@
-import type { AppError, IProjectRepository, ITaskRepository, ProjectRecord, TaskRecord } from '@voiler/core'
+import type {
+  AppError,
+  IProjectRepository,
+  ITaskRepository,
+  ProjectRecord,
+  TaskRecord,
+} from '@voiler/core'
 import { infrastructureError } from '@voiler/core'
 import { errAsync, okAsync } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'

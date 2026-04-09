@@ -64,9 +64,7 @@ interface Container {
     userId: string
     projectId: string
   }) => ResultAsync<ProjectRecord, AppError>
-  readonly listUserProjects: (params: {
-    userId: string
-  }) => ResultAsync<ProjectRecord[], AppError>
+  readonly listUserProjects: (params: { userId: string }) => ResultAsync<ProjectRecord[], AppError>
   readonly archiveProject: (
     params: { userId: string; projectId: string } & AuditableParams,
   ) => ResultAsync<ProjectRecord, AppError>

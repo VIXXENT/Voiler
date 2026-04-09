@@ -61,7 +61,13 @@ export const createAssignToTask: (
       })
       .andThen(() =>
         taskAssigneeRepository.assign({
-          data: { id: crypto.randomUUID(), taskId, userId: targetUserId, role, assignedAt: new Date() },
+          data: {
+            id: crypto.randomUUID(),
+            taskId,
+            userId: targetUserId,
+            role,
+            assignedAt: new Date(),
+          },
         }),
       )
   }

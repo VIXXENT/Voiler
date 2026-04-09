@@ -58,7 +58,9 @@ const createDrizzleProjectRepository: (
       (cause) => infrastructureError({ message: 'Failed to create project', cause }),
     ).andThen((rows) => {
       const row = rows[0]
-      if (!row) { return errAsync(infrastructureError({ message: 'Insert returned no rows' })) }
+      if (!row) {
+        return errAsync(infrastructureError({ message: 'Insert returned no rows' }))
+      }
       return okAsync(mapRowToRecord({ row }))
     })
   }
@@ -69,7 +71,9 @@ const createDrizzleProjectRepository: (
       (cause) => infrastructureError({ message: 'Failed to find project by id', cause }),
     ).andThen((rows) => {
       const row = rows[0]
-      if (!row) { return okAsync(null) }
+      if (!row) {
+        return okAsync(null)
+      }
       return okAsync(mapRowToRecord({ row }))
     })
   }
@@ -105,7 +109,9 @@ const createDrizzleProjectRepository: (
       (cause) => infrastructureError({ message: 'Failed to update project', cause }),
     ).andThen((rows) => {
       const row = rows[0]
-      if (!row) { return errAsync(infrastructureError({ message: 'Update returned no rows' })) }
+      if (!row) {
+        return errAsync(infrastructureError({ message: 'Update returned no rows' }))
+      }
       return okAsync(mapRowToRecord({ row }))
     })
   }
@@ -119,10 +125,7 @@ const createDrizzleProjectRepository: (
 
   const countByOwner: IProjectRepository['countByOwner'] = (countParams) => {
     return ResultAsync.fromPromise(
-      db
-        .select({ value: count() })
-        .from(Project)
-        .where(eq(Project.ownerId, countParams.ownerId)),
+      db.select({ value: count() }).from(Project).where(eq(Project.ownerId, countParams.ownerId)),
       (cause) => infrastructureError({ message: 'Failed to count projects by owner', cause }),
     ).andThen((rows) => okAsync(rows[0]?.value ?? 0))
   }
@@ -141,8 +144,7 @@ const createDrizzleProjectRepository: (
         await tx.delete(Task).where(eq(Task.projectId, deleteParams.id))
         await tx.delete(Project).where(eq(Project.id, deleteParams.id))
       }),
-      (cause) =>
-        infrastructureError({ message: 'Failed to delete project with cascade', cause }),
+      (cause) => infrastructureError({ message: 'Failed to delete project with cascade', cause }),
     ).map(() => undefined)
   }
 

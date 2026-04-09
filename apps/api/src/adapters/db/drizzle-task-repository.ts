@@ -15,11 +15,7 @@ interface CreateDrizzleTaskRepositoryParams {
 const mapRowToRecord: (params: { row: TaskRow }) => TaskRecord = (params) => {
   const { row } = params
   const status =
-    row.status === 'in_progress'
-      ? row.status
-      : row.status === 'done'
-        ? row.status
-        : 'todo'
+    row.status === 'in_progress' ? row.status : row.status === 'done' ? row.status : 'todo'
   const priority =
     row.priority === 'low' ? row.priority : row.priority === 'high' ? row.priority : 'medium'
   return {
@@ -65,7 +61,9 @@ const createDrizzleTaskRepository: (
       (cause) => infrastructureError({ message: 'Failed to create task', cause }),
     ).andThen((rows) => {
       const row = rows[0]
-      if (!row) { return errAsync(infrastructureError({ message: 'Insert returned no rows' })) }
+      if (!row) {
+        return errAsync(infrastructureError({ message: 'Insert returned no rows' }))
+      }
       return okAsync(mapRowToRecord({ row }))
     })
   }
@@ -76,7 +74,9 @@ const createDrizzleTaskRepository: (
       (cause) => infrastructureError({ message: 'Failed to find task by id', cause }),
     ).andThen((rows) => {
       const row = rows[0]
-      if (!row) { return okAsync(null) }
+      if (!row) {
+        return okAsync(null)
+      }
       return okAsync(mapRowToRecord({ row }))
     })
   }
@@ -100,10 +100,15 @@ const createDrizzleTaskRepository: (
             .from(TaskAssignee)
             .where(eq(TaskAssignee.userId, filters.assigneeId))
           const taskIds = assigneeRows.map((r) => r.taskId)
-          if (taskIds.length === 0) { return [] }
+          if (taskIds.length === 0) {
+            return []
+          }
           conditions.push(inArray(Task.id, taskIds))
         }
-        return db.select().from(Task).where(and(...conditions))
+        return db
+          .select()
+          .from(Task)
+          .where(and(...conditions))
       })(),
       (cause) => infrastructureError({ message: 'Failed to find tasks by project', cause }),
     ).map((rows) => rows.map((row) => mapRowToRecord({ row })))
@@ -131,24 +136,22 @@ const createDrizzleTaskRepository: (
       (cause) => infrastructureError({ message: 'Failed to update task', cause }),
     ).andThen((rows) => {
       const row = rows[0]
-      if (!row) { return errAsync(infrastructureError({ message: 'Update returned no rows' })) }
+      if (!row) {
+        return errAsync(infrastructureError({ message: 'Update returned no rows' }))
+      }
       return okAsync(mapRowToRecord({ row }))
     })
   }
 
   const del: ITaskRepository['delete'] = (deleteParams) => {
-    return ResultAsync.fromPromise(
-      db.delete(Task).where(eq(Task.id, deleteParams.id)),
-      (cause) => infrastructureError({ message: 'Failed to delete task', cause }),
+    return ResultAsync.fromPromise(db.delete(Task).where(eq(Task.id, deleteParams.id)), (cause) =>
+      infrastructureError({ message: 'Failed to delete task', cause }),
     ).map(() => undefined)
   }
 
   const countByProject: ITaskRepository['countByProject'] = (countParams) => {
     return ResultAsync.fromPromise(
-      db
-        .select({ value: count() })
-        .from(Task)
-        .where(eq(Task.projectId, countParams.projectId)),
+      db.select({ value: count() }).from(Task).where(eq(Task.projectId, countParams.projectId)),
       (cause) => infrastructureError({ message: 'Failed to count tasks by project', cause }),
     ).andThen((rows) => okAsync(rows[0]?.value ?? 0))
   }

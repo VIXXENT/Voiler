@@ -53,7 +53,11 @@ describe('createProject use case', () => {
     vi.mocked(repo.create).mockReturnValue(okAsync(fakeProject))
 
     const useCase = createCreateProject({ projectRepository: repo })
-    const result = await useCase({ userId: 'user-1', name: 'Test Project', description: 'A description' })
+    const result = await useCase({
+      userId: 'user-1',
+      name: 'Test Project',
+      description: 'A description',
+    })
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {

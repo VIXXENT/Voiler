@@ -15,11 +15,7 @@ interface CreateDrizzleTaskAssigneeRepositoryParams {
 const mapRowToRecord: (params: { row: TaskAssigneeRow }) => TaskAssigneeRecord = (params) => {
   const { row } = params
   const role =
-    row.role === 'responsible'
-      ? row.role
-      : row.role === 'reviewer'
-        ? row.role
-        : 'collaborator'
+    row.role === 'responsible' ? row.role : row.role === 'reviewer' ? row.role : 'collaborator'
   return {
     id: row.id,
     taskId: row.taskId,
@@ -53,7 +49,9 @@ const createDrizzleTaskAssigneeRepository: (
       (cause) => infrastructureError({ message: 'Failed to assign user to task', cause }),
     ).andThen((rows) => {
       const row = rows[0]
-      if (!row) { return errAsync(infrastructureError({ message: 'Insert returned no rows' })) }
+      if (!row) {
+        return errAsync(infrastructureError({ message: 'Insert returned no rows' }))
+      }
       return okAsync(mapRowToRecord({ row }))
     })
   }
@@ -85,15 +83,14 @@ const createDrizzleTaskAssigneeRepository: (
         .select()
         .from(TaskAssignee)
         .where(
-          and(
-            eq(TaskAssignee.taskId, findParams.taskId),
-            eq(TaskAssignee.role, 'responsible'),
-          ),
+          and(eq(TaskAssignee.taskId, findParams.taskId), eq(TaskAssignee.role, 'responsible')),
         ),
       (cause) => infrastructureError({ message: 'Failed to find responsible assignee', cause }),
     ).andThen((rows) => {
       const row = rows[0]
-      if (!row) { return okAsync(null) }
+      if (!row) {
+        return okAsync(null)
+      }
       return okAsync(mapRowToRecord({ row }))
     })
   }

@@ -57,10 +57,7 @@ interface CreateTaskRouterParams {
     taskId: string
     newStatus: 'todo' | 'in_progress' | 'done'
   }) => ResultAsync<TaskRecord, AppError>
-  readonly deleteTask: (params: {
-    userId: string
-    taskId: string
-  }) => ResultAsync<void, AppError>
+  readonly deleteTask: (params: { userId: string; taskId: string }) => ResultAsync<void, AppError>
   readonly listProjectTasks: (params: {
     userId: string
     projectId: string
@@ -135,21 +132,18 @@ const createTaskRouter: (params: CreateTaskRouterParams) => ReturnType<typeof ro
       )
     }),
 
-    transition: authedProcedure
-      .input(TransitionTaskStatusInputSchema)
-      .mutation(async (opts) => {
-        const result: Awaited<ReturnType<typeof transitionTaskStatus>> =
-          await transitionTaskStatus({
-            userId: opts.ctx.user.id,
-            taskId: opts.input.taskId,
-            newStatus: opts.input.newStatus,
-          })
+    transition: authedProcedure.input(TransitionTaskStatusInputSchema).mutation(async (opts) => {
+      const result: Awaited<ReturnType<typeof transitionTaskStatus>> = await transitionTaskStatus({
+        userId: opts.ctx.user.id,
+        taskId: opts.input.taskId,
+        newStatus: opts.input.newStatus,
+      })
 
-        return result.match(
-          (record) => mapToPublicTask({ record }),
-          (error) => throwTrpcError({ error }),
-        )
-      }),
+      return result.match(
+        (record) => mapToPublicTask({ record }),
+        (error) => throwTrpcError({ error }),
+      )
+    }),
 
     delete: authedProcedure
       .input(z.object({ taskId: z.string().min(1) }))

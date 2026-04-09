@@ -26,22 +26,21 @@ interface CreateProjectParams {
  */
 export const createCreateProject: (
   deps: CreateProjectDeps,
-) => (params: CreateProjectParams) => ResultAsync<ProjectRecord, AppError> =
-  (deps) => (params) => {
-    const { projectRepository } = deps
-    const { userId, name, description } = params
+) => (params: CreateProjectParams) => ResultAsync<ProjectRecord, AppError> = (deps) => (params) => {
+  const { projectRepository } = deps
+  const { userId, name, description } = params
 
-    const validationResult = validateProjectName({ name })
-    if (validationResult.isErr()) {
-      return errAsync(validationResult.error)
-    }
-
-    return projectRepository.create({
-      data: {
-        id: crypto.randomUUID(),
-        name: validationResult.value,
-        description,
-        ownerId: userId,
-      },
-    })
+  const validationResult = validateProjectName({ name })
+  if (validationResult.isErr()) {
+    return errAsync(validationResult.error)
   }
+
+  return projectRepository.create({
+    data: {
+      id: crypto.randomUUID(),
+      name: validationResult.value,
+      description,
+      ownerId: userId,
+    },
+  })
+}

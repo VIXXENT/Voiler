@@ -34,9 +34,7 @@ interface CreateProjectRouterParams {
     userId: string
     projectId: string
   }) => ResultAsync<ProjectRecord, AppError>
-  readonly listUserProjects: (params: {
-    userId: string
-  }) => ResultAsync<ProjectRecord[], AppError>
+  readonly listUserProjects: (params: { userId: string }) => ResultAsync<ProjectRecord[], AppError>
   readonly archiveProject: (params: {
     userId: string
     projectId: string
@@ -72,19 +70,17 @@ const createProjectRouter: (params: CreateProjectRouterParams) => ReturnType<typ
       )
     }),
 
-    get: authedProcedure
-      .input(z.object({ projectId: z.string().min(1) }))
-      .query(async (opts) => {
-        const result: Awaited<ReturnType<typeof getProject>> = await getProject({
-          userId: opts.ctx.user.id,
-          projectId: opts.input.projectId,
-        })
+    get: authedProcedure.input(z.object({ projectId: z.string().min(1) })).query(async (opts) => {
+      const result: Awaited<ReturnType<typeof getProject>> = await getProject({
+        userId: opts.ctx.user.id,
+        projectId: opts.input.projectId,
+      })
 
-        return result.match(
-          (record) => mapToPublicProject({ record }),
-          (error) => throwTrpcError({ error }),
-        )
-      }),
+      return result.match(
+        (record) => mapToPublicProject({ record }),
+        (error) => throwTrpcError({ error }),
+      )
+    }),
 
     list: authedProcedure.query(async (opts) => {
       const result: Awaited<ReturnType<typeof listUserProjects>> = await listUserProjects({

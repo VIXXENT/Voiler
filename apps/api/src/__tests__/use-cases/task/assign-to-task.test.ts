@@ -62,8 +62,16 @@ describe('assignToTask use case', () => {
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
     vi.mocked(assigneeRepo.assign).mockReturnValue(okAsync(fakeAssignee))
 
-    const useCase = createAssignToTask({ taskRepository: taskRepo, taskAssigneeRepository: assigneeRepo })
-    const result = await useCase({ userId: 'user-1', taskId: 'task-1', targetUserId: 'user-2', role: 'collaborator' })
+    const useCase = createAssignToTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+    })
+    const result = await useCase({
+      userId: 'user-1',
+      taskId: 'task-1',
+      targetUserId: 'user-2',
+      role: 'collaborator',
+    })
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
@@ -82,8 +90,16 @@ describe('assignToTask use case', () => {
     vi.mocked(assigneeRepo.findResponsible).mockReturnValue(okAsync(null))
     vi.mocked(assigneeRepo.assign).mockReturnValue(okAsync(fakeAssignee))
 
-    const useCase = createAssignToTask({ taskRepository: taskRepo, taskAssigneeRepository: assigneeRepo })
-    const result = await useCase({ userId: 'user-1', taskId: 'task-1', targetUserId: 'user-2', role: 'responsible' })
+    const useCase = createAssignToTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+    })
+    const result = await useCase({
+      userId: 'user-1',
+      taskId: 'task-1',
+      targetUserId: 'user-2',
+      role: 'responsible',
+    })
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
@@ -102,8 +118,16 @@ describe('assignToTask use case', () => {
     vi.mocked(assigneeRepo.findResponsible).mockReturnValue(okAsync(existingResponsible))
     vi.mocked(assigneeRepo.assign).mockReturnValue(okAsync(existingResponsible))
 
-    const useCase = createAssignToTask({ taskRepository: taskRepo, taskAssigneeRepository: assigneeRepo })
-    const result = await useCase({ userId: 'user-1', taskId: 'task-1', targetUserId: 'user-2', role: 'responsible' })
+    const useCase = createAssignToTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+    })
+    const result = await useCase({
+      userId: 'user-1',
+      taskId: 'task-1',
+      targetUserId: 'user-2',
+      role: 'responsible',
+    })
 
     expect(result.isOk()).toBe(true)
     expect(assigneeRepo.assign).toHaveBeenCalledOnce()
@@ -117,8 +141,16 @@ describe('assignToTask use case', () => {
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
     vi.mocked(assigneeRepo.findResponsible).mockReturnValue(okAsync(existingResponsible))
 
-    const useCase = createAssignToTask({ taskRepository: taskRepo, taskAssigneeRepository: assigneeRepo })
-    const result = await useCase({ userId: 'user-1', taskId: 'task-1', targetUserId: 'user-3', role: 'responsible' })
+    const useCase = createAssignToTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+    })
+    const result = await useCase({
+      userId: 'user-1',
+      taskId: 'task-1',
+      targetUserId: 'user-3',
+      role: 'responsible',
+    })
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {
@@ -132,8 +164,16 @@ describe('assignToTask use case', () => {
     const assigneeRepo = makeMockAssigneeRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(null))
 
-    const useCase = createAssignToTask({ taskRepository: taskRepo, taskAssigneeRepository: assigneeRepo })
-    const result = await useCase({ userId: 'user-1', taskId: 'task-1', targetUserId: 'user-2', role: 'collaborator' })
+    const useCase = createAssignToTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+    })
+    const result = await useCase({
+      userId: 'user-1',
+      taskId: 'task-1',
+      targetUserId: 'user-2',
+      role: 'collaborator',
+    })
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {
@@ -150,8 +190,16 @@ describe('assignToTask use case', () => {
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
     vi.mocked(assigneeRepo.assign).mockReturnValue(errAsync(repoError))
 
-    const useCase = createAssignToTask({ taskRepository: taskRepo, taskAssigneeRepository: assigneeRepo })
-    const result = await useCase({ userId: 'user-1', taskId: 'task-1', targetUserId: 'user-2', role: 'reviewer' })
+    const useCase = createAssignToTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+    })
+    const result = await useCase({
+      userId: 'user-1',
+      taskId: 'task-1',
+      targetUserId: 'user-2',
+      role: 'reviewer',
+    })
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {

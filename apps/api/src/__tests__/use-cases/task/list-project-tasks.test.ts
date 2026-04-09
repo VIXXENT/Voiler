@@ -1,4 +1,10 @@
-import type { AppError, IProjectRepository, ITaskRepository, ProjectRecord, TaskRecord } from '@voiler/core'
+import type {
+  AppError,
+  IProjectRepository,
+  ITaskRepository,
+  ProjectRecord,
+  TaskRecord,
+} from '@voiler/core'
 import { infrastructureError } from '@voiler/core'
 import { errAsync, okAsync } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'
@@ -63,7 +69,10 @@ describe('listProjectTasks use case', () => {
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(taskRepo.findByProject).mockReturnValue(okAsync([fakeTask]))
 
-    const useCase = createListProjectTasks({ projectRepository: projectRepo, taskRepository: taskRepo })
+    const useCase = createListProjectTasks({
+      projectRepository: projectRepo,
+      taskRepository: taskRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
     expect(result.isOk()).toBe(true)
@@ -81,7 +90,10 @@ describe('listProjectTasks use case', () => {
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(taskRepo.findByProject).mockReturnValue(okAsync([]))
 
-    const useCase = createListProjectTasks({ projectRepository: projectRepo, taskRepository: taskRepo })
+    const useCase = createListProjectTasks({
+      projectRepository: projectRepo,
+      taskRepository: taskRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
     expect(result.isOk()).toBe(true)
@@ -95,7 +107,10 @@ describe('listProjectTasks use case', () => {
     const taskRepo = makeMockTaskRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(null))
 
-    const useCase = createListProjectTasks({ projectRepository: projectRepo, taskRepository: taskRepo })
+    const useCase = createListProjectTasks({
+      projectRepository: projectRepo,
+      taskRepository: taskRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
     expect(result.isErr()).toBe(true)
@@ -113,7 +128,10 @@ describe('listProjectTasks use case', () => {
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(taskRepo.findByProject).mockReturnValue(errAsync(repoError))
 
-    const useCase = createListProjectTasks({ projectRepository: projectRepo, taskRepository: taskRepo })
+    const useCase = createListProjectTasks({
+      projectRepository: projectRepo,
+      taskRepository: taskRepo,
+    })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
     expect(result.isErr()).toBe(true)

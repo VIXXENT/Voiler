@@ -47,7 +47,10 @@ describe('deleteTask use case', () => {
     vi.mocked(assigneeRepo.deleteByTask).mockReturnValue(okAsync(undefined))
     vi.mocked(taskRepo.delete).mockReturnValue(okAsync(undefined))
 
-    const useCase = createDeleteTask({ taskRepository: taskRepo, taskAssigneeRepository: assigneeRepo })
+    const useCase = createDeleteTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+    })
     const result = await useCase({ userId: 'user-1', taskId: 'task-1' })
 
     expect(result.isOk()).toBe(true)
@@ -60,7 +63,10 @@ describe('deleteTask use case', () => {
     const assigneeRepo = makeMockAssigneeRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(null))
 
-    const useCase = createDeleteTask({ taskRepository: taskRepo, taskAssigneeRepository: assigneeRepo })
+    const useCase = createDeleteTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+    })
     const result = await useCase({ userId: 'user-1', taskId: 'task-1' })
 
     expect(result.isErr()).toBe(true)
@@ -79,7 +85,10 @@ describe('deleteTask use case', () => {
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
     vi.mocked(assigneeRepo.deleteByTask).mockReturnValue(errAsync(repoError))
 
-    const useCase = createDeleteTask({ taskRepository: taskRepo, taskAssigneeRepository: assigneeRepo })
+    const useCase = createDeleteTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+    })
     const result = await useCase({ userId: 'user-1', taskId: 'task-1' })
 
     expect(result.isErr()).toBe(true)
@@ -98,7 +107,10 @@ describe('deleteTask use case', () => {
     vi.mocked(assigneeRepo.deleteByTask).mockReturnValue(okAsync(undefined))
     vi.mocked(taskRepo.delete).mockReturnValue(errAsync(repoError))
 
-    const useCase = createDeleteTask({ taskRepository: taskRepo, taskAssigneeRepository: assigneeRepo })
+    const useCase = createDeleteTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+    })
     const result = await useCase({ userId: 'user-1', taskId: 'task-1' })
 
     expect(result.isErr()).toBe(true)

@@ -26,18 +26,17 @@ interface DeleteProjectParams {
  */
 export const createDeleteProject: (
   deps: DeleteProjectDeps,
-) => (params: DeleteProjectParams) => ResultAsync<void, AppError> =
-  (deps) => (params) => {
-    const { projectRepository } = deps
-    const { userId, projectId } = params
+) => (params: DeleteProjectParams) => ResultAsync<void, AppError> = (deps) => (params) => {
+  const { projectRepository } = deps
+  const { userId, projectId } = params
 
-    return projectRepository.findById({ id: projectId }).andThen((record) => {
-      if (!record) {
-        return errAsync(projectNotFound('Project not found'))
-      }
-      if (record.ownerId !== userId) {
-        return errAsync(insufficientPermission('Only the owner can delete this project'))
-      }
-      return projectRepository.deleteWithCascade({ id: projectId })
-    })
-  }
+  return projectRepository.findById({ id: projectId }).andThen((record) => {
+    if (!record) {
+      return errAsync(projectNotFound('Project not found'))
+    }
+    if (record.ownerId !== userId) {
+      return errAsync(insufficientPermission('Only the owner can delete this project'))
+    }
+    return projectRepository.deleteWithCascade({ id: projectId })
+  })
+}

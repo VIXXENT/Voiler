@@ -39,6 +39,7 @@ From `CLAUDE.md` — these apply to ALL code written:
 ### One subagent per task
 
 Use `superpowers:subagent-driven-development`. Each task gets a **fresh subagent** with:
+
 - Full task text from the plan
 - Relevant context (patterns, file paths, existing code)
 - No access to conversation history
@@ -57,6 +58,7 @@ Fix all issues before marking the task complete and moving to the next one.
 ### Double Agent Review at each milestone
 
 After completing a milestone (M1, M2, etc.):
+
 1. **Reviewer Agent** — thorough analysis: bugs, code smells, standard violations, edge cases, security
 2. **Triager Agent** — evaluates each finding: category, urgency, priority. Decides: fix immediately OR create GitHub issue with epic
 
@@ -91,6 +93,7 @@ gh issue create \
 ```
 
 If the label `taskforge-finding` doesn't exist, create it first:
+
 ```bash
 gh label create "taskforge-finding" --color "#e4e669" --description "Found while building TaskForge stress-test"
 ```
@@ -120,6 +123,7 @@ For DB changes: `pnpm --filter @voiler/api db:push`
 Read `TASKFORGE-CONTEXT.md` fully, then implement M1 using `superpowers:subagent-driven-development`.
 
 The 5 review fixes already identified for M1 (union literal types, SQL COUNT, FK constraints, transaction in deleteWithCascade, missing tests) should be incorporated **during** M1 implementation — not as a separate pass afterward. Specifically:
+
 - Use union literal types in `ProjectRecord` and `TaskRecord` from the start
 - Use `count()` from drizzle-orm in countByProject/countByOwner
 - Add FK `.references()` to task and task_assignee tables

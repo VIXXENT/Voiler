@@ -32,30 +32,36 @@ Full spec: `docs/superpowers/specs/2026-04-05-taskforge-design.md` and `-es.md`
 ## Codebase Patterns
 
 **Table definition** (`packages/schema/src/entities/user.ts`):
+
 - `pgTable('name', { col: text('col').notNull() })`
 - `// eslint-disable-next-line @typescript-eslint/typedef` before every inferred `const`
 - `createSelectSchema(Table)` + `createInsertSchema(Table, { overrides })` via drizzle-zod
 
 **Use-case factory** (`apps/api/src/use-cases/user/create-user.ts`):
+
 ```typescript
 export const createFoo: (deps: FooDeps) => (params: FooParams) => ResultAsync<FooResult, AppError>
 = (deps) => (params) => { ... }
 ```
 
 **Repository adapter** (`apps/api/src/adapters/db/drizzle-user-repository.ts`):
+
 - `ResultAsync.fromPromise(db.query, errorMapper).andThen(...)`
 - `okAsync(null)` for not-found
 - `crypto.randomUUID()` for IDs
 
 **tRPC procedure** (`apps/api/src/trpc/procedures/user.ts`):
+
 - Factory: `createFooRouter(params) => ReturnType<typeof router>`
 - `result.match(okFn, (error) => throwTrpcError({ error }))`
 - Import `throwTrpcError` from `./user.js`
 
 **Container** (`apps/api/src/container.ts`):
+
 - Create adapters → create raw use-cases → wrap with `withAuditLog` → return
 
 **Test pattern** (`apps/api/src/__tests__/use-cases/create-user.test.ts`):
+
 ```typescript
 vi.mocked(repo.method).mockReturnValue(okAsync(fakeEntity))
 const result = await useCase({ ... })
@@ -77,14 +83,17 @@ expect(result.isOk()).toBe(true)
 ### Domain Validation (pure functions → `Result<T, DomainError>`)
 
 `packages/domain/src/validation/project-validation.ts`:
+
 - `validateProjectName({ name })` — trim, non-empty, max 100 → `Result<string, DomainError>` (tag: `InvalidProjectName`)
 
 `packages/domain/src/validation/task-validation.ts`:
+
 - `validateTaskTitle({ title })` — trim, non-empty, max 200 → (tag: `InvalidTaskTitle`)
 - `canTransitionStatus({ from, to })` — state machine: todo→in_progress, in_progress→done, done→in_progress, in_progress→todo (tag: `InvalidStatusTransition`)
 - Export `type TaskStatus = 'todo' | 'in_progress' | 'done'`
 
 `packages/domain/src/validation/assignment-validation.ts`:
+
 - `canAssignResponsible({ currentResponsibleUserId, newUserId })` — max 1 responsible, same user is idempotent (tag: `InvalidAssignment`)
 
 ### New Domain Errors (add to `packages/domain/src/errors/domain-error.ts` union)
@@ -110,6 +119,7 @@ Create factory functions in `packages/domain/src/errors/project-errors.ts`.
 **`ITaskAssigneeRepository`**: assign, unassign, findByTask, findResponsible, deleteByTask
 
 **Record types use union literals** (not `string`):
+
 - `ProjectRecord.status: 'active' | 'archived'`
 - `TaskRecord.status: 'todo' | 'in_progress' | 'done'`
 - `TaskRecord.priority: 'low' | 'medium' | 'high'`
@@ -123,6 +133,7 @@ Create factory functions in `packages/domain/src/errors/project-errors.ts`.
 ### Use-Cases (`apps/api/src/use-cases/`)
 
 **Project:**
+
 - `createProject({ userId, name, description? })` — validate name → create → return record
 - `getProject({ userId, projectId })` — find → ProjectNotFound if null
 - `listUserProjects({ userId })` — findByOwner
@@ -130,6 +141,7 @@ Create factory functions in `packages/domain/src/errors/project-errors.ts`.
 - `deleteProject({ userId, projectId })` — find → check ownerId → deleteWithCascade
 
 **Task:**
+
 - `createTask({ userId, projectId, title, description?, priority?, dueDate? })` — validate title → find project → create
 - `updateTask({ userId, taskId, title?, description?, priority?, dueDate? })` — validate title if provided → find task → update
 - `transitionTaskStatus({ userId, taskId, newStatus })` — find task → canTransitionStatus → update
@@ -153,6 +165,7 @@ All mutating use-cases wrapped with `withAuditLog` in container.
 **`apps/api/src/trpc/procedures/task.ts`**: create, update, transition, delete, list, assign, unassign — all `authedProcedure`
 
 **Update `mapErrorCode`** in `user.ts` to handle new error tags:
+
 - ProjectNotFound, TaskNotFound → 'NOT_FOUND'
 - InvalidStatusTransition, InvalidAssignment, InvalidProjectName, InvalidTaskTitle → 'BAD_REQUEST'
 - InsufficientPermission → 'FORBIDDEN'
@@ -189,7 +202,7 @@ pnpm format:check                    # clean
 These should be applied after M1 is complete, in separate focused commits:
 
 1. **Record union types** — `ProjectRecord.status: 'active' | 'archived'`, `TaskRecord.status: 'todo' | 'in_progress' | 'done'`, `TaskRecord.priority: 'low' | 'medium' | 'high'` (eliminates all `as` casts)
-2. **SQL COUNT(*)** — use `import { count } from 'drizzle-orm'` in countByProject/countByOwner instead of fetching all rows
+2. **SQL COUNT(\*)** — use `import { count } from 'drizzle-orm'` in countByProject/countByOwner instead of fetching all rows
 3. **FK constraints** — add `.references(() => Project.id, { onDelete: 'cascade' })` to task.projectId and task_assignee.taskId/userId
 4. **Transaction in deleteWithCascade** — `db.transaction()` wrapping the 3-step cascade
 5. **Missing tests** — update-task, delete-task, list-project-tasks, unassign-from-task unit tests

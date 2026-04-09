@@ -52,9 +52,7 @@ export const canTransitionStatus: (
 ) => Result<TaskStatus, DomainError> = ({ from, to }) => {
   const allowed = VALID_TRANSITIONS.get(from)
   if (!allowed?.has(to)) {
-    return err(
-      invalidStatusTransition(`Cannot transition task status from '${from}' to '${to}'`),
-    )
+    return err(invalidStatusTransition(`Cannot transition task status from '${from}' to '${to}'`))
   }
   return ok(to)
 }
