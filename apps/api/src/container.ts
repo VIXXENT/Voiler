@@ -5,6 +5,7 @@ import type { IPaymentService } from '@voiler/mod-payments'
 import type { ProjectRecord, TaskAssigneeRecord, TaskRecord } from '@voiler/schema'
 import type { ResultAsync } from 'neverthrow'
 
+import { createDrizzleProjectMemberRepository } from './adapters/db/drizzle-project-member-repository.js'
 import { createDrizzleProjectRepository } from './adapters/db/drizzle-project-repository.js'
 import { createDrizzleTaskAssigneeRepository } from './adapters/db/drizzle-task-assignee-repository.js'
 import { createDrizzleTaskRepository } from './adapters/db/drizzle-task-repository.js'
@@ -144,6 +145,7 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
 
   const userRepository = createDrizzleUserRepository({ db })
   const projectRepository = createDrizzleProjectRepository({ db })
+  const memberRepository = createDrizzleProjectMemberRepository({ db })
   const taskRepository = createDrizzleTaskRepository({ db })
   const taskAssigneeRepository = createDrizzleTaskAssigneeRepository({ db })
 
@@ -154,19 +156,42 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
 
   // --- Project use-cases (raw) ---
   const rawCreateProject = createCreateProject({ projectRepository })
-  const rawGetProject = createGetProject({ projectRepository })
+  const rawGetProject = createGetProject({ projectRepository, memberRepository })
   const rawListUserProjects = createListUserProjects({ projectRepository })
   const rawArchiveProject = createArchiveProject({ projectRepository })
   const rawDeleteProject = createDeleteProject({ projectRepository })
 
   // --- Task use-cases (raw) ---
-  const rawCreateTask = createCreateTask({ projectRepository, taskRepository })
-  const rawUpdateTask = createUpdateTask({ taskRepository })
-  const rawTransitionTaskStatus = createTransitionTaskStatus({ taskRepository })
-  const rawDeleteTask = createDeleteTask({ taskRepository, taskAssigneeRepository })
-  const rawListProjectTasks = createListProjectTasks({ projectRepository, taskRepository })
-  const rawAssignToTask = createAssignToTask({ taskRepository, taskAssigneeRepository })
-  const rawUnassignFromTask = createUnassignFromTask({ taskRepository, taskAssigneeRepository })
+  const rawCreateTask = createCreateTask({ projectRepository, taskRepository, memberRepository })
+  const rawUpdateTask = createUpdateTask({ taskRepository, projectRepository, memberRepository })
+  const rawTransitionTaskStatus = createTransitionTaskStatus({
+    taskRepository,
+    projectRepository,
+    memberRepository,
+  })
+  const rawDeleteTask = createDeleteTask({
+    taskRepository,
+    taskAssigneeRepository,
+    projectRepository,
+    memberRepository,
+  })
+  const rawListProjectTasks = createListProjectTasks({
+    projectRepository,
+    taskRepository,
+    memberRepository,
+  })
+  const rawAssignToTask = createAssignToTask({
+    taskRepository,
+    taskAssigneeRepository,
+    projectRepository,
+    memberRepository,
+  })
+  const rawUnassignFromTask = createUnassignFromTask({
+    taskRepository,
+    taskAssigneeRepository,
+    projectRepository,
+    memberRepository,
+  })
 
   // --- Wrap with audit logging ---
   const createUser: Container['createUser'] = withAuditLog({

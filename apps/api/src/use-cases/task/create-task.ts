@@ -1,5 +1,17 @@
-import type { AppError, IProjectRepository, ITaskRepository, TaskRecord } from '@voiler/core'
-import { projectNotFound, validateTaskTitle } from '@voiler/domain'
+import type {
+  AppError,
+  IProjectMemberRepository,
+  IProjectRepository,
+  ITaskRepository,
+  TaskRecord,
+} from '@voiler/core'
+import {
+  canPerformAction,
+  notAMember,
+  projectNotFound,
+  resolveProjectRole,
+  validateTaskTitle,
+} from '@voiler/domain'
 import { errAsync, type ResultAsync } from 'neverthrow'
 
 /**
@@ -8,6 +20,7 @@ import { errAsync, type ResultAsync } from 'neverthrow'
 interface CreateTaskDeps {
   readonly projectRepository: IProjectRepository
   readonly taskRepository: ITaskRepository
+  readonly memberRepository: IProjectMemberRepository
 }
 
 /**
@@ -25,13 +38,13 @@ interface CreateTaskParams {
 /**
  * Factory that builds a use case for creating a new task.
  *
- * Validates the task title, verifies the project exists,
+ * Validates the task title, verifies the project exists, checks mutate permission,
  * then persists the task with status 'todo' and the given userId as creator.
  */
 export const createCreateTask: (
   deps: CreateTaskDeps,
 ) => (params: CreateTaskParams) => ResultAsync<TaskRecord, AppError> = (deps) => (params) => {
-  const { projectRepository, taskRepository } = deps
+  const { projectRepository, taskRepository, memberRepository } = deps
   const { userId, projectId, title, description, priority, dueDate } = params
 
   const titleResult = validateTaskTitle({ title })
@@ -43,16 +56,30 @@ export const createCreateTask: (
     if (!project) {
       return errAsync(projectNotFound('Project not found'))
     }
-    return taskRepository.create({
-      data: {
-        id: crypto.randomUUID(),
-        projectId,
-        title: titleResult.value,
-        description,
-        priority,
-        dueDate,
-        createdBy: userId,
-      },
+    return memberRepository.findMembership({ projectId, userId }).andThen((membership) => {
+      const role = resolveProjectRole({
+        userId,
+        ownerId: project.ownerId,
+        membershipRole: membership?.role ?? null,
+      })
+      if (role === null) {
+        return errAsync(notAMember('You are not a member of this project'))
+      }
+      const permResult = canPerformAction({ role, action: 'mutate' })
+      if (permResult.isErr()) {
+        return errAsync(permResult.error)
+      }
+      return taskRepository.create({
+        data: {
+          id: crypto.randomUUID(),
+          projectId,
+          title: titleResult.value,
+          description,
+          priority,
+          dueDate,
+          createdBy: userId,
+        },
+      })
     })
   })
 }

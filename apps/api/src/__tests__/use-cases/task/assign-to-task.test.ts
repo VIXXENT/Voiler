@@ -1,7 +1,10 @@
 import type {
   AppError,
+  IProjectMemberRepository,
+  IProjectRepository,
   ITaskAssigneeRepository,
   ITaskRepository,
+  ProjectRecord,
   TaskAssigneeRecord,
   TaskRecord,
 } from '@voiler/core'
@@ -10,6 +13,20 @@ import { errAsync, okAsync } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'
 
 import { createAssignToTask } from '../../../use-cases/task/assign-to-task'
+
+/** Builds a fake ProjectRecord for test assertions. */
+const makeFakeProject = (): ProjectRecord => ({
+  id: 'proj-1',
+  name: 'Test Project',
+  description: null,
+  ownerId: 'user-1',
+  status: 'active',
+  frozen: false,
+  unfrozenAt: null,
+  cooldownMinutes: null,
+  createdAt: new Date('2026-01-01'),
+  updatedAt: new Date('2026-01-01'),
+})
 
 /** Builds a fake TaskRecord for test assertions. */
 const makeFakeTask = (): TaskRecord => ({
@@ -34,6 +51,17 @@ const makeFakeAssignee = (): TaskAssigneeRecord => ({
   assignedAt: new Date('2026-01-01'),
 })
 
+/** Builds a mock IProjectRepository with vi.fn() stubs. */
+const makeMockProjectRepo = (): IProjectRepository => ({
+  create: vi.fn(),
+  findById: vi.fn(),
+  findByOwner: vi.fn(),
+  update: vi.fn(),
+  delete: vi.fn(),
+  countByOwner: vi.fn(),
+  deleteWithCascade: vi.fn(),
+})
+
 /** Builds a mock ITaskRepository with vi.fn() stubs. */
 const makeMockTaskRepo = (): ITaskRepository => ({
   create: vi.fn(),
@@ -53,18 +81,36 @@ const makeMockAssigneeRepo = (): ITaskAssigneeRepository => ({
   deleteByTask: vi.fn(),
 })
 
+/** Builds a mock IProjectMemberRepository with vi.fn() stubs. */
+const makeMockMemberRepo = (): IProjectMemberRepository => ({
+  addMember: vi.fn(),
+  removeMember: vi.fn(),
+  findByProject: vi.fn(),
+  findMembership: vi.fn(),
+  updateRole: vi.fn(),
+  deleteByProject: vi.fn(),
+  deleteByUser: vi.fn(),
+})
+
 describe('assignToTask use case', () => {
-  it('assigns a collaborator without responsible check', async () => {
+  it('assigns a collaborator without responsible check (owner)', async () => {
     const fakeTask = makeFakeTask()
+    const fakeProject = makeFakeProject()
     const fakeAssignee = { ...makeFakeAssignee(), role: 'collaborator' as const, userId: 'user-2' }
     const taskRepo = makeMockTaskRepo()
     const assigneeRepo = makeMockAssigneeRepo()
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
     vi.mocked(assigneeRepo.assign).mockReturnValue(okAsync(fakeAssignee))
 
     const useCase = createAssignToTask({
       taskRepository: taskRepo,
       taskAssigneeRepository: assigneeRepo,
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
     })
     const result = await useCase({
       userId: 'user-1',
@@ -83,16 +129,23 @@ describe('assignToTask use case', () => {
 
   it('assigns responsible when no existing responsible', async () => {
     const fakeTask = makeFakeTask()
+    const fakeProject = makeFakeProject()
     const fakeAssignee = makeFakeAssignee()
     const taskRepo = makeMockTaskRepo()
     const assigneeRepo = makeMockAssigneeRepo()
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
     vi.mocked(assigneeRepo.findResponsible).mockReturnValue(okAsync(null))
     vi.mocked(assigneeRepo.assign).mockReturnValue(okAsync(fakeAssignee))
 
     const useCase = createAssignToTask({
       taskRepository: taskRepo,
       taskAssigneeRepository: assigneeRepo,
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
     })
     const result = await useCase({
       userId: 'user-1',
@@ -111,16 +164,23 @@ describe('assignToTask use case', () => {
 
   it('allows reassigning the same responsible user (idempotent)', async () => {
     const fakeTask = makeFakeTask()
+    const fakeProject = makeFakeProject()
     const existingResponsible = makeFakeAssignee()
     const taskRepo = makeMockTaskRepo()
     const assigneeRepo = makeMockAssigneeRepo()
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
     vi.mocked(assigneeRepo.findResponsible).mockReturnValue(okAsync(existingResponsible))
     vi.mocked(assigneeRepo.assign).mockReturnValue(okAsync(existingResponsible))
 
     const useCase = createAssignToTask({
       taskRepository: taskRepo,
       taskAssigneeRepository: assigneeRepo,
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
     })
     const result = await useCase({
       userId: 'user-1',
@@ -135,15 +195,22 @@ describe('assignToTask use case', () => {
 
   it('returns Err(InvalidAssignment) when different responsible already assigned', async () => {
     const fakeTask = makeFakeTask()
+    const fakeProject = makeFakeProject()
     const existingResponsible = makeFakeAssignee()
     const taskRepo = makeMockTaskRepo()
     const assigneeRepo = makeMockAssigneeRepo()
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
     vi.mocked(assigneeRepo.findResponsible).mockReturnValue(okAsync(existingResponsible))
 
     const useCase = createAssignToTask({
       taskRepository: taskRepo,
       taskAssigneeRepository: assigneeRepo,
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
     })
     const result = await useCase({
       userId: 'user-1',
@@ -162,11 +229,15 @@ describe('assignToTask use case', () => {
   it('returns Err(TaskNotFound) when task does not exist', async () => {
     const taskRepo = makeMockTaskRepo()
     const assigneeRepo = makeMockAssigneeRepo()
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(null))
 
     const useCase = createAssignToTask({
       taskRepository: taskRepo,
       taskAssigneeRepository: assigneeRepo,
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
     })
     const result = await useCase({
       userId: 'user-1',
@@ -182,17 +253,88 @@ describe('assignToTask use case', () => {
     expect(assigneeRepo.assign).not.toHaveBeenCalled()
   })
 
-  it('returns Err when assign repository call fails', async () => {
+  it('returns Err(NotAMember) when user has no membership and is not owner', async () => {
     const fakeTask = makeFakeTask()
+    const fakeProject = makeFakeProject()
     const taskRepo = makeMockTaskRepo()
     const assigneeRepo = makeMockAssigneeRepo()
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
+    vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+
+    const useCase = createAssignToTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
+    const result = await useCase({
+      userId: 'user-99',
+      taskId: 'task-1',
+      targetUserId: 'user-2',
+      role: 'collaborator',
+    })
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.tag).toBe('NotAMember')
+    }
+    expect(assigneeRepo.assign).not.toHaveBeenCalled()
+  })
+
+  it('returns Err(InsufficientPermission) when viewer tries to assign', async () => {
+    const fakeTask = makeFakeTask()
+    const fakeProject = makeFakeProject()
+    const taskRepo = makeMockTaskRepo()
+    const assigneeRepo = makeMockAssigneeRepo()
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
+    vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(
+      okAsync({ id: 'm-1', projectId: 'proj-1', userId: 'user-2', role: 'viewer', joinedAt: new Date() }),
+    )
+
+    const useCase = createAssignToTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
+    const result = await useCase({
+      userId: 'user-2',
+      taskId: 'task-1',
+      targetUserId: 'user-3',
+      role: 'collaborator',
+    })
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.tag).toBe('InsufficientPermission')
+    }
+    expect(assigneeRepo.assign).not.toHaveBeenCalled()
+  })
+
+  it('returns Err when assign repository call fails', async () => {
+    const fakeTask = makeFakeTask()
+    const fakeProject = makeFakeProject()
+    const taskRepo = makeMockTaskRepo()
+    const assigneeRepo = makeMockAssigneeRepo()
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
     const repoError: AppError = infrastructureError({ message: 'db error' })
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
     vi.mocked(assigneeRepo.assign).mockReturnValue(errAsync(repoError))
 
     const useCase = createAssignToTask({
       taskRepository: taskRepo,
       taskAssigneeRepository: assigneeRepo,
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
     })
     const result = await useCase({
       userId: 'user-1',

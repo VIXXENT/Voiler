@@ -1,5 +1,18 @@
-import type { AppError, ITaskRepository, TaskRecord } from '@voiler/core'
-import { taskNotFound, validateTaskTitle } from '@voiler/domain'
+import type {
+  AppError,
+  IProjectMemberRepository,
+  IProjectRepository,
+  ITaskRepository,
+  TaskRecord,
+} from '@voiler/core'
+import {
+  canPerformAction,
+  notAMember,
+  projectNotFound,
+  resolveProjectRole,
+  taskNotFound,
+  validateTaskTitle,
+} from '@voiler/domain'
 import { errAsync, type ResultAsync } from 'neverthrow'
 
 /**
@@ -7,6 +20,8 @@ import { errAsync, type ResultAsync } from 'neverthrow'
  */
 interface UpdateTaskDeps {
   readonly taskRepository: ITaskRepository
+  readonly projectRepository: IProjectRepository
+  readonly memberRepository: IProjectMemberRepository
 }
 
 /**
@@ -25,13 +40,13 @@ interface UpdateTaskParams {
  * Factory that builds a use case for updating a task.
  *
  * Optionally validates the title if provided, verifies the task exists,
- * then persists the updated fields with a fresh updatedAt timestamp.
+ * checks mutate permission via the task's project, then persists the updated fields.
  */
 export const createUpdateTask: (
   deps: UpdateTaskDeps,
 ) => (params: UpdateTaskParams) => ResultAsync<TaskRecord, AppError> = (deps) => (params) => {
-  const { taskRepository } = deps
-  const { taskId, title, description, priority, dueDate } = params
+  const { taskRepository, projectRepository, memberRepository } = deps
+  const { userId, taskId, title, description, priority, dueDate } = params
 
   let validatedTitle: string | undefined
   if (title !== undefined) {
@@ -46,15 +61,36 @@ export const createUpdateTask: (
     if (!task) {
       return errAsync(taskNotFound('Task not found'))
     }
-    return taskRepository.update({
-      id: taskId,
-      data: {
-        ...(validatedTitle !== undefined ? { title: validatedTitle } : {}),
-        ...(description !== undefined ? { description } : {}),
-        ...(priority !== undefined ? { priority } : {}),
-        ...(dueDate !== undefined ? { dueDate } : {}),
-        updatedAt: new Date(),
-      },
+    return projectRepository.findById({ id: task.projectId }).andThen((project) => {
+      if (!project) {
+        return errAsync(projectNotFound('Project not found'))
+      }
+      return memberRepository
+        .findMembership({ projectId: task.projectId, userId })
+        .andThen((membership) => {
+          const role = resolveProjectRole({
+            userId,
+            ownerId: project.ownerId,
+            membershipRole: membership?.role ?? null,
+          })
+          if (role === null) {
+            return errAsync(notAMember('You are not a member of this project'))
+          }
+          const permResult = canPerformAction({ role, action: 'mutate' })
+          if (permResult.isErr()) {
+            return errAsync(permResult.error)
+          }
+          return taskRepository.update({
+            id: taskId,
+            data: {
+              ...(validatedTitle !== undefined ? { title: validatedTitle } : {}),
+              ...(description !== undefined ? { description } : {}),
+              ...(priority !== undefined ? { priority } : {}),
+              ...(dueDate !== undefined ? { dueDate } : {}),
+              updatedAt: new Date(),
+            },
+          })
+        })
     })
   })
 }

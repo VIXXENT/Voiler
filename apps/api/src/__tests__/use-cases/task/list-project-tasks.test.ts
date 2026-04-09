@@ -1,5 +1,6 @@
 import type {
   AppError,
+  IProjectMemberRepository,
   IProjectRepository,
   ITaskRepository,
   ProjectRecord,
@@ -60,18 +61,32 @@ const makeMockTaskRepo = (): ITaskRepository => ({
   countByProject: vi.fn(),
 })
 
+/** Builds a mock IProjectMemberRepository with vi.fn() stubs. */
+const makeMockMemberRepo = (): IProjectMemberRepository => ({
+  addMember: vi.fn(),
+  removeMember: vi.fn(),
+  findByProject: vi.fn(),
+  findMembership: vi.fn(),
+  updateRole: vi.fn(),
+  deleteByProject: vi.fn(),
+  deleteByUser: vi.fn(),
+})
+
 describe('listProjectTasks use case', () => {
-  it('returns Ok(TaskRecord[]) on happy path', async () => {
+  it('returns Ok(TaskRecord[]) when owner lists tasks', async () => {
     const fakeProject = makeFakeProject()
     const fakeTask = makeFakeTask()
     const projectRepo = makeMockProjectRepo()
     const taskRepo = makeMockTaskRepo()
+    const memberRepo = makeMockMemberRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
     vi.mocked(taskRepo.findByProject).mockReturnValue(okAsync([fakeTask]))
 
     const useCase = createListProjectTasks({
       projectRepository: projectRepo,
       taskRepository: taskRepo,
+      memberRepository: memberRepo,
     })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
@@ -87,12 +102,15 @@ describe('listProjectTasks use case', () => {
     const fakeProject = makeFakeProject()
     const projectRepo = makeMockProjectRepo()
     const taskRepo = makeMockTaskRepo()
+    const memberRepo = makeMockMemberRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
     vi.mocked(taskRepo.findByProject).mockReturnValue(okAsync([]))
 
     const useCase = createListProjectTasks({
       projectRepository: projectRepo,
       taskRepository: taskRepo,
+      memberRepository: memberRepo,
     })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
@@ -105,11 +123,13 @@ describe('listProjectTasks use case', () => {
   it('returns Err(ProjectNotFound) when project does not exist', async () => {
     const projectRepo = makeMockProjectRepo()
     const taskRepo = makeMockTaskRepo()
+    const memberRepo = makeMockMemberRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(null))
 
     const useCase = createListProjectTasks({
       projectRepository: projectRepo,
       taskRepository: taskRepo,
+      memberRepository: memberRepo,
     })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
@@ -120,17 +140,42 @@ describe('listProjectTasks use case', () => {
     expect(taskRepo.findByProject).not.toHaveBeenCalled()
   })
 
+  it('returns Err(NotAMember) when user has no membership and is not owner', async () => {
+    const fakeProject = makeFakeProject()
+    const projectRepo = makeMockProjectRepo()
+    const taskRepo = makeMockTaskRepo()
+    const memberRepo = makeMockMemberRepo()
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+
+    const useCase = createListProjectTasks({
+      projectRepository: projectRepo,
+      taskRepository: taskRepo,
+      memberRepository: memberRepo,
+    })
+    const result = await useCase({ userId: 'user-99', projectId: 'proj-1' })
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.tag).toBe('NotAMember')
+    }
+    expect(taskRepo.findByProject).not.toHaveBeenCalled()
+  })
+
   it('returns Err when findByProject fails', async () => {
     const fakeProject = makeFakeProject()
     const projectRepo = makeMockProjectRepo()
     const taskRepo = makeMockTaskRepo()
+    const memberRepo = makeMockMemberRepo()
     const repoError: AppError = infrastructureError({ message: 'db error' })
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
     vi.mocked(taskRepo.findByProject).mockReturnValue(errAsync(repoError))
 
     const useCase = createListProjectTasks({
       projectRepository: projectRepo,
       taskRepository: taskRepo,
+      memberRepository: memberRepo,
     })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1' })
 
