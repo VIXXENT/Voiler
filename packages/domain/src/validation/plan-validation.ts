@@ -16,7 +16,7 @@ interface CheckMemberLimitParams {
   readonly limits: PlanLimits
 }
 
-/** Parameters for checkTaskLimitParams. */
+/** Parameters for checkTaskLimit. */
 interface CheckTaskLimitParams {
   readonly currentCount: number
   readonly limits: PlanLimits
