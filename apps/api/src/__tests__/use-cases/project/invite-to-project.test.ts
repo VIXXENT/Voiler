@@ -54,6 +54,7 @@ const makeMockMemberRepo = (): IProjectMemberRepository => ({
   updateRole: vi.fn(),
   deleteByProject: vi.fn(),
   deleteByUser: vi.fn(),
+  findProjectIdsByUser: vi.fn(),
 })
 
 /** Builds a mock IUserSubscriptionRepository with vi.fn() stubs. */

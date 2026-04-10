@@ -139,6 +139,16 @@ const createDrizzleProjectMemberRepository: (
     ).map(() => undefined)
   }
 
+  const findProjectIdsByUser: IProjectMemberRepository['findProjectIdsByUser'] = (findParams) =>
+    ResultAsync.fromPromise(
+      db
+        .select({ projectId: ProjectMember.projectId })
+        .from(ProjectMember)
+        .where(eq(ProjectMember.userId, findParams.userId)),
+      (cause) =>
+        infrastructureError({ message: 'Failed to find project memberships by user', cause }),
+    ).map((rows) => rows.map((r) => r.projectId))
+
   return {
     addMember,
     removeMember,
@@ -147,6 +157,7 @@ const createDrizzleProjectMemberRepository: (
     updateRole,
     deleteByProject,
     deleteByUser,
+    findProjectIdsByUser,
   }
 }
 

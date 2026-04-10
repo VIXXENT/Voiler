@@ -53,4 +53,6 @@ export interface IProjectMemberRepository {
   deleteByProject: (params: { projectId: string }) => ResultAsync<void, AppError>
   /** Delete all memberships for a user (used when deleting a user account). */
   deleteByUser: (params: { userId: string }) => ResultAsync<void, AppError>
+  /** Find all project IDs where a user has membership (not ownership). */
+  findProjectIdsByUser: (params: { userId: string }) => ResultAsync<string[], AppError>
 }

@@ -80,6 +80,7 @@ const makeMockMemberRepo = (): IProjectMemberRepository => ({
   updateRole: vi.fn(),
   deleteByProject: vi.fn(),
   deleteByUser: vi.fn(),
+  findProjectIdsByUser: vi.fn(),
 })
 
 describe('deleteTask use case', () => {

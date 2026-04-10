@@ -2,6 +2,8 @@ import type { AppError } from '@voiler/core'
 import type { Context } from 'hono'
 import type { ResultAsync } from 'neverthrow'
 
+import { isRecord } from '../lib/type-guards.js'
+
 /**
  * Dependencies for the Stripe webhook handler.
  */
@@ -11,9 +13,6 @@ interface StripeWebhookHandlerDeps {
     data: Record<string, unknown>
   }) => ResultAsync<void, AppError>
 }
-
-/** Type guard: checks if a value is a non-null object. */
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 
 /** Type guard: checks if a parsed JSON value is a valid webhook event shape. */
 const isWebhookEvent = (v: unknown): v is { type: string; data: Record<string, unknown> } => {

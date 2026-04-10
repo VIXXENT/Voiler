@@ -2,6 +2,8 @@ import type { AppError, IUserSubscriptionRepository } from '@voiler/core'
 import type { PlanId } from '@voiler/domain'
 import { okAsync, type ResultAsync } from 'neverthrow'
 
+import { isRecord } from '../../lib/type-guards.js'
+
 /** Known plan IDs that can be activated via checkout. */
 const VALID_PLAN_IDS: ReadonlySet<string> = new Set<PlanId>(['free', 'pro'])
 
@@ -21,9 +23,6 @@ interface HandleStripeWebhookParams {
   readonly type: string
   readonly data: Record<string, unknown>
 }
-
-/** Type guard: checks if a value is a non-null object (i.e. Record). */
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 
 /** Safely extract a string property from an unknown value. */
 const extractString = ({ v, key }: { v: unknown; key: string }): string | null => {

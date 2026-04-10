@@ -241,7 +241,7 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
     subscriptionRepository,
   })
   const rawGetProject = createGetProject({ projectRepository, memberRepository })
-  const rawListUserProjects = createListUserProjects({ projectRepository })
+  const rawListUserProjects = createListUserProjects({ projectRepository, memberRepository })
   const rawArchiveProject = createArchiveProject({ projectRepository })
   const rawDeleteProject = createDeleteProject({ projectRepository })
 

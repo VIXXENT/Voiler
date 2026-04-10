@@ -33,11 +33,20 @@ interface ProjectRow {
 }
 
 /** Returns true if value is a ProjectRow. */
-const isProjectRow = (value: unknown): value is ProjectRow =>
-  typeof value === 'object' &&
-  value !== null &&
-  typeof (value as Record<string, unknown>)['id'] === 'string' &&
-  typeof (value as Record<string, unknown>)['name'] === 'string'
+const isProjectRow = (value: unknown): value is ProjectRow => {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+  // Safe: narrowed to object above
+  const obj = value as Record<string, unknown>
+  return (
+    typeof obj['id'] === 'string' &&
+    typeof obj['name'] === 'string' &&
+    typeof obj['ownerId'] === 'string' &&
+    (obj['status'] === 'active' || obj['status'] === 'archived') &&
+    typeof obj['frozen'] === 'boolean'
+  )
+}
 
 /** Returns true if value is a ProjectRow array. */
 const isProjectRowArray = (value: unknown): value is ProjectRow[] =>

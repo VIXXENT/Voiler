@@ -1,6 +1,7 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { Suspense } from 'react'
 
+import { ErrorBoundary } from '~/components/ErrorBoundary'
 import { AppLayout } from '~/components/layout'
 import { Spinner } from '~/components/ui/spinner'
 import { authClient } from '~/lib/auth'
@@ -16,15 +17,17 @@ const Route = createFileRoute('/_app')({
   },
   component: () => (
     <AppLayout>
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center py-16">
-            <Spinner className="h-6 w-6" />
-          </div>
-        }
-      >
-        <Outlet />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center py-16">
+              <Spinner className="h-6 w-6" />
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
+      </ErrorBoundary>
     </AppLayout>
   ),
 })
