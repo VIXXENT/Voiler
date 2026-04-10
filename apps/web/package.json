@@ -12,23 +12,37 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@radix-ui/react-alert-dialog": "^1.1.15",
+    "@radix-ui/react-avatar": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-separator": "^1.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@tanstack/react-query": "^5.0.0",
     "@tanstack/react-router": "^1.168.0",
     "@tanstack/react-start": "^1.167.0",
     "@trpc/client": "^11.16.0",
     "@trpc/react-query": "^11.16.0",
     "better-auth": "^1.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.8.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.0.0",
     "vite": "^8.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@trpc/server": "^11.16.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@voiler/api": "workspace:*",
-    "@playwright/test": "^1.52.0",
     "@voiler/config-ts": "workspace:*",
     "typescript": "^5.7.0"
   }
