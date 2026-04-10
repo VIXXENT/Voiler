@@ -22,6 +22,11 @@ export type DomainError =
   | { readonly tag: 'AlreadyMember'; readonly message: string }
   | { readonly tag: 'CannotRemoveOwner'; readonly message: string }
   | { readonly tag: 'NotAMember'; readonly message: string }
+  | { readonly tag: 'ProjectLimitReached'; readonly message: string }
+  | { readonly tag: 'MemberLimitReached'; readonly message: string }
+  | { readonly tag: 'TaskLimitReached'; readonly message: string }
+  | { readonly tag: 'ProjectFrozen'; readonly message: string }
+  | { readonly tag: 'SubscriptionNotFound'; readonly message: string }
 
 /** Create an InvalidEmail domain error. */
 export const invalidEmail: (message: string) => DomainError = (message) => ({

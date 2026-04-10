@@ -47,7 +47,13 @@ const mapErrorCode: (params: { tag: AppError['tag'] }) => TRPCError['code'] = (p
       return 'CONFLICT'
     case 'InsufficientPermission':
     case 'NotAMember':
+    case 'ProjectLimitReached':
+    case 'MemberLimitReached':
+    case 'TaskLimitReached':
+    case 'ProjectFrozen':
       return 'FORBIDDEN'
+    case 'SubscriptionNotFound':
+      return 'NOT_FOUND'
     case 'InvalidEmail':
     case 'InvalidPassword':
     case 'InvalidUserId':

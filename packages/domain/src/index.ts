@@ -30,6 +30,17 @@ export {
   cannotRemoveOwner,
   notAMember,
 } from './errors/project-errors'
+export {
+  projectLimitReached,
+  memberLimitReached,
+  taskLimitReached,
+  projectFrozen,
+  subscriptionNotFound,
+} from './errors/subscription-errors'
+
+// Plans
+export type { PlanId, PlanLimits } from './plans/plan-definitions'
+export { PLAN_LIMITS } from './plans/plan-definitions'
 
 // Validation
 export { validateProjectName } from './validation/project-validation'
@@ -40,6 +51,12 @@ export type { MemberRole } from './validation/member-validation'
 export { validateMemberRole } from './validation/member-validation'
 export type { ProjectRole } from './validation/permission-validation'
 export { resolveProjectRole, canPerformAction } from './validation/permission-validation'
+export {
+  checkProjectLimit,
+  checkMemberLimit,
+  checkTaskLimit,
+  checkNotFrozen,
+} from './validation/plan-validation'
 
 // Value objects
 export type { Email } from './value-objects/email'
