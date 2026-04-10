@@ -29,10 +29,25 @@ const isWebhookEvent = (v: unknown): v is { type: string; data: Record<string, u
  * Parses raw body as JSON and verifies the event shape.
  * Routes to the handleStripeWebhook use-case.
  * Returns 400 for invalid payloads and 500 for processing errors.
+ *
+ * Signature verification:
+ * - If STRIPE_WEBHOOK_SECRET is set: returns 501 until SDK verification is wired.
+ * - If STRIPE_WEBHOOK_SECRET is not set (test mode): proceeds with a warning.
  */
 const createStripeWebhookHandler: (
   deps: StripeWebhookHandlerDeps,
 ) => (c: Context) => Promise<Response> = (deps) => async (c) => {
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+
+  if (webhookSecret) {
+    // TODO: verify Stripe signature with stripe.webhooks.constructEvent()
+    // For now: reject all webhook requests when secret is configured but SDK is not wired.
+    return c.json({ error: 'Stripe webhook signature verification not yet implemented' }, 501)
+  }
+
+  // Test mode: proceed without signature verification
+  console.warn('[stripe-webhook] Received without signature verification (test mode)')
+
   const body = await c.req.text()
 
   let parsed: unknown

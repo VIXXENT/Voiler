@@ -84,9 +84,10 @@ const auth = createAuth({
  * 2. Request logger (assign ID, log start/end)
  * 3. Security headers (set on every response)
  * 4. CORS (validate origin before processing)
- * 5. CSRF (validate origin on mutations)
- * 6. Body limit (reject oversized payloads)
- * 7. Routes
+ * 5. Stripe webhook (must be before CSRF -- Stripe has no Origin header)
+ * 6. CSRF (validate origin on mutations)
+ * 7. Body limit (reject oversized payloads)
+ * 8. Routes
  */
 
 const app = new Hono()
@@ -114,6 +115,15 @@ app.use(
     maxAge: 86400,
   }),
 )
+
+// --- Stripe webhook (registered BEFORE CSRF) ---
+// Stripe does not send an Origin header, so CSRF would block it.
+// Signature verification in the handler guards against forged requests.
+app.post(
+  '/api/stripe/webhook',
+  createStripeWebhookHandler({ handleStripeWebhook: container.handleStripeWebhook }),
+)
+
 app.use('*', csrfProtection({ allowedOrigins }))
 app.use(
   '*',
@@ -217,12 +227,6 @@ const appRouter = createAppRouter({
     cancelSubscription: container.cancelSubscription,
   },
 })
-
-// --- Stripe webhook ---
-app.post(
-  '/api/stripe/webhook',
-  createStripeWebhookHandler({ handleStripeWebhook: container.handleStripeWebhook }),
-)
 
 const trpcRoute = createTrpcRoute({
   appRouter,
