@@ -103,7 +103,11 @@ const ProjectDetailPage = () => {
       @typescript-eslint/no-unsafe-call,
       @typescript-eslint/no-unsafe-member-access */
   // @ts-expect-error — cross-package tRPC collision
-  const { data: projectData, isLoading: projectLoading, error: projectError } = trpc.project.get.useQuery({ projectId })
+  const {
+    data: projectData,
+    isLoading: projectLoading,
+    error: projectError,
+  } = trpc.project.get.useQuery({ projectId })
   // @ts-expect-error — cross-package tRPC collision
   const { data: tasksData, isLoading: tasksLoading } = trpc.task.list.useQuery({ projectId })
   // @ts-expect-error — cross-package tRPC collision
@@ -152,17 +156,20 @@ const ProjectDetailPage = () => {
     })
   }
 
-  const handleTransition = ({ taskId, newStatus }: { taskId: string; newStatus: 'todo' | 'in_progress' | 'done' }) => {
+  const handleTransition = ({
+    taskId,
+    newStatus,
+  }: {
+    taskId: string
+    newStatus: 'todo' | 'in_progress' | 'done'
+  }) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     transitionTask.mutate({ taskId, newStatus })
   }
 
-  const tabBase =
-    'px-4 py-2 text-sm font-medium border-b-2 transition-colors'
-  const tabActive =
-    'border-primary text-primary'
-  const tabInactive =
-    'border-transparent text-muted-foreground hover:text-foreground'
+  const tabBase = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors'
+  const tabActive = 'border-primary text-primary'
+  const tabInactive = 'border-transparent text-muted-foreground hover:text-foreground'
 
   if (projectError !== null && projectError !== undefined) {
     return <div className="p-6 text-destructive">Failed to load project</div>
@@ -183,9 +190,7 @@ const ProjectDetailPage = () => {
       {/* Project header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">
-            {project !== undefined ? project.name : 'Project'}
-          </h1>
+          <h1 className="text-2xl font-bold">{project !== undefined ? project.name : 'Project'}</h1>
           {project !== undefined && project.status === 'archived' && (
             <Badge variant="outline">Archived</Badge>
           )}

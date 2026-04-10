@@ -113,13 +113,9 @@ const BillingPage = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Current Plan</CardTitle>
-              {subscription !== undefined && (
-                <PlanBadge plan={subscription.plan} />
-              )}
+              {subscription !== undefined && <PlanBadge plan={subscription.plan} />}
             </div>
-            <CardDescription>
-              Your active subscription plan and billing details.
-            </CardDescription>
+            <CardDescription>Your active subscription plan and billing details.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {subscription !== undefined && (
@@ -128,16 +124,17 @@ const BillingPage = () => {
                   <span className="text-muted-foreground">Status</span>
                   <span className="font-medium capitalize">{subscription.status}</span>
                 </div>
-                {subscription.currentPeriodEnd !== null && subscription.currentPeriodEnd !== undefined && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {subscription.plan === 'pro' ? 'Renews' : 'Period ends'}
-                    </span>
-                    <span className="font-medium">
-                      {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
+                {subscription.currentPeriodEnd !== null &&
+                  subscription.currentPeriodEnd !== undefined && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {subscription.plan === 'pro' ? 'Renews' : 'Period ends'}
+                      </span>
+                      <span className="font-medium">
+                        {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
               </>
             )}
 
@@ -164,8 +161,8 @@ const BillingPage = () => {
                       <DialogTitle>Cancel Subscription</DialogTitle>
                     </DialogHeader>
                     <p className="text-sm text-muted-foreground py-4">
-                      Are you sure you want to cancel your Pro subscription?
-                      You will retain Pro access until the end of your current billing period.
+                      Are you sure you want to cancel your Pro subscription? You will retain Pro
+                      access until the end of your current billing period.
                     </p>
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" onClick={() => setCancelOpen(false)}>

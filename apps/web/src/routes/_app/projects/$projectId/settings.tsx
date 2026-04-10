@@ -48,7 +48,11 @@ const ProjectSettingsPage = () => {
   const [newOwnerId, setNewOwnerId] = useState('')
 
   // @ts-expect-error — cross-package tRPC collision
-  const { data: projectData, isLoading: projectLoading, error: projectError } = trpc.project.get.useQuery({ projectId })
+  const {
+    data: projectData,
+    isLoading: projectLoading,
+    error: projectError,
+  } = trpc.project.get.useQuery({ projectId })
   // @ts-expect-error — cross-package tRPC collision
   const utils = trpc.useUtils()
   // @ts-expect-error — cross-package tRPC collision
@@ -135,9 +139,7 @@ const ProjectSettingsPage = () => {
     <div className="p-6">
       {/* Page header */}
       <div className="flex items-center gap-3 mb-2">
-        <h1 className="text-2xl font-bold">
-          {project !== undefined ? project.name : 'Project'}
-        </h1>
+        <h1 className="text-2xl font-bold">{project !== undefined ? project.name : 'Project'}</h1>
         {project !== undefined && project.status === 'archived' && (
           <Badge variant="outline">Archived</Badge>
         )}
@@ -176,9 +178,7 @@ const ProjectSettingsPage = () => {
             <CardDescription>The display name for this project.</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm font-medium">
-              {project !== undefined ? project.name : '—'}
-            </p>
+            <p className="text-sm font-medium">{project !== undefined ? project.name : '—'}</p>
             {project !== undefined && project.description !== null && (
               <p className="mt-1 text-sm text-muted-foreground">{project.description}</p>
             )}
@@ -248,8 +248,8 @@ const ProjectSettingsPage = () => {
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <p className="text-sm text-muted-foreground">
-                    Enter the User ID of the member who should become the new owner.
-                    This action cannot be undone without their cooperation.
+                    Enter the User ID of the member who should become the new owner. This action
+                    cannot be undone without their cooperation.
                   </p>
                   <div className="space-y-2">
                     <Label htmlFor="new-owner-id">New Owner User ID</Label>

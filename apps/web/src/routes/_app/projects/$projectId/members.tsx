@@ -78,7 +78,11 @@ const ProjectMembersPage = () => {
   const [inviteRole, setInviteRole] = useState<'member' | 'viewer'>('member')
 
   // @ts-expect-error — cross-package tRPC collision
-  const { data: projectData, isLoading: projectLoading, error: projectError } = trpc.project.get.useQuery({ projectId })
+  const {
+    data: projectData,
+    isLoading: projectLoading,
+    error: projectError,
+  } = trpc.project.get.useQuery({ projectId })
   // @ts-expect-error — cross-package tRPC collision
   const { data: membersData, isLoading: membersLoading } = trpc.member.list.useQuery({ projectId })
   // @ts-expect-error — cross-package tRPC collision
@@ -131,7 +135,13 @@ const ProjectMembersPage = () => {
     removeMember.mutate({ projectId, targetUserId: memberUserId })
   }
 
-  const handleUpdateRole = ({ memberUserId, newRole }: { memberUserId: string; newRole: 'member' | 'viewer' }) => {
+  const handleUpdateRole = ({
+    memberUserId,
+    newRole,
+  }: {
+    memberUserId: string
+    newRole: 'member' | 'viewer'
+  }) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     updateRole.mutate({ projectId, targetUserId: memberUserId, newRole })
   }
@@ -158,9 +168,7 @@ const ProjectMembersPage = () => {
     <div className="p-6">
       {/* Page header */}
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold">
-          {project !== undefined ? project.name : 'Project'}
-        </h1>
+        <h1 className="text-2xl font-bold">{project !== undefined ? project.name : 'Project'}</h1>
 
         {/* Invite Member button */}
         <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
@@ -266,53 +274,61 @@ const ProjectMembersPage = () => {
       )}
 
       {/* Member rows */}
-      {members !== undefined && members.map((member) => (
-        <div key={member.id} className="flex items-center justify-between rounded-lg border p-4 mb-2">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-medium">
-              {member.userId.slice(0, 2).toUpperCase()}
+      {members !== undefined &&
+        members.map((member) => (
+          <div
+            key={member.id}
+            className="flex items-center justify-between rounded-lg border p-4 mb-2"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                {member.userId.slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <p className="text-sm font-medium">{member.userId}</p>
+                <p className="text-xs text-muted-foreground">
+                  Joined {new Date(member.joinedAt).toLocaleDateString()}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium">{member.userId}</p>
-              <p className="text-xs text-muted-foreground">
-                Joined {new Date(member.joinedAt).toLocaleDateString()}
-              </p>
+            <div className="flex items-center gap-2">
+              <MemberRoleBadge role={member.role} />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {member.role === 'viewer' && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleUpdateRole({ memberUserId: member.userId, newRole: 'member' })
+                      }
+                    >
+                      Change to Member
+                    </DropdownMenuItem>
+                  )}
+                  {member.role === 'member' && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleUpdateRole({ memberUserId: member.userId, newRole: 'viewer' })
+                      }
+                    >
+                      Change to Viewer
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={() => handleRemove({ memberUserId: member.userId })}
+                  >
+                    Remove
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <MemberRoleBadge role={member.role} />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {member.role === 'viewer' && (
-                  <DropdownMenuItem
-                    onClick={() => handleUpdateRole({ memberUserId: member.userId, newRole: 'member' })}
-                  >
-                    Change to Member
-                  </DropdownMenuItem>
-                )}
-                {member.role === 'member' && (
-                  <DropdownMenuItem
-                    onClick={() => handleUpdateRole({ memberUserId: member.userId, newRole: 'viewer' })}
-                  >
-                    Change to Viewer
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                  className="text-destructive"
-                  onClick={() => handleRemove({ memberUserId: member.userId })}
-                >
-                  Remove
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      ))}
+        ))}
 
       {members !== undefined && members.length === 0 && (
         <div className="mt-8 text-center text-muted-foreground">
