@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest'
 
 import type { PlanLimits } from '../../plans/plan-definitions'
-import { checkProjectLimit, checkMemberLimit, checkTaskLimit, checkNotFrozen } from '../../validation/plan-validation'
+import {
+  checkProjectLimit,
+  checkMemberLimit,
+  checkTaskLimit,
+  checkNotFrozen,
+} from '../../validation/plan-validation'
 
 const freeLimits: PlanLimits = { maxProjects: 3, maxMembersPerProject: 5, maxTasksPerProject: 50 }
 const proLimits: PlanLimits = { maxProjects: -1, maxMembersPerProject: -1, maxTasksPerProject: -1 }

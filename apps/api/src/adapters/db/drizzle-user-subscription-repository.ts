@@ -16,11 +16,7 @@ const mapRowToRecord: (params: { row: SubscriptionRow }) => SubscriptionRecord =
   const { row } = params
   const plan = row.plan === 'pro' ? row.plan : 'free'
   const status =
-    row.status === 'canceled'
-      ? row.status
-      : row.status === 'past_due'
-        ? row.status
-        : 'active'
+    row.status === 'canceled' ? row.status : row.status === 'past_due' ? row.status : 'active'
   return {
     id: row.id,
     userId: row.userId,

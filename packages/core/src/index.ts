@@ -51,7 +51,4 @@ export type {
 } from './repositories/user-subscription.repository'
 
 // Service ports
-export type {
-  CheckoutSessionResult,
-  IBillingService,
-} from './services/billing.service'
+export type { CheckoutSessionResult, IBillingService } from './services/billing.service'

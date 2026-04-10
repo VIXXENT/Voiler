@@ -2,7 +2,7 @@
 
 ## Goal
 
-Add subscription plans with hard limits enforced at the use-case level. Integrate Stripe in test mode (sk_test_*). Implement freeze/unfreeze logic when subscriptions lapse.
+Add subscription plans with hard limits enforced at the use-case level. Integrate Stripe in test mode (sk*test*\*). Implement freeze/unfreeze logic when subscriptions lapse.
 
 ## Plans
 
@@ -12,20 +12,21 @@ Defined in code (not DB enum) in `packages/domain/src/plans/plan-definitions.ts`
 export type PlanId = 'free' | 'pro'
 
 export interface PlanLimits {
-  readonly maxProjects: number       // -1 = unlimited
+  readonly maxProjects: number // -1 = unlimited
   readonly maxMembersPerProject: number
   readonly maxTasksPerProject: number
 }
 
 export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
-  free:  { maxProjects: 3, maxMembersPerProject: 5, maxTasksPerProject: 50 },
-  pro:   { maxProjects: -1, maxMembersPerProject: -1, maxTasksPerProject: -1 },
+  free: { maxProjects: 3, maxMembersPerProject: 5, maxTasksPerProject: 50 },
+  pro: { maxProjects: -1, maxMembersPerProject: -1, maxTasksPerProject: -1 },
 }
 ```
 
 ## New Table
 
 **`user_subscription`** — `packages/schema/src/entities/user-subscription.ts`
+
 - `id`: text PK
 - `userId`: text notNull unique (one subscription per user)
 - `plan`: text notNull default 'free' ('free' | 'pro')
@@ -51,6 +52,7 @@ Factory functions in `packages/domain/src/errors/subscription-errors.ts`.
 ## Domain Validation
 
 `packages/domain/src/validation/plan-validation.ts`:
+
 - `checkProjectLimit({ currentCount, plan }): Result<void, DomainError>` — tag: ProjectLimitReached
 - `checkMemberLimit({ currentCount, plan }): Result<void, DomainError>` — tag: MemberLimitReached
 - `checkTaskLimit({ currentCount, plan }): Result<void, DomainError>` — tag: TaskLimitReached
@@ -59,9 +61,11 @@ Factory functions in `packages/domain/src/errors/subscription-errors.ts`.
 ## Port Interfaces
 
 `packages/core/src/repositories/user-subscription.repository.ts`:
+
 - `IUserSubscriptionRepository`: findByUser, upsert, updateStatus, updateStripeData
 
 `packages/core/src/services/billing.service.ts`:
+
 - `IBillingService`: createCheckoutSession, cancelSubscription, getPortalUrl
 
 ## Drizzle Adapter
@@ -71,6 +75,7 @@ Factory functions in `packages/domain/src/errors/subscription-errors.ts`.
 ## Billing Service (Stub, Test Mode Ready)
 
 `apps/api/src/adapters/billing/stripe-billing-service.ts`
+
 - Uses `STRIPE_SECRET_KEY` from env (if `sk_test_*`, test mode)
 - Falls back to stub behavior if key not set
 - `createCheckoutSession({ userId, plan })` → returns `{ url: string }`
@@ -80,6 +85,7 @@ Factory functions in `packages/domain/src/errors/subscription-errors.ts`.
 ## Use-Cases
 
 `apps/api/src/use-cases/subscription/`:
+
 - `getSubscription({ userId })` — findByUser or create free default
 - `createCheckoutSession({ userId, plan })` — call billingService
 - `handleStripeWebhook({ event })` — process: checkout.session.completed → upgrade to pro; subscription.deleted → downgrade to free + freeze projects
@@ -89,6 +95,7 @@ Factory functions in `packages/domain/src/errors/subscription-errors.ts`.
 ## Plan Limit Enforcement
 
 Update these use-cases to inject `subscriptionRepository`:
+
 - `createProject`: getSubscription → checkProjectLimit(count) → proceed
 - `inviteToProject`: getSubscription(ownerId) → checkMemberLimit(memberCount) → proceed
 - `createTask`: getSubscription(task.createdBy or project ownerId) → checkTaskLimit(taskCount) → proceed
@@ -102,6 +109,7 @@ Update these use-cases to inject `subscriptionRepository`:
 ## tRPC Router
 
 `apps/api/src/trpc/procedures/billing.ts`:
+
 - `getSubscription` (query)
 - `createCheckoutSession` (mutation, returns { url })
 - `cancelSubscription` (mutation)
@@ -109,6 +117,7 @@ Update these use-cases to inject `subscriptionRepository`:
 ## Stripe Webhook Endpoint (Hono)
 
 `apps/api/src/http/stripe-webhook.ts` — POST /api/stripe/webhook
+
 - Parse raw body, verify signature (skip verification if STRIPE_WEBHOOK_SECRET not set)
 - Route to handleStripeWebhook use-case
 

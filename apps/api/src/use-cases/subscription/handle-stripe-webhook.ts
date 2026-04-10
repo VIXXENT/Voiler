@@ -23,8 +23,7 @@ interface ProjectHelperParams {
 }
 
 /** Type guard: checks if a value is a non-null object (i.e. Record). */
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 
 /** Safely extract a string property from an unknown value. */
 const extractString = ({ v, key }: { v: unknown; key: string }): string | null => {
@@ -83,47 +82,46 @@ const unfreezeUserProjects = ({
  */
 export const createHandleStripeWebhook: (
   deps: HandleStripeWebhookDeps,
-) => (params: HandleStripeWebhookParams) => ResultAsync<void, AppError> =
-  (deps) => (params) => {
-    const { subscriptionRepository, projectRepository } = deps
-    const { type, data } = params
+) => (params: HandleStripeWebhookParams) => ResultAsync<void, AppError> = (deps) => (params) => {
+  const { subscriptionRepository, projectRepository } = deps
+  const { type, data } = params
 
-    const obj: unknown = data.object
+  const obj: unknown = data.object
 
-    if (type === 'checkout.session.completed') {
-      const metadata: unknown = isRecord(obj) ? obj.metadata : null
-      const userId = extractString({ v: metadata, key: 'userId' })
-      const plan = extractString({ v: metadata, key: 'plan' })
+  if (type === 'checkout.session.completed') {
+    const metadata: unknown = isRecord(obj) ? obj.metadata : null
+    const userId = extractString({ v: metadata, key: 'userId' })
+    const plan = extractString({ v: metadata, key: 'plan' })
 
-      if (userId === null || plan === null) {
-        return okAsync(undefined)
-      }
+    if (userId === null || plan === null) {
+      return okAsync(undefined)
+    }
 
-      return subscriptionRepository
-        .upsert({
+    return subscriptionRepository
+      .upsert({
+        userId,
+        data: {
           userId,
-          data: {
-            userId,
-            plan: 'pro',
-            status: 'active',
-            updatedAt: new Date(),
-          },
-        })
-        .andThen(() => unfreezeUserProjects({ projectRepository, userId }))
-    }
-
-    if (type === 'customer.subscription.deleted') {
-      const metadata: unknown = isRecord(obj) ? obj.metadata : null
-      const userId = extractString({ v: metadata, key: 'userId' })
-
-      if (userId === null) {
-        return okAsync(undefined)
-      }
-
-      return subscriptionRepository
-        .updateStatus({ userId, status: 'canceled', updatedAt: new Date() })
-        .andThen(() => freezeUserProjects({ projectRepository, userId }))
-    }
-
-    return okAsync(undefined)
+          plan: 'pro',
+          status: 'active',
+          updatedAt: new Date(),
+        },
+      })
+      .andThen(() => unfreezeUserProjects({ projectRepository, userId }))
   }
+
+  if (type === 'customer.subscription.deleted') {
+    const metadata: unknown = isRecord(obj) ? obj.metadata : null
+    const userId = extractString({ v: metadata, key: 'userId' })
+
+    if (userId === null) {
+      return okAsync(undefined)
+    }
+
+    return subscriptionRepository
+      .updateStatus({ userId, status: 'canceled', updatedAt: new Date() })
+      .andThen(() => freezeUserProjects({ projectRepository, userId }))
+  }
+
+  return okAsync(undefined)
+}

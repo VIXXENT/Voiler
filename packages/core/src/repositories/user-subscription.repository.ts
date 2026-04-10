@@ -43,9 +43,16 @@ export interface IUserSubscriptionRepository {
   /** Find the subscription for a user. Returns null if no subscription record exists. */
   findByUser: (params: { userId: string }) => ResultAsync<SubscriptionRecord | null, AppError>
   /** Create or update the subscription record for a user. */
-  upsert: (params: { userId: string; data: UpsertSubscriptionData }) => ResultAsync<SubscriptionRecord, AppError>
+  upsert: (params: {
+    userId: string
+    data: UpsertSubscriptionData
+  }) => ResultAsync<SubscriptionRecord, AppError>
   /** Update subscription status only. */
-  updateStatus: (params: { userId: string; status: 'active' | 'canceled' | 'past_due'; updatedAt: Date }) => ResultAsync<SubscriptionRecord, AppError>
+  updateStatus: (params: {
+    userId: string
+    status: 'active' | 'canceled' | 'past_due'
+    updatedAt: Date
+  }) => ResultAsync<SubscriptionRecord, AppError>
   /** Update Stripe-specific fields on the subscription. */
   updateStripeData: (params: {
     userId: string

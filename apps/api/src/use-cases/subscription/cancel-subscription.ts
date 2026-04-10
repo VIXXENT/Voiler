@@ -1,4 +1,9 @@
-import type { AppError, IBillingService, IProjectRepository, IUserSubscriptionRepository } from '@voiler/core'
+import type {
+  AppError,
+  IBillingService,
+  IProjectRepository,
+  IUserSubscriptionRepository,
+} from '@voiler/core'
 import { okAsync, ResultAsync } from 'neverthrow'
 
 /**
@@ -50,31 +55,30 @@ const freezeUserProjects = ({
  */
 export const createCancelSubscription: (
   deps: CancelSubscriptionDeps,
-) => (params: CancelSubscriptionParams) => ResultAsync<void, AppError> =
-  (deps) => (params) => {
-    const { subscriptionRepository, billingService, projectRepository } = deps
-    const { userId } = params
+) => (params: CancelSubscriptionParams) => ResultAsync<void, AppError> = (deps) => (params) => {
+  const { subscriptionRepository, billingService, projectRepository } = deps
+  const { userId } = params
 
-    return subscriptionRepository.findByUser({ userId }).andThen((subscription) => {
-      if (subscription === null) {
-        return okAsync(undefined)
-      }
+  return subscriptionRepository.findByUser({ userId }).andThen((subscription) => {
+    if (subscription === null) {
+      return okAsync(undefined)
+    }
 
-      const cancelStripe: ResultAsync<void, AppError> =
-        subscription.stripeSubscriptionId !== null
-          ? billingService.cancelSubscription({
-              stripeSubscriptionId: subscription.stripeSubscriptionId,
-            })
-          : okAsync(undefined)
+    const cancelStripe: ResultAsync<void, AppError> =
+      subscription.stripeSubscriptionId !== null
+        ? billingService.cancelSubscription({
+            stripeSubscriptionId: subscription.stripeSubscriptionId,
+          })
+        : okAsync(undefined)
 
-      return cancelStripe
-        .andThen(() =>
-          subscriptionRepository.updateStatus({
-            userId,
-            status: 'canceled',
-            updatedAt: new Date(),
-          }),
-        )
-        .andThen(() => freezeUserProjects({ projectRepository, userId }))
-    })
-  }
+    return cancelStripe
+      .andThen(() =>
+        subscriptionRepository.updateStatus({
+          userId,
+          status: 'canceled',
+          updatedAt: new Date(),
+        }),
+      )
+      .andThen(() => freezeUserProjects({ projectRepository, userId }))
+  })
+}

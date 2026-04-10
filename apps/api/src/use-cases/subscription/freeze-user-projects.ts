@@ -23,22 +23,21 @@ interface FreezeUserProjectsParams {
  */
 export const createFreezeUserProjects: (
   deps: FreezeUserProjectsDeps,
-) => (params: FreezeUserProjectsParams) => ResultAsync<void, AppError> =
-  (deps) => (params) => {
-    const { projectRepository } = deps
-    const { userId } = params
+) => (params: FreezeUserProjectsParams) => ResultAsync<void, AppError> = (deps) => (params) => {
+  const { projectRepository } = deps
+  const { userId } = params
 
-    return projectRepository
-      .findByOwner({ ownerId: userId })
-      .andThen((projects) => {
-        if (projects.length === 0) {
-          return okAsync([])
-        }
-        return ResultAsync.combine(
-          projects.map((p) =>
-            projectRepository.update({ id: p.id, data: { frozen: true, updatedAt: new Date() } }),
-          ),
-        )
-      })
-      .map(() => undefined)
-  }
+  return projectRepository
+    .findByOwner({ ownerId: userId })
+    .andThen((projects) => {
+      if (projects.length === 0) {
+        return okAsync([])
+      }
+      return ResultAsync.combine(
+        projects.map((p) =>
+          projectRepository.update({ id: p.id, data: { frozen: true, updatedAt: new Date() } }),
+        ),
+      )
+    })
+    .map(() => undefined)
+}

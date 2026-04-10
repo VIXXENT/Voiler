@@ -150,9 +150,7 @@ describe('inviteToProject use case', () => {
     const projectRepo = makeMockProjectRepo()
     const memberRepo = makeMockMemberRepo()
     const subRepo = makeMockSubscriptionRepo()
-    vi.mocked(projectRepo.findById).mockReturnValue(
-      okAsync({ ...makeFakeProject(), frozen: true }),
-    )
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync({ ...makeFakeProject(), frozen: true }))
 
     const useCase = createInviteToProject({
       projectRepository: projectRepo,

@@ -216,9 +216,7 @@ describe('createTask use case', () => {
     const taskRepo = makeMockTaskRepo()
     const memberRepo = makeMockMemberRepo()
     const subRepo = makeMockSubscriptionRepo()
-    vi.mocked(projectRepo.findById).mockReturnValue(
-      okAsync({ ...makeFakeProject(), frozen: true }),
-    )
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync({ ...makeFakeProject(), frozen: true }))
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
 
     const useCase = createCreateTask({

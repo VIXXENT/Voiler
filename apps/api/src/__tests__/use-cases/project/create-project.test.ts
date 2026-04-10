@@ -1,4 +1,9 @@
-import type { AppError, IProjectRepository, IUserSubscriptionRepository, ProjectRecord } from '@voiler/core'
+import type {
+  AppError,
+  IProjectRepository,
+  IUserSubscriptionRepository,
+  ProjectRecord,
+} from '@voiler/core'
 import { infrastructureError } from '@voiler/core'
 import { errAsync, okAsync } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'
@@ -47,7 +52,10 @@ describe('createProject use case', () => {
     vi.mocked(repo.countByOwner).mockReturnValue(okAsync(0))
     vi.mocked(repo.create).mockReturnValue(okAsync(fakeProject))
 
-    const useCase = createCreateProject({ projectRepository: repo, subscriptionRepository: subRepo })
+    const useCase = createCreateProject({
+      projectRepository: repo,
+      subscriptionRepository: subRepo,
+    })
     const result = await useCase({ userId: 'user-1', name: 'Test Project' })
 
     expect(result.isOk()).toBe(true)
@@ -66,7 +74,10 @@ describe('createProject use case', () => {
     vi.mocked(repo.countByOwner).mockReturnValue(okAsync(0))
     vi.mocked(repo.create).mockReturnValue(okAsync(fakeProject))
 
-    const useCase = createCreateProject({ projectRepository: repo, subscriptionRepository: subRepo })
+    const useCase = createCreateProject({
+      projectRepository: repo,
+      subscriptionRepository: subRepo,
+    })
     const result = await useCase({
       userId: 'user-1',
       name: 'Test Project',
@@ -84,7 +95,10 @@ describe('createProject use case', () => {
     const repo = makeMockRepo()
     const subRepo = makeMockSubscriptionRepo()
 
-    const useCase = createCreateProject({ projectRepository: repo, subscriptionRepository: subRepo })
+    const useCase = createCreateProject({
+      projectRepository: repo,
+      subscriptionRepository: subRepo,
+    })
     const result = await useCase({ userId: 'user-1', name: '   ' })
 
     expect(result.isErr()).toBe(true)
@@ -98,7 +112,10 @@ describe('createProject use case', () => {
     const repo = makeMockRepo()
     const subRepo = makeMockSubscriptionRepo()
 
-    const useCase = createCreateProject({ projectRepository: repo, subscriptionRepository: subRepo })
+    const useCase = createCreateProject({
+      projectRepository: repo,
+      subscriptionRepository: subRepo,
+    })
     const result = await useCase({ userId: 'user-1', name: 'a'.repeat(101) })
 
     expect(result.isErr()).toBe(true)
@@ -126,7 +143,10 @@ describe('createProject use case', () => {
     )
     vi.mocked(repo.countByOwner).mockReturnValue(okAsync(3))
 
-    const useCase = createCreateProject({ projectRepository: repo, subscriptionRepository: subRepo })
+    const useCase = createCreateProject({
+      projectRepository: repo,
+      subscriptionRepository: subRepo,
+    })
     const result = await useCase({ userId: 'user-1', name: 'Test Project' })
 
     expect(result.isErr()).toBe(true)
@@ -144,7 +164,10 @@ describe('createProject use case', () => {
     vi.mocked(repo.countByOwner).mockReturnValue(okAsync(0))
     vi.mocked(repo.create).mockReturnValue(errAsync(repoError))
 
-    const useCase = createCreateProject({ projectRepository: repo, subscriptionRepository: subRepo })
+    const useCase = createCreateProject({
+      projectRepository: repo,
+      subscriptionRepository: subRepo,
+    })
     const result = await useCase({ userId: 'user-1', name: 'Test Project' })
 
     expect(result.isErr()).toBe(true)

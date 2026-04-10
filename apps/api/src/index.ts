@@ -9,6 +9,7 @@ import './auth/types.js'
 import { createContainer } from './container.js'
 import { createDb } from './db/index.js'
 import { createHealthRoute } from './http/index.js'
+import { createStripeWebhookHandler } from './http/stripe-webhook.js'
 import { cleanupAuditLog, requestLogger } from './logging/index.js'
 import { createRateLimiter } from './middleware/rate-limiter.js'
 import { securityHeaders, csrfProtection } from './middleware/security.js'
@@ -210,7 +211,18 @@ const appRouter = createAppRouter({
     updateMemberRole: container.updateMemberRole,
     transferOwnership: container.transferOwnership,
   },
+  billing: {
+    getSubscription: container.getSubscription,
+    createCheckoutSession: container.createCheckoutSession,
+    cancelSubscription: container.cancelSubscription,
+  },
 })
+
+// --- Stripe webhook ---
+app.post(
+  '/api/stripe/webhook',
+  createStripeWebhookHandler({ handleStripeWebhook: container.handleStripeWebhook }),
+)
 
 const trpcRoute = createTrpcRoute({
   appRouter,

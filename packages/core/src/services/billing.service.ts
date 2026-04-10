@@ -26,9 +26,7 @@ export interface IBillingService {
   }) => ResultAsync<CheckoutSessionResult, AppError>
 
   /** Cancel an active Stripe subscription. */
-  cancelSubscription: (params: {
-    stripeSubscriptionId: string
-  }) => ResultAsync<void, AppError>
+  cancelSubscription: (params: { stripeSubscriptionId: string }) => ResultAsync<void, AppError>
 
   /** Get the URL for the Stripe customer portal. */
   getPortalUrl: (params: {

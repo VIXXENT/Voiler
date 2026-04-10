@@ -1,7 +1,12 @@
 import { ok, err, type Result } from 'neverthrow'
 
 import type { DomainError } from '../errors/domain-error'
-import { projectLimitReached, memberLimitReached, taskLimitReached, projectFrozen } from '../errors/subscription-errors'
+import {
+  projectLimitReached,
+  memberLimitReached,
+  taskLimitReached,
+  projectFrozen,
+} from '../errors/subscription-errors'
 import type { PlanLimits } from '../plans/plan-definitions'
 
 /** Parameters for checkProjectLimit. */
@@ -41,9 +46,7 @@ export const checkProjectLimit: (params: CheckProjectLimitParams) => Result<void
     return ok(undefined)
   }
   return err(
-    projectLimitReached(
-      `Project limit of ${String(limits.maxProjects)} reached for this plan`,
-    ),
+    projectLimitReached(`Project limit of ${String(limits.maxProjects)} reached for this plan`),
   )
 }
 

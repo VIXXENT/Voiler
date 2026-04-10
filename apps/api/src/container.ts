@@ -1,10 +1,16 @@
-import type { AppError, ProjectMemberRecord } from '@voiler/core'
+import type {
+  AppError,
+  CheckoutSessionResult,
+  ProjectMemberRecord,
+  SubscriptionRecord,
+} from '@voiler/core'
 import type { UserEntity } from '@voiler/domain'
 import { createStubPaymentService } from '@voiler/mod-payments'
 import type { IPaymentService } from '@voiler/mod-payments'
 import type { ProjectRecord, TaskAssigneeRecord, TaskRecord } from '@voiler/schema'
 import type { ResultAsync } from 'neverthrow'
 
+import { createStripeBillingService } from './adapters/billing/stripe-billing-service.js'
 import { createDrizzleProjectMemberRepository } from './adapters/db/drizzle-project-member-repository.js'
 import { createDrizzleProjectRepository } from './adapters/db/drizzle-project-repository.js'
 import { createDrizzleTaskAssigneeRepository } from './adapters/db/drizzle-task-assignee-repository.js'
@@ -16,14 +22,19 @@ import { withAuditLog, type AuditableParams } from './logging/use-case-logger.js
 import {
   createArchiveProject,
   createAssignToTask,
+  createCancelSubscription,
+  createCreateCheckoutSession,
   createCreateProject,
   createCreateTask,
   createCreateUser,
   createDeleteProject,
   createDeleteTask,
   createDeleteUserData,
+  createFreezeUserProjects,
   createGetProject,
+  createGetSubscription,
   createGetUser,
+  createHandleStripeWebhook,
   createInviteToProject,
   createListProjectMembers,
   createListProjectTasks,
@@ -172,6 +183,26 @@ interface Container {
   readonly deleteUserData: (
     params: { userId: string } & AuditableParams,
   ) => ResultAsync<void, AppError>
+  // --- Subscription use-cases ---
+  readonly getSubscription: (params: {
+    userId: string
+  }) => ResultAsync<SubscriptionRecord, AppError>
+  readonly createCheckoutSession: (params: {
+    userId: string
+    plan: 'pro'
+    successUrl: string
+    cancelUrl: string
+    requestId?: string
+  }) => ResultAsync<CheckoutSessionResult, AppError>
+  readonly cancelSubscription: (params: {
+    userId: string
+    requestId?: string
+  }) => ResultAsync<void, AppError>
+  readonly handleStripeWebhook: (params: {
+    type: string
+    data: Record<string, unknown>
+  }) => ResultAsync<void, AppError>
+  readonly freezeUserProjects: (params: { userId: string }) => ResultAsync<void, AppError>
 }
 
 /**
@@ -187,6 +218,7 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   // --- Adapters ---
 
   const paymentService = createStubPaymentService()
+  const billingService = createStripeBillingService()
 
   const userRepository = createDrizzleUserRepository({ db })
   const projectRepository = createDrizzleProjectRepository({ db })
@@ -208,7 +240,12 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   const rawDeleteProject = createDeleteProject({ projectRepository })
 
   // --- Task use-cases (raw) ---
-  const rawCreateTask = createCreateTask({ projectRepository, taskRepository, memberRepository, subscriptionRepository })
+  const rawCreateTask = createCreateTask({
+    projectRepository,
+    taskRepository,
+    memberRepository,
+    subscriptionRepository,
+  })
   const rawUpdateTask = createUpdateTask({ taskRepository, projectRepository, memberRepository })
   const rawTransitionTaskStatus = createTransitionTaskStatus({
     taskRepository,
@@ -240,7 +277,11 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   })
 
   // --- Member use-cases (raw) ---
-  const rawInviteToProject = createInviteToProject({ projectRepository, memberRepository, subscriptionRepository })
+  const rawInviteToProject = createInviteToProject({
+    projectRepository,
+    memberRepository,
+    subscriptionRepository,
+  })
   const rawRemoveFromProject = createRemoveFromProject({ projectRepository, memberRepository })
   const rawListProjectMembers = createListProjectMembers({ projectRepository, memberRepository })
   const rawUpdateMemberRole = createUpdateMemberRole({ projectRepository, memberRepository })
@@ -374,6 +415,43 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
     db,
   })
 
+  // --- Subscription use-cases (raw) ---
+  const rawGetSubscription = createGetSubscription({ subscriptionRepository })
+  const rawCreateCheckoutSession = createCreateCheckoutSession({
+    subscriptionRepository,
+    billingService,
+  })
+  const rawCancelSubscription = createCancelSubscription({
+    subscriptionRepository,
+    billingService,
+    projectRepository,
+  })
+  const rawHandleStripeWebhook = createHandleStripeWebhook({
+    subscriptionRepository,
+    projectRepository,
+  })
+  const rawFreezeUserProjects = createFreezeUserProjects({ projectRepository })
+
+  // read-only — no audit log
+  const getSubscription: Container['getSubscription'] = rawGetSubscription
+
+  // mutating — wrap with audit log
+  const createCheckoutSession: Container['createCheckoutSession'] = withAuditLog({
+    name: 'subscription.checkout',
+    useCase: rawCreateCheckoutSession,
+    db,
+  })
+
+  const cancelSubscription: Container['cancelSubscription'] = withAuditLog({
+    name: 'subscription.cancel',
+    useCase: rawCancelSubscription,
+    db,
+  })
+
+  // internal / webhook — not exposed via tRPC directly
+  const handleStripeWebhook: Container['handleStripeWebhook'] = rawHandleStripeWebhook
+  const freezeUserProjects: Container['freezeUserProjects'] = rawFreezeUserProjects
+
   return {
     createUser,
     getUser,
@@ -397,6 +475,11 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
     updateMemberRole,
     transferOwnership,
     deleteUserData,
+    getSubscription,
+    createCheckoutSession,
+    cancelSubscription,
+    handleStripeWebhook,
+    freezeUserProjects,
   }
 }
 

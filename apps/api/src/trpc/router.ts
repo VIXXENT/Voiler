@@ -1,6 +1,8 @@
 import { router } from './context.js'
 import type { CreateAdminRouterParams } from './procedures/admin.js'
 import { createAdminRouter } from './procedures/admin.js'
+import type { CreateBillingRouterParams } from './procedures/billing.js'
+import { createBillingRouter } from './procedures/billing.js'
 import type { CreateMemberRouterParams } from './procedures/member.js'
 import { createMemberRouter } from './procedures/member.js'
 import type { CreatePaymentRouterParams } from './procedures/payments.js'
@@ -25,6 +27,7 @@ interface CreateAppRouterParams {
   readonly project: CreateProjectRouterParams
   readonly task: CreateTaskRouterParams
   readonly member: CreateMemberRouterParams
+  readonly billing: CreateBillingRouterParams
 }
 
 /**
@@ -46,6 +49,8 @@ const createAppRouter: (params: CreateAppRouterParams) => ReturnType<typeof rout
 
   const memberRouter = createMemberRouter(params.member)
 
+  const billingRouter = createBillingRouter(params.billing)
+
   const appRouter = router({
     user: userRouter,
     session: sessionRouter,
@@ -54,6 +59,7 @@ const createAppRouter: (params: CreateAppRouterParams) => ReturnType<typeof rout
     project: projectRouter,
     task: taskRouter,
     member: memberRouter,
+    billing: billingRouter,
   })
 
   return appRouter
