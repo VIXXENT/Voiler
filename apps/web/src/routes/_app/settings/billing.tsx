@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog'
 import { Skeleton } from '~/components/ui/skeleton'
+import { useTranslation } from '~/lib/i18n'
 import { trpc } from '~/lib/trpc'
 
 /** Shape of a subscription row returned by the API. */
@@ -35,6 +36,7 @@ const isSubscriptionRow = (value: unknown): value is SubscriptionRow =>
 
 /** Billing page — shows current plan and upgrade / cancel options. */
 const BillingPage = () => {
+  const { t } = useTranslation()
   const [cancelOpen, setCancelOpen] = useState(false)
 
   // @ts-expect-error — cross-package tRPC collision
@@ -98,7 +100,7 @@ const BillingPage = () => {
   }
 
   if (error !== null && error !== undefined) {
-    return <div className="p-6 text-destructive">Failed to load subscription</div>
+    return <div className="p-6 text-destructive">{t({ key: 'common.failedToLoad' })}</div>
   }
 
   if (isLoading === true) {
@@ -113,15 +115,15 @@ const BillingPage = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-1">Billing</h1>
-      <p className="text-muted-foreground mb-6">Manage your subscription and plan.</p>
+      <h1 className="text-2xl font-bold mb-1">{t({ key: 'billing.title' })}</h1>
+      <p className="text-muted-foreground mb-6">{t({ key: 'billing.description' })}</p>
 
       <div className="max-w-lg space-y-6">
         {/* Current plan card */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Current Plan</CardTitle>
+              <CardTitle>{t({ key: 'billing.currentPlan' })}</CardTitle>
               {subscription !== undefined && <PlanBadge plan={subscription.plan} />}
             </div>
             <CardDescription>Your active subscription plan and billing details.</CardDescription>
@@ -130,14 +132,16 @@ const BillingPage = () => {
             {subscription !== undefined && (
               <>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Status</span>
+                  <span className="text-muted-foreground">{t({ key: 'billing.statusLabel' })}</span>
                   <span className="font-medium capitalize">{subscription.status}</span>
                 </div>
                 {subscription.currentPeriodEnd !== null &&
                   subscription.currentPeriodEnd !== undefined && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">
-                        {subscription.plan === 'pro' ? 'Renews' : 'Period ends'}
+                        {subscription.plan === 'pro'
+                          ? t({ key: 'billing.renews' })
+                          : t({ key: 'billing.periodEnds' })}
                       </span>
                       <span className="font-medium">
                         {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
@@ -151,7 +155,9 @@ const BillingPage = () => {
             {subscription !== undefined && subscription.plan === 'free' && (
               <div className="pt-2">
                 <Button onClick={handleUpgrade} disabled={isCheckoutPending} className="w-full">
-                  {isCheckoutPending ? 'Redirecting...' : 'Upgrade to Pro'}
+                  {isCheckoutPending
+                    ? t({ key: 'billing.redirecting' })
+                    : t({ key: 'billing.upgrade' })}
                 </Button>
               </div>
             )}
@@ -162,27 +168,28 @@ const BillingPage = () => {
                 <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full">
-                      Cancel Subscription
+                      {t({ key: 'billing.cancel' })}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Cancel Subscription</DialogTitle>
+                      <DialogTitle>{t({ key: 'billing.cancelTitle' })}</DialogTitle>
                     </DialogHeader>
                     <p className="text-sm text-muted-foreground py-4">
-                      Are you sure you want to cancel your Pro subscription? You will retain Pro
-                      access until the end of your current billing period.
+                      {t({ key: 'billing.cancelDesc' })}
                     </p>
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" onClick={() => setCancelOpen(false)}>
-                        Keep Plan
+                        {t({ key: 'billing.keepPlan' })}
                       </Button>
                       <Button
                         variant="destructive"
                         onClick={handleCancel}
                         disabled={isCancelPending}
                       >
-                        {isCancelPending ? 'Cancelling...' : 'Cancel Subscription'}
+                        {isCancelPending
+                          ? t({ key: 'billing.cancelling' })
+                          : t({ key: 'billing.cancel' })}
                       </Button>
                     </div>
                   </DialogContent>

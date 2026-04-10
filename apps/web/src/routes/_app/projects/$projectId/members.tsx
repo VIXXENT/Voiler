@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '~/components/ui/select'
 import { Skeleton } from '~/components/ui/skeleton'
+import { useTranslation } from '~/lib/i18n'
 import { trpc } from '~/lib/trpc'
 
 /** Shape of a member row returned by the API. */
@@ -73,6 +74,7 @@ const isProjectRow = (value: unknown): value is ProjectRow =>
 /** Project members page — lists members, supports invite, role change, and remove. */
 const ProjectMembersPage = () => {
   const { projectId } = Route.useParams()
+  const { t } = useTranslation()
 
   const [inviteOpen, setInviteOpen] = useState(false)
   const [targetUserId, setTargetUserId] = useState('')
@@ -164,7 +166,7 @@ const ProjectMembersPage = () => {
   const tabBase = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors'
 
   if (projectError !== null && projectError !== undefined) {
-    return <div className="p-6 text-destructive">Failed to load project</div>
+    return <div className="p-6 text-destructive">{t({ key: 'members.failedToLoad' })}</div>
   }
 
   if (projectLoading === true) {
@@ -181,31 +183,33 @@ const ProjectMembersPage = () => {
     <div className="p-6">
       {/* Page header */}
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold">{project !== undefined ? project.name : 'Project'}</h1>
+        <h1 className="text-2xl font-bold">
+          {project !== undefined ? project.name : t({ key: 'common.project' })}
+        </h1>
 
         {/* Invite Member button */}
         <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
           <DialogTrigger asChild>
             <Button>
-              <UserPlus className="mr-2 h-4 w-4" /> Invite Member
+              <UserPlus className="mr-2 h-4 w-4" /> {t({ key: 'members.invite' })}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Invite Member</DialogTitle>
+              <DialogTitle>{t({ key: 'members.inviteTitle' })}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="target-user-id">User ID</Label>
+                <Label htmlFor="target-user-id">{t({ key: 'members.targetUserId' })}</Label>
                 <Input
                   id="target-user-id"
                   value={targetUserId}
                   onChange={(e) => setTargetUserId(e.target.value)}
-                  placeholder="User ID to invite"
+                  placeholder={t({ key: 'members.userIdPlaceholder' })}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="invite-role">Role</Label>
+                <Label htmlFor="invite-role">{t({ key: 'members.role' })}</Label>
                 <Select
                   value={inviteRole}
                   onValueChange={(v) => {
@@ -218,18 +222,20 @@ const ProjectMembersPage = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="member">Member</SelectItem>
-                    <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="member">{t({ key: 'members.role.member' })}</SelectItem>
+                    <SelectItem value="viewer">{t({ key: 'members.role.viewer' })}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setInviteOpen(false)}>
-                Cancel
+                {t({ key: 'common.cancel' })}
               </Button>
               <Button onClick={handleInvite} disabled={isInvitePending || !targetUserId.trim()}>
-                {isInvitePending ? 'Inviting...' : 'Invite'}
+                {isInvitePending
+                  ? t({ key: 'members.inviting' })
+                  : t({ key: 'members.invite.button' })}
               </Button>
             </div>
           </DialogContent>
@@ -247,7 +253,7 @@ const ProjectMembersPage = () => {
             className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
           }}
         >
-          Tasks
+          {t({ key: 'tasks.title' })}
         </Link>
         <Link
           to="/projects/$projectId/members"
@@ -257,7 +263,7 @@ const ProjectMembersPage = () => {
             className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
           }}
         >
-          Members
+          {t({ key: 'members.title' })}
         </Link>
         <Link
           to="/projects/$projectId/settings"
@@ -267,7 +273,7 @@ const ProjectMembersPage = () => {
             className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
           }}
         >
-          Settings
+          {t({ key: 'projects.settings' })}
         </Link>
       </div>
 
@@ -289,7 +295,7 @@ const ProjectMembersPage = () => {
             </div>
             <div>
               <p className="text-sm font-medium">{project.ownerId}</p>
-              <p className="text-xs text-muted-foreground">Owner</p>
+              <p className="text-xs text-muted-foreground">{t({ key: 'members.ownerLabel' })}</p>
             </div>
           </div>
           <MemberRoleBadge role="owner" />
@@ -310,7 +316,10 @@ const ProjectMembersPage = () => {
               <div>
                 <p className="text-sm font-medium">{member.userId}</p>
                 <p className="text-xs text-muted-foreground">
-                  Joined {new Date(member.joinedAt).toLocaleDateString()}
+                  {t({
+                    key: 'members.joined',
+                    params: { date: new Date(member.joinedAt).toLocaleDateString() },
+                  })}
                 </p>
               </div>
             </div>
@@ -329,7 +338,7 @@ const ProjectMembersPage = () => {
                         handleUpdateRole({ memberUserId: member.userId, newRole: 'member' })
                       }
                     >
-                      Change to Member
+                      {t({ key: 'members.changeToMember' })}
                     </DropdownMenuItem>
                   )}
                   {member.role === 'member' && (
@@ -338,14 +347,14 @@ const ProjectMembersPage = () => {
                         handleUpdateRole({ memberUserId: member.userId, newRole: 'viewer' })
                       }
                     >
-                      Change to Viewer
+                      {t({ key: 'members.changeToViewer' })}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem
                     className="text-destructive"
                     onClick={() => handleRemove({ memberUserId: member.userId })}
                   >
-                    Remove
+                    {t({ key: 'members.remove' })}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -355,7 +364,7 @@ const ProjectMembersPage = () => {
 
       {members !== undefined && members.length === 0 && (
         <div className="mt-8 text-center text-muted-foreground">
-          <p>No additional members yet. Invite someone to get started.</p>
+          <p>{t({ key: 'members.emptyLong' })}</p>
         </div>
       )}
     </div>

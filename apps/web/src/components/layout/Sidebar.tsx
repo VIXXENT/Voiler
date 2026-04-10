@@ -6,11 +6,12 @@ import { Button } from '~/components/ui/button'
 import { Separator } from '~/components/ui/separator'
 import { authClient } from '~/lib/auth'
 import { APP_NAME } from '~/lib/constants'
+import { useTranslation } from '~/lib/i18n'
 
-const navItems = [
-  { to: '/projects', label: 'Projects', icon: FolderOpen },
-  { to: '/settings/billing', label: 'Billing', icon: CreditCard },
-  { to: '/settings/sessions', label: 'Settings', icon: Settings },
+const navRoutes = [
+  { to: '/projects', labelKey: 'nav.projects', icon: FolderOpen },
+  { to: '/settings/billing', labelKey: 'nav.billing', icon: CreditCard },
+  { to: '/settings/sessions', labelKey: 'nav.settings', icon: Settings },
 ] as const
 
 const navBase = 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium'
@@ -20,6 +21,7 @@ const navInactive = `${navBase} text-gray-600 hover:bg-gray-100 hover:text-gray-
 /** Sidebar navigation for the authenticated app shell. */
 const Sidebar = () => {
   const session = authClient.useSession()
+  const { t } = useTranslation()
 
   const userName: string = session.data?.user?.name ?? 'User'
   const userEmail: string = session.data?.user?.email ?? ''
@@ -41,7 +43,7 @@ const Sidebar = () => {
       <Separator />
 
       <nav className="flex flex-1 flex-col gap-1 px-2 py-3">
-        {navItems.map((item) => {
+        {navRoutes.map((item) => {
           const Icon = item.icon
           return (
             <Link
@@ -51,7 +53,7 @@ const Sidebar = () => {
               inactiveProps={{ className: navInactive }}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              {item.label}
+              {t({ key: item.labelKey })}
             </Link>
           )
         })}

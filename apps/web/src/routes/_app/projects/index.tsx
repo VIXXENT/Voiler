@@ -17,6 +17,7 @@ import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Skeleton } from '~/components/ui/skeleton'
 import { Textarea } from '~/components/ui/textarea'
+import { useTranslation } from '~/lib/i18n'
 import { trpc } from '~/lib/trpc'
 
 /** Shape of a public project returned by the API. */
@@ -44,6 +45,7 @@ const isProjectRowArray = (value: unknown): value is ProjectRow[] =>
 
 /** Projects list page — shows all user's projects with create project dialog. */
 const ProjectsPage = () => {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -89,53 +91,53 @@ const ProjectsPage = () => {
   }
 
   if (error !== null && error !== undefined) {
-    return <div className="p-6 text-destructive">Failed to load projects</div>
+    return <div className="p-6 text-destructive">{t({ key: 'projects.failedToLoad' })}</div>
   }
 
   return (
     <div className="p-6">
       <PageHeader
-        title="Projects"
-        description="Manage your projects"
+        title={t({ key: 'projects.title' })}
+        description={t({ key: 'projects.description' })}
         actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="mr-2 h-4 w-4" /> New Project
+                <Plus className="mr-2 h-4 w-4" /> {t({ key: 'projects.create' })}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create Project</DialogTitle>
+                <DialogTitle>{t({ key: 'projects.createTitle' })}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">{t({ key: 'projects.name' })}</Label>
                   <Input
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="My awesome project"
+                    placeholder={t({ key: 'projects.namePlaceholder' })}
                     maxLength={100}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description (optional)</Label>
+                  <Label htmlFor="description">{t({ key: 'projects.description.label' })}</Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="What's this project about?"
+                    placeholder={t({ key: 'projects.descriptionPlaceholder' })}
                     rows={3}
                   />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setOpen(false)}>
-                  Cancel
+                  {t({ key: 'common.cancel' })}
                 </Button>
                 <Button onClick={handleCreate} disabled={isPending}>
-                  {isPending ? 'Creating...' : 'Create'}
+                  {isPending ? t({ key: 'common.creating' }) : t({ key: 'common.create' })}
                 </Button>
               </div>
             </DialogContent>
@@ -153,7 +155,7 @@ const ProjectsPage = () => {
 
       {projects !== undefined && projects.length === 0 && (
         <div className="mt-12 text-center text-muted-foreground">
-          <p>No projects yet. Create your first project to get started.</p>
+          <p>{t({ key: 'projects.empty' })}</p>
         </div>
       )}
 

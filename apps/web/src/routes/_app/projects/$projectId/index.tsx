@@ -31,6 +31,7 @@ import {
 } from '~/components/ui/select'
 import { Skeleton } from '~/components/ui/skeleton'
 import { Textarea } from '~/components/ui/textarea'
+import { useTranslation } from '~/lib/i18n'
 import { trpc } from '~/lib/trpc'
 
 /** Shape of a task row returned by the API. */
@@ -82,16 +83,16 @@ const statusTransitions: Record<
   done: ['in_progress'],
 }
 
-/** Human-readable labels for status values. */
-const statusLabels: Record<'todo' | 'in_progress' | 'done', string> = {
-  todo: 'To Do',
-  in_progress: 'In Progress',
-  done: 'Done',
-}
-
 /** Project detail page — shows project info, task list, and create task dialog. */
 const ProjectDetailPage = () => {
   const { projectId } = Route.useParams()
+  const { t } = useTranslation()
+
+  const statusLabels: Record<'todo' | 'in_progress' | 'done', string> = {
+    todo: t({ key: 'tasks.status.todo' }),
+    in_progress: t({ key: 'tasks.status.in_progress' }),
+    done: t({ key: 'tasks.status.done' }),
+  }
 
   const [createOpen, setCreateOpen] = useState(false)
   const [taskTitle, setTaskTitle] = useState('')
@@ -181,7 +182,7 @@ const ProjectDetailPage = () => {
   const tabBase = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors'
 
   if (projectError !== null && projectError !== undefined) {
-    return <div className="p-6 text-destructive">Failed to load project</div>
+    return <div className="p-6 text-destructive">{t({ key: 'tasks.failedToLoad' })}</div>
   }
 
   if (projectLoading === true) {
@@ -199,12 +200,14 @@ const ProjectDetailPage = () => {
       {/* Project header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">{project !== undefined ? project.name : 'Project'}</h1>
+          <h1 className="text-2xl font-bold">
+            {project !== undefined ? project.name : t({ key: 'common.project' })}
+          </h1>
           {project !== undefined && project.status === 'archived' && (
-            <Badge variant="outline">Archived</Badge>
+            <Badge variant="outline">{t({ key: 'projects.archived' })}</Badge>
           )}
           {project !== undefined && project.frozen === true && (
-            <Badge variant="secondary">Frozen</Badge>
+            <Badge variant="secondary">{t({ key: 'projects.frozen' })}</Badge>
           )}
         </div>
 
@@ -212,36 +215,36 @@ const ProjectDetailPage = () => {
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button disabled={project !== undefined && project.frozen === true}>
-              <Plus className="mr-2 h-4 w-4" /> New Task
+              <Plus className="mr-2 h-4 w-4" /> {t({ key: 'tasks.create' })}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create Task</DialogTitle>
+              <DialogTitle>{t({ key: 'tasks.createTitle' })}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="task-title">Title</Label>
+                <Label htmlFor="task-title">{t({ key: 'tasks.titleLabel' })}</Label>
                 <Input
                   id="task-title"
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
-                  placeholder="Task title"
+                  placeholder={t({ key: 'tasks.titlePlaceholderShort' })}
                   maxLength={255}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="task-description">Description (optional)</Label>
+                <Label htmlFor="task-description">{t({ key: 'tasks.descriptionLabel' })}</Label>
                 <Textarea
                   id="task-description"
                   value={taskDescription}
                   onChange={(e) => setTaskDescription(e.target.value)}
-                  placeholder="What needs to be done?"
+                  placeholder={t({ key: 'tasks.titlePlaceholder' })}
                   rows={3}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="task-priority">Priority</Label>
+                <Label htmlFor="task-priority">{t({ key: 'tasks.priorityLabel' })}</Label>
                 <Select
                   value={taskPriority}
                   onValueChange={(v) => {
@@ -254,14 +257,14 @@ const ProjectDetailPage = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="low">{t({ key: 'tasks.priority.low' })}</SelectItem>
+                    <SelectItem value="medium">{t({ key: 'tasks.priority.medium' })}</SelectItem>
+                    <SelectItem value="high">{t({ key: 'tasks.priority.high' })}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="task-due-date">Due Date (optional)</Label>
+                <Label htmlFor="task-due-date">{t({ key: 'tasks.dueDateLabel' })}</Label>
                 <Input
                   id="task-due-date"
                   type="date"
@@ -272,10 +275,10 @@ const ProjectDetailPage = () => {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setCreateOpen(false)}>
-                Cancel
+                {t({ key: 'common.cancel' })}
               </Button>
               <Button onClick={handleCreateTask} disabled={isCreatePending || !taskTitle.trim()}>
-                {isCreatePending ? 'Creating...' : 'Create'}
+                {isCreatePending ? t({ key: 'tasks.creating' }) : t({ key: 'tasks.create.button' })}
               </Button>
             </div>
           </DialogContent>
@@ -293,7 +296,7 @@ const ProjectDetailPage = () => {
             className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
           }}
         >
-          Tasks
+          {t({ key: 'tasks.title' })}
         </Link>
         <Link
           to="/projects/$projectId/members"
@@ -303,7 +306,7 @@ const ProjectDetailPage = () => {
             className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
           }}
         >
-          Members
+          {t({ key: 'members.title' })}
         </Link>
         <Link
           to="/projects/$projectId/settings"
@@ -313,7 +316,7 @@ const ProjectDetailPage = () => {
             className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
           }}
         >
-          Settings
+          {t({ key: 'projects.settings' })}
         </Link>
       </div>
 
@@ -328,7 +331,7 @@ const ProjectDetailPage = () => {
 
       {tasks !== undefined && tasks.length === 0 && (
         <div className="mt-12 text-center text-muted-foreground">
-          <p>No tasks yet. Create your first task to get started.</p>
+          <p>{t({ key: 'tasks.emptyLong' })}</p>
         </div>
       )}
 
@@ -371,7 +374,7 @@ const ProjectDetailPage = () => {
                       key={newStatus}
                       onClick={() => handleTransition({ taskId: task.id, newStatus })}
                     >
-                      Move to {statusLabels[newStatus]}
+                      {t({ key: 'tasks.moveTo', params: { status: statusLabels[newStatus] } })}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

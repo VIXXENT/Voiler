@@ -30,6 +30,7 @@ import {
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Skeleton } from '~/components/ui/skeleton'
+import { useTranslation } from '~/lib/i18n'
 import { trpc } from '~/lib/trpc'
 
 /** Shape of a project row returned by the API. */
@@ -53,6 +54,7 @@ const isProjectRow = (value: unknown): value is ProjectRow =>
 /** Project settings page — archive, delete, and transfer ownership. */
 const ProjectSettingsPage = () => {
   const { projectId } = Route.useParams()
+  const { t } = useTranslation()
 
   const [archiveOpen, setArchiveOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -146,7 +148,7 @@ const ProjectSettingsPage = () => {
   const tabBase = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors'
 
   if (projectError !== null && projectError !== undefined) {
-    return <div className="p-6 text-destructive">Failed to load project</div>
+    return <div className="p-6 text-destructive">{t({ key: 'tasks.failedToLoad' })}</div>
   }
 
   if (projectLoading === true) {
@@ -163,9 +165,11 @@ const ProjectSettingsPage = () => {
     <div className="p-6">
       {/* Page header */}
       <div className="flex items-center gap-3 mb-2">
-        <h1 className="text-2xl font-bold">{project !== undefined ? project.name : 'Project'}</h1>
+        <h1 className="text-2xl font-bold">
+          {project !== undefined ? project.name : t({ key: 'common.project' })}
+        </h1>
         {project !== undefined && project.status === 'archived' && (
-          <Badge variant="outline">Archived</Badge>
+          <Badge variant="outline">{t({ key: 'projects.archived' })}</Badge>
         )}
       </div>
 
@@ -180,7 +184,7 @@ const ProjectSettingsPage = () => {
             className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
           }}
         >
-          Tasks
+          {t({ key: 'tasks.title' })}
         </Link>
         <Link
           to="/projects/$projectId/members"
@@ -190,7 +194,7 @@ const ProjectSettingsPage = () => {
             className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
           }}
         >
-          Members
+          {t({ key: 'members.title' })}
         </Link>
         <Link
           to="/projects/$projectId/settings"
@@ -200,7 +204,7 @@ const ProjectSettingsPage = () => {
             className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
           }}
         >
-          Settings
+          {t({ key: 'projects.settings' })}
         </Link>
       </div>
 
@@ -208,8 +212,8 @@ const ProjectSettingsPage = () => {
         {/* Project info */}
         <Card>
           <CardHeader>
-            <CardTitle>Project Name</CardTitle>
-            <CardDescription>The display name for this project.</CardDescription>
+            <CardTitle>{t({ key: 'projects.projectName' })}</CardTitle>
+            <CardDescription>{t({ key: 'projects.projectNameDesc' })}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm font-medium">{project !== undefined ? project.name : '—'}</p>
@@ -222,10 +226,8 @@ const ProjectSettingsPage = () => {
         {/* Archive project */}
         <Card>
           <CardHeader>
-            <CardTitle>Archive Project</CardTitle>
-            <CardDescription>
-              Archive this project to hide it from the active list. It can be restored later.
-            </CardDescription>
+            <CardTitle>{t({ key: 'projects.archive' })}</CardTitle>
+            <CardDescription>{t({ key: 'projects.archiveDesc' })}</CardDescription>
           </CardHeader>
           <CardContent>
             <AlertDialog open={archiveOpen} onOpenChange={setArchiveOpen}>
@@ -235,25 +237,23 @@ const ProjectSettingsPage = () => {
                   disabled={project !== undefined && project.status === 'archived'}
                 >
                   {project !== undefined && project.status === 'archived'
-                    ? 'Already Archived'
-                    : 'Archive Project'}
+                    ? t({ key: 'projects.alreadyArchived' })
+                    : t({ key: 'projects.archive' })}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Archive Project</AlertDialogTitle>
+                  <AlertDialogTitle>{t({ key: 'projects.archive' })}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to archive{' '}
-                    <span className="font-medium text-foreground">
-                      {project !== undefined ? project.name : 'this project'}
-                    </span>
-                    ? It will be hidden from the active projects list.
+                    {t({ key: 'projects.archiveConfirm' })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t({ key: 'common.cancel' })}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleArchive} disabled={isArchivePending}>
-                    {isArchivePending ? 'Archiving...' : 'Archive'}
+                    {isArchivePending
+                      ? t({ key: 'projects.archiving' })
+                      : t({ key: 'projects.archive' })}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -264,44 +264,43 @@ const ProjectSettingsPage = () => {
         {/* Transfer ownership */}
         <Card>
           <CardHeader>
-            <CardTitle>Transfer Ownership</CardTitle>
-            <CardDescription>
-              Transfer project ownership to another member. You will lose owner privileges.
-            </CardDescription>
+            <CardTitle>{t({ key: 'projects.transferOwnership' })}</CardTitle>
+            <CardDescription>{t({ key: 'projects.transferOwnershipLongDesc' })}</CardDescription>
           </CardHeader>
           <CardContent>
             <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline">Transfer Ownership</Button>
+                <Button variant="outline">{t({ key: 'projects.transferOwnership' })}</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Transfer Ownership</DialogTitle>
+                  <DialogTitle>{t({ key: 'projects.transferOwnership' })}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <p className="text-sm text-muted-foreground">
-                    Enter the User ID of the member who should become the new owner. This action
-                    cannot be undone without their cooperation.
+                    {t({ key: 'projects.transferOwnershipDialogDesc' })}
                   </p>
                   <div className="space-y-2">
-                    <Label htmlFor="new-owner-id">New Owner User ID</Label>
+                    <Label htmlFor="new-owner-id">{t({ key: 'projects.newOwnerId' })}</Label>
                     <Input
                       id="new-owner-id"
                       value={newOwnerId}
                       onChange={(e) => setNewOwnerId(e.target.value)}
-                      placeholder="User ID"
+                      placeholder={t({ key: 'projects.newOwnerIdPlaceholder' })}
                     />
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setTransferOpen(false)}>
-                    Cancel
+                    {t({ key: 'common.cancel' })}
                   </Button>
                   <Button
                     onClick={handleTransfer}
                     disabled={isTransferPending || !newOwnerId.trim()}
                   >
-                    {isTransferPending ? 'Transferring...' : 'Transfer'}
+                    {isTransferPending
+                      ? t({ key: 'projects.transferring' })
+                      : t({ key: 'projects.transfer' })}
                   </Button>
                 </div>
               </DialogContent>
@@ -312,35 +311,31 @@ const ProjectSettingsPage = () => {
         {/* Delete project */}
         <Card className="border-destructive">
           <CardHeader>
-            <CardTitle className="text-destructive">Delete Project</CardTitle>
-            <CardDescription>
-              Permanently delete this project and all its tasks. This action cannot be undone.
-            </CardDescription>
+            <CardTitle className="text-destructive">{t({ key: 'projects.delete' })}</CardTitle>
+            <CardDescription>{t({ key: 'projects.deleteDesc' })}</CardDescription>
           </CardHeader>
           <CardContent>
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">Delete Project</Button>
+                <Button variant="destructive">{t({ key: 'projects.delete' })}</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                  <AlertDialogTitle>{t({ key: 'projects.delete' })}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to permanently delete{' '}
-                    <span className="font-medium text-foreground">
-                      {project !== undefined ? project.name : 'this project'}
-                    </span>
-                    ? This will delete all tasks and cannot be undone.
+                    {t({ key: 'projects.deleteConfirm' })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t({ key: 'common.cancel' })}</AlertDialogCancel>
                   <AlertDialogAction
                     className={buttonVariants({ variant: 'destructive' })}
                     onClick={handleDelete}
                     disabled={isDeletePending}
                   >
-                    {isDeletePending ? 'Deleting...' : 'Delete'}
+                    {isDeletePending
+                      ? t({ key: 'projects.deleting' })
+                      : t({ key: 'projects.delete' })}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

@@ -1,4 +1,5 @@
 import { Badge } from '~/components/ui/badge'
+import { useTranslation } from '~/lib/i18n'
 
 /** Props for the TaskPriorityBadge component. */
 interface TaskPriorityBadgeProps {
@@ -12,6 +13,8 @@ interface TaskPriorityBadgeProps {
  * - high → destructive
  */
 const TaskPriorityBadge = ({ priority }: TaskPriorityBadgeProps) => {
+  const { t } = useTranslation()
+
   const variantMap: Record<'low' | 'medium' | 'high', 'outline' | 'secondary' | 'destructive'> = {
     low: 'outline',
     medium: 'secondary',
@@ -19,9 +22,9 @@ const TaskPriorityBadge = ({ priority }: TaskPriorityBadgeProps) => {
   }
 
   const textMap: Record<'low' | 'medium' | 'high', string> = {
-    low: 'Low',
-    medium: 'Medium',
-    high: 'High',
+    low: t({ key: 'tasks.priority.low' }),
+    medium: t({ key: 'tasks.priority.medium' }),
+    high: t({ key: 'tasks.priority.high' }),
   }
 
   return <Badge variant={variantMap[priority]}>{textMap[priority]}</Badge>
