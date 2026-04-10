@@ -3,6 +3,7 @@ import type {
   IProjectMemberRepository,
   IProjectRepository,
   ITaskRepository,
+  IUserSubscriptionRepository,
   ProjectRecord,
   TaskRecord,
 } from '@voiler/core'
@@ -72,6 +73,14 @@ const makeMockMemberRepo = (): IProjectMemberRepository => ({
   deleteByUser: vi.fn(),
 })
 
+/** Builds a mock IUserSubscriptionRepository with vi.fn() stubs. */
+const makeMockSubscriptionRepo = (): IUserSubscriptionRepository => ({
+  findByUser: vi.fn(),
+  upsert: vi.fn(),
+  updateStatus: vi.fn(),
+  updateStripeData: vi.fn(),
+})
+
 describe('createTask use case', () => {
   it('returns Ok(TaskRecord) on happy path (owner)', async () => {
     const fakeProject = makeFakeProject()
@@ -79,14 +88,18 @@ describe('createTask use case', () => {
     const projectRepo = makeMockProjectRepo()
     const taskRepo = makeMockTaskRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+    vi.mocked(subRepo.findByUser).mockReturnValue(okAsync(null))
+    vi.mocked(taskRepo.countByProject).mockReturnValue(okAsync(0))
     vi.mocked(taskRepo.create).mockReturnValue(okAsync(fakeTask))
 
     const useCase = createCreateTask({
       projectRepository: projectRepo,
       taskRepository: taskRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', title: 'Test Task' })
 
@@ -102,11 +115,13 @@ describe('createTask use case', () => {
     const projectRepo = makeMockProjectRepo()
     const taskRepo = makeMockTaskRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
 
     const useCase = createCreateTask({
       projectRepository: projectRepo,
       taskRepository: taskRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', title: '' })
 
@@ -122,12 +137,14 @@ describe('createTask use case', () => {
     const projectRepo = makeMockProjectRepo()
     const taskRepo = makeMockTaskRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(null))
 
     const useCase = createCreateTask({
       projectRepository: projectRepo,
       taskRepository: taskRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', title: 'Test Task' })
 
@@ -143,6 +160,7 @@ describe('createTask use case', () => {
     const projectRepo = makeMockProjectRepo()
     const taskRepo = makeMockTaskRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
 
@@ -150,6 +168,7 @@ describe('createTask use case', () => {
       projectRepository: projectRepo,
       taskRepository: taskRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-99', projectId: 'proj-1', title: 'Test Task' })
 
@@ -165,6 +184,7 @@ describe('createTask use case', () => {
     const projectRepo = makeMockProjectRepo()
     const taskRepo = makeMockTaskRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(memberRepo.findMembership).mockReturnValue(
       okAsync({
@@ -180,6 +200,7 @@ describe('createTask use case', () => {
       projectRepository: projectRepo,
       taskRepository: taskRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-2', projectId: 'proj-1', title: 'Test Task' })
 
@@ -190,20 +211,86 @@ describe('createTask use case', () => {
     expect(taskRepo.create).not.toHaveBeenCalled()
   })
 
+  it('returns Err(ProjectFrozen) when project is frozen', async () => {
+    const projectRepo = makeMockProjectRepo()
+    const taskRepo = makeMockTaskRepo()
+    const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
+    vi.mocked(projectRepo.findById).mockReturnValue(
+      okAsync({ ...makeFakeProject(), frozen: true }),
+    )
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+
+    const useCase = createCreateTask({
+      projectRepository: projectRepo,
+      taskRepository: taskRepo,
+      memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
+    })
+    const result = await useCase({ userId: 'user-1', projectId: 'proj-1', title: 'Test Task' })
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.tag).toBe('ProjectFrozen')
+    }
+    expect(taskRepo.create).not.toHaveBeenCalled()
+  })
+
+  it('returns Err(TaskLimitReached) when task limit reached', async () => {
+    const projectRepo = makeMockProjectRepo()
+    const taskRepo = makeMockTaskRepo()
+    const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
+    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+    vi.mocked(subRepo.findByUser).mockReturnValue(
+      okAsync({
+        id: 'sub-1',
+        userId: 'user-1',
+        plan: 'free',
+        status: 'active',
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        currentPeriodEnd: null,
+        createdAt: new Date('2026-01-01'),
+        updatedAt: new Date('2026-01-01'),
+      }),
+    )
+    vi.mocked(taskRepo.countByProject).mockReturnValue(okAsync(50))
+
+    const useCase = createCreateTask({
+      projectRepository: projectRepo,
+      taskRepository: taskRepo,
+      memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
+    })
+    const result = await useCase({ userId: 'user-1', projectId: 'proj-1', title: 'Test Task' })
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.tag).toBe('TaskLimitReached')
+    }
+    expect(taskRepo.create).not.toHaveBeenCalled()
+  })
+
   it('returns Err when task repository create fails', async () => {
     const fakeProject = makeFakeProject()
     const projectRepo = makeMockProjectRepo()
     const taskRepo = makeMockTaskRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     const repoError: AppError = infrastructureError({ message: 'db error' })
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+    vi.mocked(subRepo.findByUser).mockReturnValue(okAsync(null))
+    vi.mocked(taskRepo.countByProject).mockReturnValue(okAsync(0))
     vi.mocked(taskRepo.create).mockReturnValue(errAsync(repoError))
 
     const useCase = createCreateTask({
       projectRepository: projectRepo,
       taskRepository: taskRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-1', projectId: 'proj-1', title: 'Test Task' })
 

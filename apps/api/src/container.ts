@@ -10,6 +10,7 @@ import { createDrizzleProjectRepository } from './adapters/db/drizzle-project-re
 import { createDrizzleTaskAssigneeRepository } from './adapters/db/drizzle-task-assignee-repository.js'
 import { createDrizzleTaskRepository } from './adapters/db/drizzle-task-repository.js'
 import { createDrizzleUserRepository } from './adapters/db/drizzle-user-repository.js'
+import { createDrizzleUserSubscriptionRepository } from './adapters/db/drizzle-user-subscription-repository.js'
 import type { DbClient } from './db/index.js'
 import { withAuditLog, type AuditableParams } from './logging/use-case-logger.js'
 import {
@@ -192,6 +193,7 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   const memberRepository = createDrizzleProjectMemberRepository({ db })
   const taskRepository = createDrizzleTaskRepository({ db })
   const taskAssigneeRepository = createDrizzleTaskAssigneeRepository({ db })
+  const subscriptionRepository = createDrizzleUserSubscriptionRepository({ db })
 
   // --- User use-cases (raw) ---
   const rawCreateUser: Container['createUser'] = createCreateUser({ userRepository })
@@ -199,14 +201,14 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   const rawListUsers: Container['listUsers'] = createListUsers({ userRepository })
 
   // --- Project use-cases (raw) ---
-  const rawCreateProject = createCreateProject({ projectRepository })
+  const rawCreateProject = createCreateProject({ projectRepository, subscriptionRepository })
   const rawGetProject = createGetProject({ projectRepository, memberRepository })
   const rawListUserProjects = createListUserProjects({ projectRepository })
   const rawArchiveProject = createArchiveProject({ projectRepository })
   const rawDeleteProject = createDeleteProject({ projectRepository })
 
   // --- Task use-cases (raw) ---
-  const rawCreateTask = createCreateTask({ projectRepository, taskRepository, memberRepository })
+  const rawCreateTask = createCreateTask({ projectRepository, taskRepository, memberRepository, subscriptionRepository })
   const rawUpdateTask = createUpdateTask({ taskRepository, projectRepository, memberRepository })
   const rawTransitionTaskStatus = createTransitionTaskStatus({
     taskRepository,
@@ -238,7 +240,7 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   })
 
   // --- Member use-cases (raw) ---
-  const rawInviteToProject = createInviteToProject({ projectRepository, memberRepository })
+  const rawInviteToProject = createInviteToProject({ projectRepository, memberRepository, subscriptionRepository })
   const rawRemoveFromProject = createRemoveFromProject({ projectRepository, memberRepository })
   const rawListProjectMembers = createListProjectMembers({ projectRepository, memberRepository })
   const rawUpdateMemberRole = createUpdateMemberRole({ projectRepository, memberRepository })

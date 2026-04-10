@@ -1,6 +1,7 @@
 import type {
   IProjectMemberRepository,
   IProjectRepository,
+  IUserSubscriptionRepository,
   ProjectMemberRecord,
   ProjectRecord,
 } from '@voiler/core'
@@ -55,18 +56,30 @@ const makeMockMemberRepo = (): IProjectMemberRepository => ({
   deleteByUser: vi.fn(),
 })
 
+/** Builds a mock IUserSubscriptionRepository with vi.fn() stubs. */
+const makeMockSubscriptionRepo = (): IUserSubscriptionRepository => ({
+  findByUser: vi.fn(),
+  upsert: vi.fn(),
+  updateStatus: vi.fn(),
+  updateStripeData: vi.fn(),
+})
+
 describe('inviteToProject use case', () => {
   it('returns Ok(ProjectMemberRecord) on happy path', async () => {
     const fakeMember = makeFakeMember()
     const projectRepo = makeMockProjectRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
+    vi.mocked(subRepo.findByUser).mockReturnValue(okAsync(null))
+    vi.mocked(memberRepo.findByProject).mockReturnValue(okAsync([]))
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
     vi.mocked(memberRepo.addMember).mockReturnValue(okAsync(fakeMember))
 
     const useCase = createInviteToProject({
       projectRepository: projectRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({
       userId: 'user-1',
@@ -86,11 +99,13 @@ describe('inviteToProject use case', () => {
   it('returns Err(ProjectNotFound) when project does not exist', async () => {
     const projectRepo = makeMockProjectRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(null))
 
     const useCase = createInviteToProject({
       projectRepository: projectRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({
       userId: 'user-1',
@@ -109,11 +124,13 @@ describe('inviteToProject use case', () => {
   it('returns Err(InsufficientPermission) when caller is not the owner', async () => {
     const projectRepo = makeMockProjectRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
 
     const useCase = createInviteToProject({
       projectRepository: projectRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({
       userId: 'user-99',
@@ -129,15 +146,93 @@ describe('inviteToProject use case', () => {
     expect(memberRepo.addMember).not.toHaveBeenCalled()
   })
 
+  it('returns Err(ProjectFrozen) when project is frozen', async () => {
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
+    vi.mocked(projectRepo.findById).mockReturnValue(
+      okAsync({ ...makeFakeProject(), frozen: true }),
+    )
+
+    const useCase = createInviteToProject({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
+    })
+    const result = await useCase({
+      userId: 'user-1',
+      projectId: 'proj-1',
+      targetUserId: 'user-2',
+      role: 'member',
+    })
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.tag).toBe('ProjectFrozen')
+    }
+    expect(memberRepo.addMember).not.toHaveBeenCalled()
+  })
+
+  it('returns Err(MemberLimitReached) when member limit reached', async () => {
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
+    vi.mocked(subRepo.findByUser).mockReturnValue(
+      okAsync({
+        id: 'sub-1',
+        userId: 'user-1',
+        plan: 'free',
+        status: 'active',
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        currentPeriodEnd: null,
+        createdAt: new Date('2026-01-01'),
+        updatedAt: new Date('2026-01-01'),
+      }),
+    )
+    vi.mocked(memberRepo.findByProject).mockReturnValue(
+      okAsync([
+        { id: 'm-1', projectId: 'proj-1', userId: 'u-1', role: 'member', joinedAt: new Date() },
+        { id: 'm-2', projectId: 'proj-1', userId: 'u-2', role: 'member', joinedAt: new Date() },
+        { id: 'm-3', projectId: 'proj-1', userId: 'u-3', role: 'member', joinedAt: new Date() },
+        { id: 'm-4', projectId: 'proj-1', userId: 'u-4', role: 'member', joinedAt: new Date() },
+        { id: 'm-5', projectId: 'proj-1', userId: 'u-5', role: 'member', joinedAt: new Date() },
+      ]),
+    )
+
+    const useCase = createInviteToProject({
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
+    })
+    const result = await useCase({
+      userId: 'user-1',
+      projectId: 'proj-1',
+      targetUserId: 'user-2',
+      role: 'member',
+    })
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.tag).toBe('MemberLimitReached')
+    }
+    expect(memberRepo.addMember).not.toHaveBeenCalled()
+  })
+
   it('returns Err(AlreadyMember) when user is already a member', async () => {
     const projectRepo = makeMockProjectRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
+    vi.mocked(subRepo.findByUser).mockReturnValue(okAsync(null))
+    vi.mocked(memberRepo.findByProject).mockReturnValue(okAsync([]))
     vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(makeFakeMember()))
 
     const useCase = createInviteToProject({
       projectRepository: projectRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({
       userId: 'user-1',
@@ -156,11 +251,13 @@ describe('inviteToProject use case', () => {
   it('returns Err(InvalidAssignment) when role is invalid', async () => {
     const projectRepo = makeMockProjectRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(makeFakeProject()))
 
     const useCase = createInviteToProject({
       projectRepository: projectRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const invalidRole = 'owner' as unknown as 'member'
     const result = await useCase({
@@ -180,6 +277,7 @@ describe('inviteToProject use case', () => {
   it('propagates infrastructure errors from findById', async () => {
     const projectRepo = makeMockProjectRepo()
     const memberRepo = makeMockMemberRepo()
+    const subRepo = makeMockSubscriptionRepo()
     vi.mocked(projectRepo.findById).mockReturnValue(
       errAsync(infrastructureError({ message: 'DB error' })),
     )
@@ -187,6 +285,7 @@ describe('inviteToProject use case', () => {
     const useCase = createInviteToProject({
       projectRepository: projectRepo,
       memberRepository: memberRepo,
+      subscriptionRepository: subRepo,
     })
     const result = await useCase({
       userId: 'user-1',
