@@ -1,6 +1,8 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+import { Suspense } from 'react'
 
 import { AppLayout } from '~/components/layout'
+import { Spinner } from '~/components/ui/spinner'
 import { authClient } from '~/lib/auth'
 
 /** Pathless layout route for authenticated app pages. Redirects to login if no session. */
@@ -14,7 +16,15 @@ const Route = createFileRoute('/_app')({
   },
   component: () => (
     <AppLayout>
-      <Outlet />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-16">
+            <Spinner className="h-6 w-6" />
+          </div>
+        }
+      >
+        <Outlet />
+      </Suspense>
     </AppLayout>
   ),
 })

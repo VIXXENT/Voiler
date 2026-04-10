@@ -3,6 +3,8 @@ import { Outlet, createRootRoute } from '@tanstack/react-router'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { useState } from 'react'
 
+import { Toaster } from 'sonner'
+
 import { DevMenu } from '~/components/dev-menu/DevMenu'
 import { ImpersonationBanner } from '~/components/ImpersonationBanner'
 import { NavBar } from '~/components/NavBar'
@@ -36,6 +38,7 @@ const RootLayout = () => {
             </main>
           </div>
           <DevMenu />
+          <Toaster />
         </I18nProvider>
       </QueryClientProvider>
       {/* @ts-expect-error — tRPC Provider collision */}

@@ -6,8 +6,19 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Badge } from '~/components/ui/badge'
-import { Button } from '~/components/ui/button'
+import { Button, buttonVariants } from '~/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog'
 import {
   Dialog,
   DialogContent,
@@ -194,8 +205,8 @@ const ProjectSettingsPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Dialog open={archiveOpen} onOpenChange={setArchiveOpen}>
-              <DialogTrigger asChild>
+            <AlertDialog open={archiveOpen} onOpenChange={setArchiveOpen}>
+              <AlertDialogTrigger asChild>
                 <Button
                   variant="outline"
                   disabled={project !== undefined && project.status === 'archived'}
@@ -204,28 +215,26 @@ const ProjectSettingsPage = () => {
                     ? 'Already Archived'
                     : 'Archive Project'}
                 </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Archive Project</DialogTitle>
-                </DialogHeader>
-                <p className="text-sm text-muted-foreground py-4">
-                  Are you sure you want to archive{' '}
-                  <span className="font-medium text-foreground">
-                    {project !== undefined ? project.name : 'this project'}
-                  </span>
-                  ? It will be hidden from the active projects list.
-                </p>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setArchiveOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleArchive} disabled={isArchivePending}>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Archive Project</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to archive{' '}
+                    <span className="font-medium text-foreground">
+                      {project !== undefined ? project.name : 'this project'}
+                    </span>
+                    ? It will be hidden from the active projects list.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleArchive} disabled={isArchivePending}>
                     {isArchivePending ? 'Archiving...' : 'Archive'}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardContent>
         </Card>
 
@@ -286,31 +295,33 @@ const ProjectSettingsPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-              <DialogTrigger asChild>
+            <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+              <AlertDialogTrigger asChild>
                 <Button variant="destructive">Delete Project</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Delete Project</DialogTitle>
-                </DialogHeader>
-                <p className="text-sm text-muted-foreground py-4">
-                  Are you sure you want to permanently delete{' '}
-                  <span className="font-medium text-foreground">
-                    {project !== undefined ? project.name : 'this project'}
-                  </span>
-                  ? This will delete all tasks and cannot be undone.
-                </p>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setDeleteOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button variant="destructive" onClick={handleDelete} disabled={isDeletePending}>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to permanently delete{' '}
+                    <span className="font-medium text-foreground">
+                      {project !== undefined ? project.name : 'this project'}
+                    </span>
+                    ? This will delete all tasks and cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className={buttonVariants({ variant: 'destructive' })}
+                    onClick={handleDelete}
+                    disabled={isDeletePending}
+                  >
                     {isDeletePending ? 'Deleting...' : 'Delete'}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardContent>
         </Card>
       </div>
