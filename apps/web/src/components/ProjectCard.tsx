@@ -17,7 +17,7 @@ interface ProjectCardProps {
 
 /**
  * Displays a project summary card with status, frozen state, and metadata.
- * Links to /projects/$id.
+ * Links to /projects/$projectId.
  */
 const ProjectCard = ({
   id,
@@ -28,7 +28,7 @@ const ProjectCard = ({
   memberCount,
   taskCount,
 }: ProjectCardProps) => (
-  <Link to={`/projects/$id`} params={{ id }}>
+  <Link to="/projects/$projectId" params={{ projectId: id }}>
     <Card className="cursor-pointer transition-shadow hover:shadow-md">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">

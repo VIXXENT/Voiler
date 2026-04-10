@@ -8,6 +8,7 @@
     "build": "vite build",
     "start": "node .output/server/index.mjs",
     "lint": "eslint src/",
+    "generate": "vite build --mode development",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test"
   },

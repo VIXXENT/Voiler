@@ -1,13 +1,11 @@
 import type {
   AppError,
   IBillingService,
-  IProjectRepository,
   IUserSubscriptionRepository,
-  ProjectRecord,
   SubscriptionRecord,
 } from '@voiler/core'
 import { infrastructureError } from '@voiler/core'
-import { errAsync, okAsync } from 'neverthrow'
+import { errAsync, okAsync, type ResultAsync } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'
 
 import { createCancelSubscription } from '../../../use-cases/subscription/cancel-subscription'
@@ -26,20 +24,6 @@ const makeFakeSubscription = (overrides?: Partial<SubscriptionRecord>): Subscrip
   ...overrides,
 })
 
-/** Builds a fake ProjectRecord for test assertions. */
-const makeFakeProject = (id: string): ProjectRecord => ({
-  id,
-  name: `Project ${id}`,
-  description: null,
-  ownerId: 'user-1',
-  status: 'active',
-  frozen: false,
-  unfrozenAt: null,
-  cooldownMinutes: null,
-  createdAt: new Date('2026-01-01'),
-  updatedAt: new Date('2026-01-01'),
-})
-
 /** Builds a mock IUserSubscriptionRepository with vi.fn() stubs. */
 const makeMockSubRepo = (): IUserSubscriptionRepository => ({
   findByUser: vi.fn(),
@@ -55,90 +39,84 @@ const makeMockBilling = (): IBillingService => ({
   getPortalUrl: vi.fn(),
 })
 
-/** Builds a mock IProjectRepository with vi.fn() stubs. */
-const makeMockProjectRepo = (): IProjectRepository => ({
-  create: vi.fn(),
-  findById: vi.fn(),
-  findByOwner: vi.fn(),
-  update: vi.fn(),
-  delete: vi.fn(),
-  countByOwner: vi.fn(),
-  deleteWithCascade: vi.fn(),
-})
+/** Builds a mock freezeUserProjects function. */
+const makeMockFreezeUserProjects = (): ((params: {
+  userId: string
+}) => ResultAsync<void, AppError>) => vi.fn()
 
 describe('cancelSubscription use case', () => {
   it('cancels stripe subscription, updates status, and freezes projects', async () => {
     const sub = makeFakeSubscription()
-    const proj = makeFakeProject('proj-1')
     const subRepo = makeMockSubRepo()
     const billing = makeMockBilling()
-    const projectRepo = makeMockProjectRepo()
+    const freezeUserProjects = makeMockFreezeUserProjects()
 
     vi.mocked(subRepo.findByUser).mockReturnValue(okAsync(sub))
     vi.mocked(billing.cancelSubscription).mockReturnValue(okAsync(undefined))
     vi.mocked(subRepo.updateStatus).mockReturnValue(okAsync({ ...sub, status: 'canceled' }))
-    vi.mocked(projectRepo.findByOwner).mockReturnValue(okAsync([proj]))
-    vi.mocked(projectRepo.update).mockReturnValue(okAsync({ ...proj, frozen: true }))
+    vi.mocked(freezeUserProjects).mockReturnValue(okAsync(undefined))
 
     const useCase = createCancelSubscription({
       subscriptionRepository: subRepo,
       billingService: billing,
-      projectRepository: projectRepo,
+      freezeUserProjects,
     })
     const result = await useCase({ userId: 'user-1' })
 
     expect(result.isOk()).toBe(true)
     expect(billing.cancelSubscription).toHaveBeenCalledOnce()
     expect(subRepo.updateStatus).toHaveBeenCalledOnce()
-    expect(projectRepo.update).toHaveBeenCalledOnce()
+    expect(freezeUserProjects).toHaveBeenCalledOnce()
+    expect(freezeUserProjects).toHaveBeenCalledWith({ userId: 'user-1' })
   })
 
   it('handles null stripeSubscriptionId without calling billing service', async () => {
     const sub = makeFakeSubscription({ stripeSubscriptionId: null })
     const subRepo = makeMockSubRepo()
     const billing = makeMockBilling()
-    const projectRepo = makeMockProjectRepo()
+    const freezeUserProjects = makeMockFreezeUserProjects()
 
     vi.mocked(subRepo.findByUser).mockReturnValue(okAsync(sub))
     vi.mocked(subRepo.updateStatus).mockReturnValue(okAsync({ ...sub, status: 'canceled' }))
-    vi.mocked(projectRepo.findByOwner).mockReturnValue(okAsync([]))
+    vi.mocked(freezeUserProjects).mockReturnValue(okAsync(undefined))
 
     const useCase = createCancelSubscription({
       subscriptionRepository: subRepo,
       billingService: billing,
-      projectRepository: projectRepo,
+      freezeUserProjects,
     })
     const result = await useCase({ userId: 'user-1' })
 
     expect(result.isOk()).toBe(true)
     expect(billing.cancelSubscription).not.toHaveBeenCalled()
     expect(subRepo.updateStatus).toHaveBeenCalledOnce()
+    expect(freezeUserProjects).toHaveBeenCalledOnce()
   })
 
   it('returns okAsync immediately when no subscription exists', async () => {
     const subRepo = makeMockSubRepo()
     const billing = makeMockBilling()
-    const projectRepo = makeMockProjectRepo()
+    const freezeUserProjects = makeMockFreezeUserProjects()
 
     vi.mocked(subRepo.findByUser).mockReturnValue(okAsync(null))
 
     const useCase = createCancelSubscription({
       subscriptionRepository: subRepo,
       billingService: billing,
-      projectRepository: projectRepo,
+      freezeUserProjects,
     })
     const result = await useCase({ userId: 'user-1' })
 
     expect(result.isOk()).toBe(true)
     expect(billing.cancelSubscription).not.toHaveBeenCalled()
     expect(subRepo.updateStatus).not.toHaveBeenCalled()
-    expect(projectRepo.update).not.toHaveBeenCalled()
+    expect(freezeUserProjects).not.toHaveBeenCalled()
   })
 
   it('returns Err when repository findByUser fails', async () => {
     const subRepo = makeMockSubRepo()
     const billing = makeMockBilling()
-    const projectRepo = makeMockProjectRepo()
+    const freezeUserProjects = makeMockFreezeUserProjects()
     const repoError: AppError = infrastructureError({ message: 'db error' })
 
     vi.mocked(subRepo.findByUser).mockReturnValue(errAsync(repoError))
@@ -146,7 +124,7 @@ describe('cancelSubscription use case', () => {
     const useCase = createCancelSubscription({
       subscriptionRepository: subRepo,
       billingService: billing,
-      projectRepository: projectRepo,
+      freezeUserProjects,
     })
     const result = await useCase({ userId: 'user-1' })
 

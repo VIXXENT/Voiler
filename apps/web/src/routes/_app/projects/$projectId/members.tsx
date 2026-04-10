@@ -5,6 +5,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { MoreHorizontal, UserPlus } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { MemberRoleBadge } from '~/components/MemberRoleBadge'
 import { Button } from '~/components/ui/button'
@@ -77,17 +78,18 @@ const ProjectMembersPage = () => {
   const [targetUserId, setTargetUserId] = useState('')
   const [inviteRole, setInviteRole] = useState<'member' | 'viewer'>('member')
 
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const {
     data: projectData,
     isLoading: projectLoading,
     error: projectError,
+    // @ts-ignore — cross-package tRPC collision
   } = trpc.project.get.useQuery({ projectId })
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const { data: membersData, isLoading: membersLoading } = trpc.member.list.useQuery({ projectId })
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const utils = trpc.useUtils()
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const inviteMember = trpc.member.invite.useMutation({
     onSuccess: () => {
       setInviteOpen(false)
@@ -95,20 +97,33 @@ const ProjectMembersPage = () => {
       setInviteRole('member')
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       void utils.member.list.invalidate({ projectId })
+      toast.success('Member invited')
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      toast.error(message)
     },
   })
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const removeMember = trpc.member.remove.useMutation({
     onSuccess: () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       void utils.member.list.invalidate({ projectId })
     },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      toast.error(message)
+    },
   })
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const updateRole = trpc.member.updateRole.useMutation({
     onSuccess: () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       void utils.member.list.invalidate({ projectId })
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      toast.error(message)
     },
   })
   /* eslint-enable
@@ -147,8 +162,6 @@ const ProjectMembersPage = () => {
   }
 
   const tabBase = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors'
-  const tabActive = 'border-primary text-primary'
-  const tabInactive = 'border-transparent text-muted-foreground hover:text-foreground'
 
   if (projectError !== null && projectError !== undefined) {
     return <div className="p-6 text-destructive">Failed to load project</div>
@@ -228,21 +241,31 @@ const ProjectMembersPage = () => {
         <Link
           to="/projects/$projectId"
           params={{ projectId }}
-          className={`${tabBase} ${tabInactive}`}
+          activeOptions={{ exact: true }}
+          activeProps={{ className: `${tabBase} border-primary text-primary` }}
+          inactiveProps={{
+            className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
+          }}
         >
           Tasks
         </Link>
         <Link
           to="/projects/$projectId/members"
           params={{ projectId }}
-          className={`${tabBase} ${tabActive}`}
+          activeProps={{ className: `${tabBase} border-primary text-primary` }}
+          inactiveProps={{
+            className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
+          }}
         >
           Members
         </Link>
         <Link
           to="/projects/$projectId/settings"
           params={{ projectId }}
-          className={`${tabBase} ${tabInactive}`}
+          activeProps={{ className: `${tabBase} border-primary text-primary` }}
+          inactiveProps={{
+            className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
+          }}
         >
           Settings
         </Link>

@@ -4,6 +4,7 @@
     @typescript-eslint/no-unsafe-member-access */
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { PlanBadge } from '~/components/PlanBadge'
 import { Button } from '~/components/ui/button'
@@ -48,6 +49,10 @@ const BillingPage = () => {
         window.location.href = session['url']
       }
     },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      toast.error(message)
+    },
   })
   // @ts-expect-error — cross-package tRPC collision
   const cancelSubscription = trpc.billing.cancelSubscription.useMutation({
@@ -55,6 +60,10 @@ const BillingPage = () => {
       setCancelOpen(false)
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       void utils.billing.getSubscription.invalidate()
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      toast.error(message)
     },
   })
   /* eslint-enable

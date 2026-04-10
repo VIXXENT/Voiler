@@ -4,6 +4,7 @@
     @typescript-eslint/no-unsafe-member-access */
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { Badge } from '~/components/ui/badge'
 import { Button, buttonVariants } from '~/components/ui/button'
@@ -58,36 +59,50 @@ const ProjectSettingsPage = () => {
   const [transferOpen, setTransferOpen] = useState(false)
   const [newOwnerId, setNewOwnerId] = useState('')
 
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const {
     data: projectData,
     isLoading: projectLoading,
     error: projectError,
+    // @ts-ignore — cross-package tRPC collision
   } = trpc.project.get.useQuery({ projectId })
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const utils = trpc.useUtils()
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const archiveProject = trpc.project.archive.useMutation({
     onSuccess: () => {
       setArchiveOpen(false)
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       void utils.project.get.invalidate({ projectId })
     },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      toast.error(message)
+    },
   })
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const deleteProject = trpc.project.delete.useMutation({
     onSuccess: () => {
       setDeleteOpen(false)
       window.location.href = '/projects'
     },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      toast.error(message)
+    },
   })
-  // @ts-expect-error — cross-package tRPC collision
+  // @ts-ignore — cross-package tRPC collision
   const transferOwnership = trpc.member.transferOwnership.useMutation({
     onSuccess: () => {
       setTransferOpen(false)
       setNewOwnerId('')
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       void utils.project.get.invalidate({ projectId })
+      toast.success('Ownership transferred')
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      toast.error(message)
     },
   })
   /* eslint-enable
@@ -129,8 +144,6 @@ const ProjectSettingsPage = () => {
   }
 
   const tabBase = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors'
-  const tabActive = 'border-primary text-primary'
-  const tabInactive = 'border-transparent text-muted-foreground hover:text-foreground'
 
   if (projectError !== null && projectError !== undefined) {
     return <div className="p-6 text-destructive">Failed to load project</div>
@@ -161,21 +174,31 @@ const ProjectSettingsPage = () => {
         <Link
           to="/projects/$projectId"
           params={{ projectId }}
-          className={`${tabBase} ${tabInactive}`}
+          activeOptions={{ exact: true }}
+          activeProps={{ className: `${tabBase} border-primary text-primary` }}
+          inactiveProps={{
+            className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
+          }}
         >
           Tasks
         </Link>
         <Link
           to="/projects/$projectId/members"
           params={{ projectId }}
-          className={`${tabBase} ${tabInactive}`}
+          activeProps={{ className: `${tabBase} border-primary text-primary` }}
+          inactiveProps={{
+            className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
+          }}
         >
           Members
         </Link>
         <Link
           to="/projects/$projectId/settings"
           params={{ projectId }}
-          className={`${tabBase} ${tabActive}`}
+          activeProps={{ className: `${tabBase} border-primary text-primary` }}
+          inactiveProps={{
+            className: `${tabBase} border-transparent text-muted-foreground hover:text-foreground`,
+          }}
         >
           Settings
         </Link>

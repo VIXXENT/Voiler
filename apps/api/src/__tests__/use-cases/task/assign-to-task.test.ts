@@ -92,6 +92,15 @@ const makeMockMemberRepo = (): IProjectMemberRepository => ({
   deleteByUser: vi.fn(),
 })
 
+/** Builds a fake project membership record for the target user. */
+const makeFakeTargetMembership = ({ userId }: { userId: string }) => ({
+  id: `m-${userId}`,
+  projectId: 'proj-1',
+  userId,
+  role: 'member' as const,
+  joinedAt: new Date('2026-01-01'),
+})
+
 describe('assignToTask use case', () => {
   it('assigns a collaborator without responsible check (owner)', async () => {
     const fakeTask = makeFakeTask()
@@ -103,7 +112,10 @@ describe('assignToTask use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
-    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+    // 1st call: caller membership check (owner → null is ok); 2nd call: target membership check
+    vi.mocked(memberRepo.findMembership)
+      .mockReturnValueOnce(okAsync(null))
+      .mockReturnValueOnce(okAsync(makeFakeTargetMembership({ userId: 'user-2' })))
     vi.mocked(assigneeRepo.assign).mockReturnValue(okAsync(fakeAssignee))
 
     const useCase = createAssignToTask({
@@ -137,7 +149,10 @@ describe('assignToTask use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
-    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+    // 1st call: caller membership check (owner → null is ok); 2nd call: target membership check
+    vi.mocked(memberRepo.findMembership)
+      .mockReturnValueOnce(okAsync(null))
+      .mockReturnValueOnce(okAsync(makeFakeTargetMembership({ userId: 'user-2' })))
     vi.mocked(assigneeRepo.findResponsible).mockReturnValue(okAsync(null))
     vi.mocked(assigneeRepo.assign).mockReturnValue(okAsync(fakeAssignee))
 
@@ -172,7 +187,10 @@ describe('assignToTask use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
-    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+    // 1st call: caller membership check (owner → null is ok); 2nd call: target membership check
+    vi.mocked(memberRepo.findMembership)
+      .mockReturnValueOnce(okAsync(null))
+      .mockReturnValueOnce(okAsync(makeFakeTargetMembership({ userId: 'user-2' })))
     vi.mocked(assigneeRepo.findResponsible).mockReturnValue(okAsync(existingResponsible))
     vi.mocked(assigneeRepo.assign).mockReturnValue(okAsync(existingResponsible))
 
@@ -203,7 +221,10 @@ describe('assignToTask use case', () => {
     const memberRepo = makeMockMemberRepo()
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
-    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+    // 1st call: caller membership check (owner → null is ok); 2nd call: target membership check
+    vi.mocked(memberRepo.findMembership)
+      .mockReturnValueOnce(okAsync(null))
+      .mockReturnValueOnce(okAsync(makeFakeTargetMembership({ userId: 'user-3' })))
     vi.mocked(assigneeRepo.findResponsible).mockReturnValue(okAsync(existingResponsible))
 
     const useCase = createAssignToTask({
@@ -284,6 +305,40 @@ describe('assignToTask use case', () => {
     expect(assigneeRepo.assign).not.toHaveBeenCalled()
   })
 
+  it('returns Err(NotAMember) when targetUserId is not a project member', async () => {
+    const fakeTask = makeFakeTask()
+    const fakeProject = makeFakeProject()
+    const taskRepo = makeMockTaskRepo()
+    const assigneeRepo = makeMockAssigneeRepo()
+    const projectRepo = makeMockProjectRepo()
+    const memberRepo = makeMockMemberRepo()
+    vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
+    vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
+    // 1st call: caller membership check (owner → null is ok); 2nd call: target membership check → null (not a member)
+    vi.mocked(memberRepo.findMembership)
+      .mockReturnValueOnce(okAsync(null))
+      .mockReturnValueOnce(okAsync(null))
+
+    const useCase = createAssignToTask({
+      taskRepository: taskRepo,
+      taskAssigneeRepository: assigneeRepo,
+      projectRepository: projectRepo,
+      memberRepository: memberRepo,
+    })
+    const result = await useCase({
+      userId: 'user-1',
+      taskId: 'task-1',
+      targetUserId: 'user-99',
+      role: 'collaborator',
+    })
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.tag).toBe('NotAMember')
+    }
+    expect(assigneeRepo.assign).not.toHaveBeenCalled()
+  })
+
   it('returns Err(InsufficientPermission) when viewer tries to assign', async () => {
     const fakeTask = makeFakeTask()
     const fakeProject = makeFakeProject()
@@ -333,7 +388,10 @@ describe('assignToTask use case', () => {
     const repoError: AppError = infrastructureError({ message: 'db error' })
     vi.mocked(taskRepo.findById).mockReturnValue(okAsync(fakeTask))
     vi.mocked(projectRepo.findById).mockReturnValue(okAsync(fakeProject))
-    vi.mocked(memberRepo.findMembership).mockReturnValue(okAsync(null))
+    // 1st call: caller membership check (owner → null is ok); 2nd call: target membership check
+    vi.mocked(memberRepo.findMembership)
+      .mockReturnValueOnce(okAsync(null))
+      .mockReturnValueOnce(okAsync(makeFakeTargetMembership({ userId: 'user-2' })))
     vi.mocked(assigneeRepo.assign).mockReturnValue(errAsync(repoError))
 
     const useCase = createAssignToTask({

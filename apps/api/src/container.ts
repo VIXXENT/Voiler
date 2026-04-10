@@ -31,6 +31,7 @@ import {
   createDeleteTask,
   createDeleteUserData,
   createFreezeUserProjects,
+  createUnfreezeUserProjects,
   createGetProject,
   createGetSubscription,
   createGetUser,
@@ -203,6 +204,7 @@ interface Container {
     data: Record<string, unknown>
   }) => ResultAsync<void, AppError>
   readonly freezeUserProjects: (params: { userId: string }) => ResultAsync<void, AppError>
+  readonly unfreezeUserProjects: (params: { userId: string }) => ResultAsync<void, AppError>
 }
 
 /**
@@ -421,16 +423,18 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
     subscriptionRepository,
     billingService,
   })
+  const rawFreezeUserProjects = createFreezeUserProjects({ projectRepository })
+  const rawUnfreezeUserProjects = createUnfreezeUserProjects({ projectRepository })
   const rawCancelSubscription = createCancelSubscription({
     subscriptionRepository,
     billingService,
-    projectRepository,
+    freezeUserProjects: rawFreezeUserProjects,
   })
   const rawHandleStripeWebhook = createHandleStripeWebhook({
     subscriptionRepository,
-    projectRepository,
+    freezeUserProjects: rawFreezeUserProjects,
+    unfreezeUserProjects: rawUnfreezeUserProjects,
   })
-  const rawFreezeUserProjects = createFreezeUserProjects({ projectRepository })
 
   // read-only — no audit log
   const getSubscription: Container['getSubscription'] = rawGetSubscription
@@ -451,6 +455,7 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   // internal / webhook — not exposed via tRPC directly
   const handleStripeWebhook: Container['handleStripeWebhook'] = rawHandleStripeWebhook
   const freezeUserProjects: Container['freezeUserProjects'] = rawFreezeUserProjects
+  const unfreezeUserProjects: Container['unfreezeUserProjects'] = rawUnfreezeUserProjects
 
   return {
     createUser,
@@ -480,6 +485,7 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
     cancelSubscription,
     handleStripeWebhook,
     freezeUserProjects,
+    unfreezeUserProjects,
   }
 }
 

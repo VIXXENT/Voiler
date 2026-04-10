@@ -40,6 +40,7 @@ interface AssignToTaskParams {
  * Factory that builds a use case for assigning a user to a task.
  *
  * Verifies the task exists, checks mutate permission via the task's project.
+ * Verifies the targetUserId is the project owner or has a project membership.
  * If assigning the 'responsible' role, checks there is no conflicting responsible.
  * Then creates the assignment record.
  */
@@ -75,19 +76,32 @@ export const createAssignToTask: (
               if (permResult.isErr()) {
                 return errAsync(permResult.error)
               }
+              const targetIsOwner = project.ownerId === targetUserId
+              const checkTargetMembership = targetIsOwner
+                ? okAsync(null)
+                : memberRepository
+                    .findMembership({ projectId: task.projectId, userId: targetUserId })
+                    .andThen((targetMembership) => {
+                      if (targetMembership === null) {
+                        return errAsync(notAMember('The assignee is not a member of this project'))
+                      }
+                      return okAsync(null)
+                    })
               if (role !== 'responsible') {
-                return okAsync(null)
+                return checkTargetMembership
               }
-              return taskAssigneeRepository.findResponsible({ taskId }).andThen((responsible) => {
-                const assignResult = canAssignResponsible({
-                  currentResponsibleUserId: responsible?.userId ?? null,
-                  newUserId: targetUserId,
-                })
-                if (assignResult.isErr()) {
-                  return errAsync(assignResult.error)
-                }
-                return okAsync(null)
-              })
+              return checkTargetMembership.andThen(() =>
+                taskAssigneeRepository.findResponsible({ taskId }).andThen((responsible) => {
+                  const assignResult = canAssignResponsible({
+                    currentResponsibleUserId: responsible?.userId ?? null,
+                    newUserId: targetUserId,
+                  })
+                  if (assignResult.isErr()) {
+                    return errAsync(assignResult.error)
+                  }
+                  return okAsync(null)
+                }),
+              )
             })
         })
       })

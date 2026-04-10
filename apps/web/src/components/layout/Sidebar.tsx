@@ -6,13 +6,16 @@ import { Button } from '~/components/ui/button'
 import { Separator } from '~/components/ui/separator'
 import { authClient } from '~/lib/auth'
 import { APP_NAME } from '~/lib/constants'
-import { cn } from '~/lib/utils'
 
 const navItems = [
   { to: '/projects', label: 'Projects', icon: FolderOpen },
   { to: '/settings/billing', label: 'Billing', icon: CreditCard },
-  { to: '/settings/profile', label: 'Settings', icon: Settings },
+  { to: '/settings/sessions', label: 'Settings', icon: Settings },
 ] as const
+
+const navBase = 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium'
+const navActive = `${navBase} bg-gray-100 text-gray-900`
+const navInactive = `${navBase} text-gray-600 hover:bg-gray-100 hover:text-gray-900`
 
 /** Sidebar navigation for the authenticated app shell. */
 const Sidebar = () => {
@@ -44,11 +47,8 @@ const Sidebar = () => {
             <Link
               key={item.to}
               to={item.to}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-gray-600',
-                'hover:bg-gray-100 hover:text-gray-900',
-                '[&.active]:bg-gray-100 [&.active]:text-gray-900',
-              )}
+              activeProps={{ className: navActive }}
+              inactiveProps={{ className: navInactive }}
             >
               <Icon className="h-4 w-4 shrink-0" />
               {item.label}

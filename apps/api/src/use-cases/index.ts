@@ -30,6 +30,7 @@ export { createCreateCheckoutSession } from './subscription/create-checkout-sess
 export { createCancelSubscription } from './subscription/cancel-subscription.js'
 export { createHandleStripeWebhook } from './subscription/handle-stripe-webhook.js'
 export { createFreezeUserProjects } from './subscription/freeze-user-projects.js'
+export { createUnfreezeUserProjects } from './subscription/unfreeze-user-projects.js'
 
 // Task
 export { createCreateTask } from './task/create-task.js'

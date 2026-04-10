@@ -1,12 +1,13 @@
-import type { AppError, IProjectRepository, IUserSubscriptionRepository } from '@voiler/core'
-import { okAsync, ResultAsync } from 'neverthrow'
+import type { AppError, IUserSubscriptionRepository } from '@voiler/core'
+import { okAsync, type ResultAsync } from 'neverthrow'
 
 /**
  * Dependencies injected into the handleStripeWebhook use case.
  */
 interface HandleStripeWebhookDeps {
   readonly subscriptionRepository: IUserSubscriptionRepository
-  readonly projectRepository: IProjectRepository
+  readonly freezeUserProjects: (params: { userId: string }) => ResultAsync<void, AppError>
+  readonly unfreezeUserProjects: (params: { userId: string }) => ResultAsync<void, AppError>
 }
 
 /**
@@ -15,11 +16,6 @@ interface HandleStripeWebhookDeps {
 interface HandleStripeWebhookParams {
   readonly type: string
   readonly data: Record<string, unknown>
-}
-
-interface ProjectHelperParams {
-  readonly projectRepository: IProjectRepository
-  readonly userId: string
 }
 
 /** Type guard: checks if a value is a non-null object (i.e. Record). */
@@ -34,44 +30,6 @@ const extractString = ({ v, key }: { v: unknown; key: string }): string | null =
   return typeof val === 'string' ? val : null
 }
 
-/** Freezes all projects owned by a user. */
-const freezeUserProjects = ({
-  projectRepository,
-  userId,
-}: ProjectHelperParams): ResultAsync<void, AppError> =>
-  projectRepository
-    .findByOwner({ ownerId: userId })
-    .andThen((projects) => {
-      if (projects.length === 0) {
-        return okAsync([])
-      }
-      return ResultAsync.combine(
-        projects.map((p) =>
-          projectRepository.update({ id: p.id, data: { frozen: true, updatedAt: new Date() } }),
-        ),
-      )
-    })
-    .map(() => undefined)
-
-/** Unfreezes all projects owned by a user. */
-const unfreezeUserProjects = ({
-  projectRepository,
-  userId,
-}: ProjectHelperParams): ResultAsync<void, AppError> =>
-  projectRepository
-    .findByOwner({ ownerId: userId })
-    .andThen((projects) => {
-      if (projects.length === 0) {
-        return okAsync([])
-      }
-      return ResultAsync.combine(
-        projects.map((p) =>
-          projectRepository.update({ id: p.id, data: { frozen: false, updatedAt: new Date() } }),
-        ),
-      )
-    })
-    .map(() => undefined)
-
 /**
  * Factory that builds a use case for handling Stripe webhook events.
  *
@@ -83,7 +41,7 @@ const unfreezeUserProjects = ({
 export const createHandleStripeWebhook: (
   deps: HandleStripeWebhookDeps,
 ) => (params: HandleStripeWebhookParams) => ResultAsync<void, AppError> = (deps) => (params) => {
-  const { subscriptionRepository, projectRepository } = deps
+  const { subscriptionRepository, freezeUserProjects, unfreezeUserProjects } = deps
   const { type, data } = params
 
   const obj: unknown = data.object
@@ -107,7 +65,7 @@ export const createHandleStripeWebhook: (
           updatedAt: new Date(),
         },
       })
-      .andThen(() => unfreezeUserProjects({ projectRepository, userId }))
+      .andThen(() => unfreezeUserProjects({ userId }))
   }
 
   if (type === 'customer.subscription.deleted') {
@@ -120,7 +78,7 @@ export const createHandleStripeWebhook: (
 
     return subscriptionRepository
       .updateStatus({ userId, status: 'canceled', updatedAt: new Date() })
-      .andThen(() => freezeUserProjects({ projectRepository, userId }))
+      .andThen(() => freezeUserProjects({ userId }))
   }
 
   return okAsync(undefined)

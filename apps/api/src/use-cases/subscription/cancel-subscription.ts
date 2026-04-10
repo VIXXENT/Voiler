@@ -1,10 +1,5 @@
-import type {
-  AppError,
-  IBillingService,
-  IProjectRepository,
-  IUserSubscriptionRepository,
-} from '@voiler/core'
-import { okAsync, ResultAsync } from 'neverthrow'
+import type { AppError, IBillingService, IUserSubscriptionRepository } from '@voiler/core'
+import { okAsync, type ResultAsync } from 'neverthrow'
 
 /**
  * Dependencies injected into the cancelSubscription use case.
@@ -12,7 +7,7 @@ import { okAsync, ResultAsync } from 'neverthrow'
 interface CancelSubscriptionDeps {
   readonly subscriptionRepository: IUserSubscriptionRepository
   readonly billingService: IBillingService
-  readonly projectRepository: IProjectRepository
+  readonly freezeUserProjects: (params: { userId: string }) => ResultAsync<void, AppError>
 }
 
 /**
@@ -21,30 +16,6 @@ interface CancelSubscriptionDeps {
 interface CancelSubscriptionParams {
   readonly userId: string
 }
-
-interface FreezeParams {
-  readonly projectRepository: IProjectRepository
-  readonly userId: string
-}
-
-/** Freezes all projects owned by a user. */
-const freezeUserProjects = ({
-  projectRepository,
-  userId,
-}: FreezeParams): ResultAsync<void, AppError> =>
-  projectRepository
-    .findByOwner({ ownerId: userId })
-    .andThen((projects) => {
-      if (projects.length === 0) {
-        return okAsync([])
-      }
-      return ResultAsync.combine(
-        projects.map((p) =>
-          projectRepository.update({ id: p.id, data: { frozen: true, updatedAt: new Date() } }),
-        ),
-      )
-    })
-    .map(() => undefined)
 
 /**
  * Factory that builds a use case for cancelling a user's subscription.
@@ -56,7 +27,7 @@ const freezeUserProjects = ({
 export const createCancelSubscription: (
   deps: CancelSubscriptionDeps,
 ) => (params: CancelSubscriptionParams) => ResultAsync<void, AppError> = (deps) => (params) => {
-  const { subscriptionRepository, billingService, projectRepository } = deps
+  const { subscriptionRepository, billingService, freezeUserProjects } = deps
   const { userId } = params
 
   return subscriptionRepository.findByUser({ userId }).andThen((subscription) => {
@@ -79,6 +50,6 @@ export const createCancelSubscription: (
           updatedAt: new Date(),
         }),
       )
-      .andThen(() => freezeUserProjects({ projectRepository, userId }))
+      .andThen(() => freezeUserProjects({ userId }))
   })
 }

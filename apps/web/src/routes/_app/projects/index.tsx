@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { PageHeader } from '~/components/layout'
 import { ProjectCard } from '~/components/ProjectCard'
@@ -63,6 +64,11 @@ const ProjectsPage = () => {
       setDescription('')
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       void utils.project.list.invalidate()
+      toast.success('Project created')
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      toast.error(message)
     },
   })
   /* eslint-enable

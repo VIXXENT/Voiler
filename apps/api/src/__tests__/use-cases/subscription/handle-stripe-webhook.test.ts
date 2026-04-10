@@ -1,12 +1,6 @@
-import type {
-  AppError,
-  IProjectRepository,
-  IUserSubscriptionRepository,
-  ProjectRecord,
-  SubscriptionRecord,
-} from '@voiler/core'
+import type { AppError, IUserSubscriptionRepository, SubscriptionRecord } from '@voiler/core'
 import { infrastructureError } from '@voiler/core'
-import { errAsync, okAsync } from 'neverthrow'
+import { errAsync, okAsync, type ResultAsync } from 'neverthrow'
 import { describe, expect, it, vi } from 'vitest'
 
 import { createHandleStripeWebhook } from '../../../use-cases/subscription/handle-stripe-webhook'
@@ -24,20 +18,6 @@ const makeFakeSubscription = (): SubscriptionRecord => ({
   updatedAt: new Date('2026-01-01'),
 })
 
-/** Builds a fake ProjectRecord for test assertions. */
-const makeFakeProject = (id: string): ProjectRecord => ({
-  id,
-  name: `Project ${id}`,
-  description: null,
-  ownerId: 'user-1',
-  status: 'active',
-  frozen: false,
-  unfrozenAt: null,
-  cooldownMinutes: null,
-  createdAt: new Date('2026-01-01'),
-  updatedAt: new Date('2026-01-01'),
-})
-
 /** Builds a mock IUserSubscriptionRepository with vi.fn() stubs. */
 const makeMockSubRepo = (): IUserSubscriptionRepository => ({
   findByUser: vi.fn(),
@@ -46,32 +26,31 @@ const makeMockSubRepo = (): IUserSubscriptionRepository => ({
   updateStripeData: vi.fn(),
 })
 
-/** Builds a mock IProjectRepository with vi.fn() stubs. */
-const makeMockProjectRepo = (): IProjectRepository => ({
-  create: vi.fn(),
-  findById: vi.fn(),
-  findByOwner: vi.fn(),
-  update: vi.fn(),
-  delete: vi.fn(),
-  countByOwner: vi.fn(),
-  deleteWithCascade: vi.fn(),
-})
+/** Builds a mock freezeUserProjects function. */
+const makeMockFreezeUserProjects = (): ((params: {
+  userId: string
+}) => ResultAsync<void, AppError>) => vi.fn()
+
+/** Builds a mock unfreezeUserProjects function. */
+const makeMockUnfreezeUserProjects = (): ((params: {
+  userId: string
+}) => ResultAsync<void, AppError>) => vi.fn()
 
 describe('handleStripeWebhook use case', () => {
   describe('checkout.session.completed', () => {
     it('upgrades plan to pro and unfreezes projects', async () => {
       const fakeSub = makeFakeSubscription()
-      const proj = makeFakeProject('proj-1')
       const subRepo = makeMockSubRepo()
-      const projectRepo = makeMockProjectRepo()
+      const freezeUserProjects = makeMockFreezeUserProjects()
+      const unfreezeUserProjects = makeMockUnfreezeUserProjects()
 
       vi.mocked(subRepo.upsert).mockReturnValue(okAsync(fakeSub))
-      vi.mocked(projectRepo.findByOwner).mockReturnValue(okAsync([proj]))
-      vi.mocked(projectRepo.update).mockReturnValue(okAsync({ ...proj, frozen: false }))
+      vi.mocked(unfreezeUserProjects).mockReturnValue(okAsync(undefined))
 
       const useCase = createHandleStripeWebhook({
         subscriptionRepository: subRepo,
-        projectRepository: projectRepo,
+        freezeUserProjects,
+        unfreezeUserProjects,
       })
       const result = await useCase({
         type: 'checkout.session.completed',
@@ -84,16 +63,20 @@ describe('handleStripeWebhook use case', () => {
 
       expect(result.isOk()).toBe(true)
       expect(subRepo.upsert).toHaveBeenCalledOnce()
-      expect(projectRepo.update).toHaveBeenCalledOnce()
+      expect(unfreezeUserProjects).toHaveBeenCalledOnce()
+      expect(unfreezeUserProjects).toHaveBeenCalledWith({ userId: 'user-1' })
+      expect(freezeUserProjects).not.toHaveBeenCalled()
     })
 
     it('returns okAsync when metadata is missing userId', async () => {
       const subRepo = makeMockSubRepo()
-      const projectRepo = makeMockProjectRepo()
+      const freezeUserProjects = makeMockFreezeUserProjects()
+      const unfreezeUserProjects = makeMockUnfreezeUserProjects()
 
       const useCase = createHandleStripeWebhook({
         subscriptionRepository: subRepo,
-        projectRepository: projectRepo,
+        freezeUserProjects,
+        unfreezeUserProjects,
       })
       const result = await useCase({
         type: 'checkout.session.completed',
@@ -108,17 +91,17 @@ describe('handleStripeWebhook use case', () => {
   describe('customer.subscription.deleted', () => {
     it('cancels subscription and freezes projects', async () => {
       const fakeSub = makeFakeSubscription()
-      const proj = makeFakeProject('proj-1')
       const subRepo = makeMockSubRepo()
-      const projectRepo = makeMockProjectRepo()
+      const freezeUserProjects = makeMockFreezeUserProjects()
+      const unfreezeUserProjects = makeMockUnfreezeUserProjects()
 
       vi.mocked(subRepo.updateStatus).mockReturnValue(okAsync({ ...fakeSub, status: 'canceled' }))
-      vi.mocked(projectRepo.findByOwner).mockReturnValue(okAsync([proj]))
-      vi.mocked(projectRepo.update).mockReturnValue(okAsync({ ...proj, frozen: true }))
+      vi.mocked(freezeUserProjects).mockReturnValue(okAsync(undefined))
 
       const useCase = createHandleStripeWebhook({
         subscriptionRepository: subRepo,
-        projectRepository: projectRepo,
+        freezeUserProjects,
+        unfreezeUserProjects,
       })
       const result = await useCase({
         type: 'customer.subscription.deleted',
@@ -131,16 +114,20 @@ describe('handleStripeWebhook use case', () => {
 
       expect(result.isOk()).toBe(true)
       expect(subRepo.updateStatus).toHaveBeenCalledOnce()
-      expect(projectRepo.update).toHaveBeenCalledOnce()
+      expect(freezeUserProjects).toHaveBeenCalledOnce()
+      expect(freezeUserProjects).toHaveBeenCalledWith({ userId: 'user-1' })
+      expect(unfreezeUserProjects).not.toHaveBeenCalled()
     })
 
     it('returns okAsync when metadata userId is missing', async () => {
       const subRepo = makeMockSubRepo()
-      const projectRepo = makeMockProjectRepo()
+      const freezeUserProjects = makeMockFreezeUserProjects()
+      const unfreezeUserProjects = makeMockUnfreezeUserProjects()
 
       const useCase = createHandleStripeWebhook({
         subscriptionRepository: subRepo,
-        projectRepository: projectRepo,
+        freezeUserProjects,
+        unfreezeUserProjects,
       })
       const result = await useCase({
         type: 'customer.subscription.deleted',
@@ -155,11 +142,13 @@ describe('handleStripeWebhook use case', () => {
   describe('unknown event type', () => {
     it('ignores the event and returns okAsync', async () => {
       const subRepo = makeMockSubRepo()
-      const projectRepo = makeMockProjectRepo()
+      const freezeUserProjects = makeMockFreezeUserProjects()
+      const unfreezeUserProjects = makeMockUnfreezeUserProjects()
 
       const useCase = createHandleStripeWebhook({
         subscriptionRepository: subRepo,
-        projectRepository: projectRepo,
+        freezeUserProjects,
+        unfreezeUserProjects,
       })
       const result = await useCase({
         type: 'invoice.payment_succeeded',
@@ -174,14 +163,16 @@ describe('handleStripeWebhook use case', () => {
 
   it('returns Err when upsert fails on checkout.session.completed', async () => {
     const subRepo = makeMockSubRepo()
-    const projectRepo = makeMockProjectRepo()
+    const freezeUserProjects = makeMockFreezeUserProjects()
+    const unfreezeUserProjects = makeMockUnfreezeUserProjects()
     const repoError: AppError = infrastructureError({ message: 'db error' })
 
     vi.mocked(subRepo.upsert).mockReturnValue(errAsync(repoError))
 
     const useCase = createHandleStripeWebhook({
       subscriptionRepository: subRepo,
-      projectRepository: projectRepo,
+      freezeUserProjects,
+      unfreezeUserProjects,
     })
     const result = await useCase({
       type: 'checkout.session.completed',
