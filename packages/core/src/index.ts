@@ -43,3 +43,15 @@ export type {
   IProjectMemberRepository,
   ProjectMemberRecord,
 } from './repositories/project-member.repository'
+
+export type {
+  IUserSubscriptionRepository,
+  SubscriptionRecord,
+  UpsertSubscriptionData,
+} from './repositories/user-subscription.repository'
+
+// Service ports
+export type {
+  CheckoutSessionResult,
+  IBillingService,
+} from './services/billing.service'
