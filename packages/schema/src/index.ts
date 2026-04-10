@@ -50,6 +50,18 @@ export type {
   ProjectMemberInsert,
 } from './entities/project-member.js'
 
+export {
+  UserSubscription,
+  UserSubscriptionSelectSchema,
+  UserSubscriptionInsertSchema,
+} from './entities/user-subscription.js'
+
+export type {
+  UserSubscriptionSelect,
+  UserSubscriptionInsert,
+  SubscriptionRecord,
+} from './entities/user-subscription.js'
+
 // --- Inputs (tRPC procedure validation) ---
 export { CreateUserInputSchema } from './inputs/create-user.js'
 export type { CreateUserInput } from './inputs/create-user.js'
@@ -84,6 +96,9 @@ export type { UpdateMemberRoleInput } from './inputs/update-member-role.js'
 export { TransferOwnershipInputSchema } from './inputs/transfer-ownership.js'
 export type { TransferOwnershipInput } from './inputs/transfer-ownership.js'
 
+export { CreateCheckoutSessionInputSchema } from './inputs/create-checkout-session.js'
+export type { CreateCheckoutSessionInput } from './inputs/create-checkout-session.js'
+
 // --- Outputs (client-safe response schemas) ---
 export { PublicUserSchema } from './outputs/public-user.js'
 export type { PublicUser } from './outputs/public-user.js'
@@ -96,3 +111,6 @@ export type { PublicTask } from './outputs/public-task.js'
 
 export { PublicProjectMemberSchema } from './outputs/public-project-member.js'
 export type { PublicProjectMember } from './outputs/public-project-member.js'
+
+export { PublicSubscriptionSchema } from './outputs/public-subscription.js'
+export type { PublicSubscription } from './outputs/public-subscription.js'
