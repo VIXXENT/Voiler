@@ -45,13 +45,17 @@ const ProjectCard = ({
           {typeof memberCount === 'number' && (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Users className="h-4 w-4" />
-              <span>{memberCount} member{memberCount === 1 ? '' : 's'}</span>
+              <span>
+                {memberCount} member{memberCount === 1 ? '' : 's'}
+              </span>
             </div>
           )}
           {typeof taskCount === 'number' && (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <CheckSquare className="h-4 w-4" />
-              <span>{taskCount} task{taskCount === 1 ? '' : 's'}</span>
+              <span>
+                {taskCount} task{taskCount === 1 ? '' : 's'}
+              </span>
             </div>
           )}
         </div>

@@ -24,8 +24,7 @@ const badgeVariants = cva(
 
 /** Props for the Badge component. */
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
 
 /** Small pill label with semantic color variants. */
 const Badge = ({ className, variant, ...props }: BadgeProps) => (
