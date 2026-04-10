@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test'
 
+// Auth tests visit unauthenticated pages — clear global storageState
+test.use({ storageState: { cookies: [], origins: [] } })
+
 test('login page renders with form fields', async ({ page }) => {
   await page.goto('/auth/login')
   await expect(page.getByRole('textbox', { name: /email/i })).toBeVisible()
