@@ -27,8 +27,11 @@ const createPaymentRouter = (params: CreatePaymentRouterParams) => {
         const result = await paymentService.createCheckoutSession(input)
         return result.match(
           (session: CheckoutSession) => session,
-          (error: { readonly message: string }) => {
-            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message })
+          () => {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: 'Failed to create checkout session',
+            })
           },
         )
       }),
@@ -53,8 +56,11 @@ const createPaymentRouter = (params: CreatePaymentRouterParams) => {
         const result = await paymentService.handleWebhookEvent(input)
         return result.match(
           () => ({ received: true }),
-          (error: { readonly message: string }) => {
-            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message })
+          () => {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: 'Failed to process webhook event',
+            })
           },
         )
       }),

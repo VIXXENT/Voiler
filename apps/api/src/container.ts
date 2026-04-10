@@ -235,7 +235,11 @@ const createContainer: (params: CreateContainerParams) => Container = (params) =
   const rawListUsers: Container['listUsers'] = createListUsers({ userRepository })
 
   // --- Project use-cases (raw) ---
-  const rawCreateProject = createCreateProject({ projectRepository, subscriptionRepository })
+  const rawCreateProject = createCreateProject({
+    projectRepository,
+    memberRepository,
+    subscriptionRepository,
+  })
   const rawGetProject = createGetProject({ projectRepository, memberRepository })
   const rawListUserProjects = createListUserProjects({ projectRepository })
   const rawArchiveProject = createArchiveProject({ projectRepository })

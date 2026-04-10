@@ -1,5 +1,9 @@
 import type { AppError, IUserSubscriptionRepository } from '@voiler/core'
+import type { PlanId } from '@voiler/domain'
 import { okAsync, type ResultAsync } from 'neverthrow'
+
+/** Known plan IDs that can be activated via checkout. */
+const VALID_PLAN_IDS: ReadonlySet<string> = new Set<PlanId>(['free', 'pro'])
 
 /**
  * Dependencies injected into the handleStripeWebhook use case.
@@ -49,18 +53,20 @@ export const createHandleStripeWebhook: (
   if (type === 'checkout.session.completed') {
     const metadata: unknown = isRecord(obj) ? obj.metadata : null
     const userId = extractString({ v: metadata, key: 'userId' })
-    const plan = extractString({ v: metadata, key: 'plan' })
+    const planRaw = extractString({ v: metadata, key: 'plan' })
 
-    if (userId === null || plan === null) {
+    if (userId === null || planRaw === null || !VALID_PLAN_IDS.has(planRaw)) {
       return okAsync(undefined)
     }
+
+    const plan = planRaw as PlanId
 
     return subscriptionRepository
       .upsert({
         userId,
         data: {
           userId,
-          plan: 'pro',
+          plan,
           status: 'active',
           updatedAt: new Date(),
         },

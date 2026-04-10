@@ -1,5 +1,6 @@
 import type {
   AppError,
+  IProjectMemberRepository,
   IProjectRepository,
   IUserSubscriptionRepository,
   ProjectRecord,
@@ -13,6 +14,7 @@ import { errAsync, type ResultAsync } from 'neverthrow'
  */
 interface CreateProjectDeps {
   readonly projectRepository: IProjectRepository
+  readonly memberRepository: IProjectMemberRepository
   readonly subscriptionRepository: IUserSubscriptionRepository
 }
 
@@ -30,11 +32,12 @@ interface CreateProjectParams {
  *
  * Validates the project name, checks the user's plan project limit,
  * then persists the project with the given userId as owner, status 'active', and frozen = false.
+ * Also inserts an owner membership row so the owner appears in member listings.
  */
 export const createCreateProject: (
   deps: CreateProjectDeps,
 ) => (params: CreateProjectParams) => ResultAsync<ProjectRecord, AppError> = (deps) => (params) => {
-  const { projectRepository, subscriptionRepository } = deps
+  const { projectRepository, memberRepository, subscriptionRepository } = deps
   const { userId, name, description } = params
 
   const validationResult = validateProjectName({ name })
@@ -49,14 +52,28 @@ export const createCreateProject: (
       if (limitResult.isErr()) {
         return errAsync(limitResult.error)
       }
-      return projectRepository.create({
-        data: {
-          id: crypto.randomUUID(),
-          name: validationResult.value,
-          description,
-          ownerId: userId,
-        },
-      })
+      return projectRepository
+        .create({
+          data: {
+            id: crypto.randomUUID(),
+            name: validationResult.value,
+            description,
+            ownerId: userId,
+          },
+        })
+        .andThen((project) =>
+          memberRepository
+            .addMember({
+              data: {
+                id: crypto.randomUUID(),
+                projectId: project.id,
+                userId,
+                role: 'member',
+                joinedAt: new Date(),
+              },
+            })
+            .map(() => project),
+        )
     }),
   )
 }

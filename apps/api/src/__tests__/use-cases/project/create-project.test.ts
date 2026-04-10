@@ -1,7 +1,9 @@
 import type {
   AppError,
+  IProjectMemberRepository,
   IProjectRepository,
   IUserSubscriptionRepository,
+  ProjectMemberRecord,
   ProjectRecord,
 } from '@voiler/core'
 import { infrastructureError } from '@voiler/core'
@@ -35,6 +37,26 @@ const makeMockRepo = (): IProjectRepository => ({
   deleteWithCascade: vi.fn(),
 })
 
+/** Builds a fake ProjectMemberRecord for test assertions. */
+const makeFakeMember = (): ProjectMemberRecord => ({
+  id: 'member-1',
+  projectId: 'proj-1',
+  userId: 'user-1',
+  role: 'member',
+  joinedAt: new Date('2026-01-01'),
+})
+
+/** Builds a mock IProjectMemberRepository with vi.fn() stubs. */
+const makeMockMemberRepo = (): IProjectMemberRepository => ({
+  addMember: vi.fn(),
+  removeMember: vi.fn(),
+  findByProject: vi.fn(),
+  findMembership: vi.fn(),
+  updateRole: vi.fn(),
+  deleteByProject: vi.fn(),
+  deleteByUser: vi.fn(),
+})
+
 /** Builds a mock IUserSubscriptionRepository with vi.fn() stubs. */
 const makeMockSubscriptionRepo = (): IUserSubscriptionRepository => ({
   findByUser: vi.fn(),
@@ -46,14 +68,18 @@ const makeMockSubscriptionRepo = (): IUserSubscriptionRepository => ({
 describe('createProject use case', () => {
   it('returns Ok(ProjectRecord) on happy path', async () => {
     const fakeProject = makeFakeProject()
+    const fakeMember = makeFakeMember()
     const repo = makeMockRepo()
+    const memberRepo = makeMockMemberRepo()
     const subRepo = makeMockSubscriptionRepo()
     vi.mocked(subRepo.findByUser).mockReturnValue(okAsync(null))
     vi.mocked(repo.countByOwner).mockReturnValue(okAsync(0))
     vi.mocked(repo.create).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.addMember).mockReturnValue(okAsync(fakeMember))
 
     const useCase = createCreateProject({
       projectRepository: repo,
+      memberRepository: memberRepo,
       subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-1', name: 'Test Project' })
@@ -64,18 +90,23 @@ describe('createProject use case', () => {
       expect(result.value.ownerId).toBe('user-1')
     }
     expect(repo.create).toHaveBeenCalledOnce()
+    expect(memberRepo.addMember).toHaveBeenCalledOnce()
   })
 
   it('passes description when provided', async () => {
     const fakeProject = { ...makeFakeProject(), description: 'A description' }
+    const fakeMember = makeFakeMember()
     const repo = makeMockRepo()
+    const memberRepo = makeMockMemberRepo()
     const subRepo = makeMockSubscriptionRepo()
     vi.mocked(subRepo.findByUser).mockReturnValue(okAsync(null))
     vi.mocked(repo.countByOwner).mockReturnValue(okAsync(0))
     vi.mocked(repo.create).mockReturnValue(okAsync(fakeProject))
+    vi.mocked(memberRepo.addMember).mockReturnValue(okAsync(fakeMember))
 
     const useCase = createCreateProject({
       projectRepository: repo,
+      memberRepository: memberRepo,
       subscriptionRepository: subRepo,
     })
     const result = await useCase({
@@ -93,10 +124,12 @@ describe('createProject use case', () => {
 
   it('returns Err(InvalidProjectName) when name is empty', async () => {
     const repo = makeMockRepo()
+    const memberRepo = makeMockMemberRepo()
     const subRepo = makeMockSubscriptionRepo()
 
     const useCase = createCreateProject({
       projectRepository: repo,
+      memberRepository: memberRepo,
       subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-1', name: '   ' })
@@ -110,10 +143,12 @@ describe('createProject use case', () => {
 
   it('returns Err(InvalidProjectName) when name exceeds 100 chars', async () => {
     const repo = makeMockRepo()
+    const memberRepo = makeMockMemberRepo()
     const subRepo = makeMockSubscriptionRepo()
 
     const useCase = createCreateProject({
       projectRepository: repo,
+      memberRepository: memberRepo,
       subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-1', name: 'a'.repeat(101) })
@@ -127,6 +162,7 @@ describe('createProject use case', () => {
 
   it('returns Err(ProjectLimitReached) when user has reached project limit', async () => {
     const repo = makeMockRepo()
+    const memberRepo = makeMockMemberRepo()
     const subRepo = makeMockSubscriptionRepo()
     vi.mocked(subRepo.findByUser).mockReturnValue(
       okAsync({
@@ -145,6 +181,7 @@ describe('createProject use case', () => {
 
     const useCase = createCreateProject({
       projectRepository: repo,
+      memberRepository: memberRepo,
       subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-1', name: 'Test Project' })
@@ -158,6 +195,7 @@ describe('createProject use case', () => {
 
   it('returns Err when repository create fails', async () => {
     const repo = makeMockRepo()
+    const memberRepo = makeMockMemberRepo()
     const subRepo = makeMockSubscriptionRepo()
     const repoError: AppError = infrastructureError({ message: 'db error' })
     vi.mocked(subRepo.findByUser).mockReturnValue(okAsync(null))
@@ -166,6 +204,7 @@ describe('createProject use case', () => {
 
     const useCase = createCreateProject({
       projectRepository: repo,
+      memberRepository: memberRepo,
       subscriptionRepository: subRepo,
     })
     const result = await useCase({ userId: 'user-1', name: 'Test Project' })

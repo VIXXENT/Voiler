@@ -4,7 +4,7 @@ import { count, eq, inArray } from 'drizzle-orm'
 import { ResultAsync, errAsync, okAsync } from 'neverthrow'
 
 import type { DbClient } from '../../db/index.js'
-import { Project, Task, TaskAssignee } from '../../db/schema.js'
+import { Project, ProjectMember, Task, TaskAssignee } from '../../db/schema.js'
 
 type ProjectRow = typeof Project.$inferSelect
 
@@ -144,6 +144,7 @@ const createDrizzleProjectRepository: (
           await tx.delete(TaskAssignee).where(inArray(TaskAssignee.taskId, taskIds))
         }
         await tx.delete(Task).where(eq(Task.projectId, deleteParams.id))
+        await tx.delete(ProjectMember).where(eq(ProjectMember.projectId, deleteParams.id))
         await tx.delete(Project).where(eq(Project.id, deleteParams.id))
       }),
       (cause) => infrastructureError({ message: 'Failed to delete project with cascade', cause }),
