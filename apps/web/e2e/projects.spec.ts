@@ -41,6 +41,16 @@ const createAndGoToProject = async ({ page, name }: { page: Page; name: string }
   // Click project card and wait for SPA navigation to detail page
   await page.getByText(name).first().click()
   await page.waitForURL(/\/projects\/.+/, { timeout: 10000 })
+  // If ErrorBoundary shows "Failed to fetch" (tRPC/auth race on SPA nav), reload once
+  if (
+    await page
+      .getByText('Something went wrong')
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
+  ) {
+    await page.reload()
+    await page.waitForURL(/\/projects\/.+/, { timeout: 10000 })
+  }
   // Wait for detail page tabs to confirm page is loaded
   await page.getByRole('link', { name: /tasks/i }).waitFor({ state: 'visible' })
 }

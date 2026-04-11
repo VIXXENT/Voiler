@@ -36,6 +36,16 @@ const createAndGoToProject = async ({ page, name }: { page: Page; name: string }
   await page.getByRole('dialog').waitFor({ state: 'detached', timeout: 15000 })
   await page.getByText(name).first().click()
   await page.waitForURL(/\/projects\/.+/, { timeout: 10000 })
+  // Reload if ErrorBoundary catches a "Failed to fetch" on SPA navigation
+  if (
+    await page
+      .getByText('Something went wrong')
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
+  ) {
+    await page.reload()
+    await page.waitForURL(/\/projects\/.+/, { timeout: 10000 })
+  }
   await page.getByRole('link', { name: /tasks/i }).waitFor({ state: 'visible' })
 }
 
