@@ -31,13 +31,20 @@ const openNewProjectDialog = async ({ page }: { page: Page }) => {
   await dialog.waitFor({ state: 'visible', timeout: 8000 })
 }
 
+/** Submits the create project form and waits for dialog to close (mutation success). */
+const submitCreateProject = async ({ page, name }: { page: Page; name: string }) => {
+  await page.getByRole('textbox').first().fill(name)
+  await page.getByRole('button', { name: /^create$/i }).click()
+  // Dialog closes on success — if it stays open the mutation failed
+  await page.getByRole('dialog').waitFor({ state: 'detached', timeout: 15000 })
+  await expect(page.getByText(name)).toBeVisible()
+}
+
 /** Creates a new project and navigates to its detail page. */
 const createAndGoToProject = async ({ page, name }: { page: Page; name: string }) => {
   await gotoAndWaitHydration({ page, url: '/projects' })
   await openNewProjectDialog({ page })
-  await page.getByRole('textbox').first().fill(name)
-  await page.getByRole('button', { name: /^create$/i }).click()
-  await expect(page.getByText(name)).toBeVisible()
+  await submitCreateProject({ page, name })
   await page.getByText(name).click()
 }
 
@@ -51,9 +58,7 @@ test.describe('Projects', () => {
     const projectName = `Create Test ${Date.now()}`
     await gotoAndWaitHydration({ page, url: '/projects' })
     await openNewProjectDialog({ page })
-    await page.getByRole('textbox').first().fill(projectName)
-    await page.getByRole('button', { name: /^create$/i }).click()
-    await expect(page.getByText(projectName)).toBeVisible()
+    await submitCreateProject({ page, name: projectName })
   })
 
   test('navigates to project detail', async ({ page }) => {
