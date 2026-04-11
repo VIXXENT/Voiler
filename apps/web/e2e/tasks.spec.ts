@@ -2,15 +2,15 @@ import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
 /**
- * Navigate to a URL and wait for React hydration.
- * Listener registered BEFORE goto to avoid missing early responses.
+ * Navigate to a URL and wait for full React hydration + auth resolution.
+ * Waits for the "Sign out" button which only renders after authClient.useSession()
+ * resolves with real session data — the most reliable post-hydration indicator.
  */
 const gotoAndWaitHydration = async ({ page, url }: { page: Page; url: string }) => {
-  const hydrated = page
-    .waitForResponse((resp) => resp.url().includes('/api/auth/get-session'), { timeout: 20000 })
-    .catch(() => null)
   await page.goto(url)
-  await hydrated
+  await page
+    .getByRole('button', { name: /sign out/i })
+    .waitFor({ state: 'visible', timeout: 25000 })
 }
 
 /** Creates a new project and navigates to its detail page. */
