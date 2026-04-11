@@ -1,17 +1,21 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
-/** Wait for React hydration by detecting the auth session API call that fires post-hydration. */
-const waitForHydration = async ({ page }: { page: Page }) => {
-  await page
+/**
+ * Navigate to a URL and wait for React hydration.
+ * Registers the response listener BEFORE goto to avoid missing early responses.
+ */
+const gotoAndWaitHydration = async ({ page, url }: { page: Page; url: string }) => {
+  const hydrated = page
     .waitForResponse((resp) => resp.url().includes('/api/auth/get-session'), { timeout: 20000 })
     .catch(() => null)
+  await page.goto(url)
+  await hydrated
 }
 
 /** Creates a new project and navigates to its detail page. */
 const createAndGoToProject = async ({ page, name }: { page: Page; name: string }) => {
-  await page.goto('/projects')
-  await waitForHydration({ page })
+  await gotoAndWaitHydration({ page, url: '/projects' })
   // Click after hydration — React event handlers are now attached
   await page.getByRole('button', { name: /new project/i }).click()
   // Wait for Radix Dialog to open
@@ -24,15 +28,13 @@ const createAndGoToProject = async ({ page, name }: { page: Page; name: string }
 
 test.describe('Projects', () => {
   test('shows projects page after login', async ({ page }) => {
-    await page.goto('/projects')
-    await waitForHydration({ page })
+    await gotoAndWaitHydration({ page, url: '/projects' })
     await expect(page.getByRole('heading', { name: /projects/i })).toBeVisible()
   })
 
   test('creates a new project', async ({ page }) => {
     const projectName = `Create Test ${Date.now()}`
-    await page.goto('/projects')
-    await waitForHydration({ page })
+    await gotoAndWaitHydration({ page, url: '/projects' })
     await page.getByRole('button', { name: /new project/i }).click()
     await page.getByRole('dialog').waitFor({ state: 'visible' })
     await page.getByRole('textbox').first().fill(projectName)

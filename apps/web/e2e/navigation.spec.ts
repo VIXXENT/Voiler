@@ -25,9 +25,14 @@ test.describe('Navigation', () => {
     // Fresh context with no stored auth state
     const context = await browser.newContext()
     const page = await context.newPage()
+    // Register listener BEFORE goto to catch the session check response
+    const sessionPromise = page
+      .waitForResponse((resp) => resp.url().includes('/api/auth/get-session'), { timeout: 20000 })
+      .catch(() => null)
     await page.goto('http://localhost:3000/projects')
-    // Client-side auth check redirects to login (SSR skips check; client runs it)
-    await page.waitForURL(/\/auth\/login/, { timeout: 20000 })
+    await sessionPromise
+    // Client-side auth check returns null → redirects to login
+    await page.waitForURL(/\/auth\/login/, { timeout: 15000 })
     await expect(page).toHaveURL(/\/auth\/login/)
     await context.close()
   })
