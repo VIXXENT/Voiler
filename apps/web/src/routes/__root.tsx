@@ -32,8 +32,8 @@ const RootLayout = () => {
         <HeadContent />
       </head>
       <body>
-        {/* @ts-expect-error — tRPC Provider collision with cross-package AppRouter */}
         {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+        {/* @ts-expect-error — tRPC Provider collision with cross-package AppRouter */}
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
             <I18nProvider>
