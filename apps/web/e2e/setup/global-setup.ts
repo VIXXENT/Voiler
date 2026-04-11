@@ -1,31 +1,26 @@
-import { chromium } from '@playwright/test'
+import { chromium, type APIRequestContext } from '@playwright/test'
 
-/** Attempt to authenticate and return true on success, false on failure. */
-const tryAuth = async (params: {
-  page: import('@playwright/test').Page
-  url: string
-  buttonText: RegExp
-  email: string
-  password: string
-  name?: string
-}): Promise<boolean> => {
-  const { page, url, buttonText, email, password, name } = params
-  await page.goto(url)
-  await page.waitForLoadState('domcontentloaded')
+const API_URL = 'http://localhost:4000'
+const APP_URL = 'http://localhost:3000'
 
-  if (name) {
-    const nameInput = page.getByRole('textbox', { name: /^name/i })
-    if (await nameInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await nameInput.fill(name)
-    }
-  }
-  await page.getByRole('textbox', { name: /email/i }).fill(email)
-  await page.getByLabel(/password/i).fill(password)
-  await page.getByRole('button', { name: buttonText }).click()
-
-  // Wait for network to settle and check if we left the auth page
-  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => undefined)
-  return !page.url().includes('/auth/')
+/**
+ * Call Better Auth API directly (faster + reliable vs UI automation).
+ * Returns the Set-Cookie headers on success, null on failure.
+ */
+const authViaApi = async (params: {
+  request: APIRequestContext
+  endpoint: string
+  body: Record<string, string>
+}): Promise<string[] | null> => {
+  const response = await params.request.post(`${API_URL}${params.endpoint}`, {
+    data: params.body,
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!response.ok()) { return null }
+  const cookies = response.headersArray()
+    .filter((h) => h.name.toLowerCase() === 'set-cookie')
+    .map((h) => h.value)
+  return cookies.length > 0 ? cookies : null
 }
 
 /** Global setup: register or login a test user and save auth state. */
@@ -34,39 +29,36 @@ const globalSetup = async () => {
   const password = process.env['E2E_TEST_PASSWORD'] ?? 'TestPassword123!'
 
   const browser = await chromium.launch()
-  const page = await browser.newPage()
+  const context = await browser.newContext({ baseURL: APP_URL })
+  const page = await context.newPage()
 
-  // Try registration first
-  const registered = await tryAuth({
-    page,
-    url: 'http://localhost:3000/auth/register',
-    buttonText: /sign\s*up/i,
-    email,
-    password,
-    name: 'Test User',
+  // Try register first via direct API call
+  let cookies = await authViaApi({
+    request: context.request,
+    endpoint: '/api/auth/sign-up/email',
+    body: { email, password, name: 'Test User' },
   })
 
-  // If registration didn't redirect away from auth, try login (account already exists)
-  if (!registered) {
-    const loggedIn = await tryAuth({
-      page,
-      url: 'http://localhost:3000/auth/login',
-      buttonText: /sign\s*in/i,
-      email,
-      password,
+  // Account likely exists — try login
+  if (!cookies) {
+    cookies = await authViaApi({
+      request: context.request,
+      endpoint: '/api/auth/sign-in/email',
+      body: { email, password },
     })
-    if (!loggedIn) {
-      await browser.close()
-      throw new Error(`E2E setup failed: could not register or login with ${email}`)
-    }
   }
 
-  // Navigate explicitly to /projects to ensure we're on the right page
-  await page.goto('http://localhost:3000/projects')
-  await page.waitForLoadState('networkidle', { timeout: 10000 })
+  if (!cookies) {
+    await browser.close()
+    throw new Error(`E2E setup failed: could not authenticate with ${email}`)
+  }
 
-  // Save auth state for reuse across all test files
-  await page.context().storageState({ path: 'e2e/.auth/user.json' })
+  // Visit /projects to let the app hydrate with the session
+  await page.goto(`${APP_URL}/projects`)
+  await page.waitForLoadState('domcontentloaded')
+
+  // Save full browser storage state (cookies + localStorage)
+  await context.storageState({ path: 'e2e/.auth/user.json' })
   await browser.close()
 }
 
