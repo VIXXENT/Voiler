@@ -20,6 +20,10 @@ const User = pgTable('user', {
   emailVerified: boolean('email_verified').notNull().default(false),
   image: text('image'),
   role: text('role').notNull().default('user'),
+  // Required by Better Auth admin plugin
+  banned: boolean('banned').notNull().default(false),
+  banReason: text('ban_reason'),
+  banExpires: timestamp('ban_expires', { withTimezone: true }),
   createdAt: timestamp('created_at', {
     withTimezone: true,
   }).notNull(),
