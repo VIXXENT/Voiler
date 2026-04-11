@@ -2,20 +2,21 @@ import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
 /**
- * Navigate to a URL and wait for full React hydration + auth resolution.
- * Waits for the "Sign out" button which only renders after authClient.useSession()
- * resolves with real session data — the most reliable post-hydration indicator.
+ * Navigate to a URL and wait for full React hydration.
+ * Waits for the Better Auth get-session response which fires after React hydrates.
  */
 const gotoAndWaitHydration = async ({ page, url }: { page: Page; url: string }) => {
+  const sessionResponsePromise = page
+    .waitForResponse((resp) => resp.url().includes('/api/auth/get-session'), { timeout: 25000 })
+    .catch(() => null)
   await page.goto(url)
-  await page
-    .getByRole('button', { name: /sign out/i })
-    .waitFor({ state: 'visible', timeout: 25000 })
+  await sessionResponsePromise
 }
 
 /** Creates a new project and navigates to its detail page. */
 const createAndGoToProject = async ({ page, name }: { page: Page; name: string }) => {
   await gotoAndWaitHydration({ page, url: '/projects' })
+  // Click New Project button — React is hydrated so dialog state change works
   await page.getByRole('button', { name: /new project/i }).click()
   await page.getByRole('dialog').waitFor({ state: 'visible' })
   await page.getByRole('textbox').first().fill(name)

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Outlet, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { useState } from 'react'
 
@@ -15,6 +15,8 @@ import '~/styles.css'
 /**
  * Root layout wrapping the app with tRPC and React Query providers.
  * Clients are created inside useState to avoid SSR cross-request leakage.
+ * HeadContent and Scripts are required by TanStack Start to inject the
+ * client bundle and enable React hydration.
  */
 const RootLayout = () => {
   const [queryClient] = useState(() => new QueryClient())
@@ -25,24 +27,32 @@ const RootLayout = () => {
      @typescript-eslint/no-unsafe-return */
 
   return (
-    // @ts-expect-error — tRPC Provider collision with cross-package AppRouter
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <I18nProvider>
-          <div className="min-h-screen bg-gray-50">
-            <ImpersonationBanner />
-            <NavBar />
-            <main className="container mx-auto px-4 py-8">
-              <Outlet />
-            </main>
-          </div>
-          <DevMenu />
-          <Toaster />
-        </I18nProvider>
-      </QueryClientProvider>
-      {/* @ts-expect-error — tRPC Provider collision */}
-    </trpc.Provider>
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {/* @ts-expect-error — tRPC Provider collision with cross-package AppRouter */}
+        {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <I18nProvider>
+              <div className="min-h-screen bg-gray-50">
+                <ImpersonationBanner />
+                <NavBar />
+                <main className="container mx-auto px-4 py-8">
+                  <Outlet />
+                </main>
+              </div>
+              <DevMenu />
+              <Toaster />
+            </I18nProvider>
+          </QueryClientProvider>
+          {/* @ts-expect-error — tRPC Provider collision */}
+        </trpc.Provider>
+        <Scripts />
+      </body>
+    </html>
   )
 }
 

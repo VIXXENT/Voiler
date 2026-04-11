@@ -2,24 +2,39 @@ import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
 /**
- * Navigate to a URL and wait for full React hydration + auth resolution.
- * Waits for the "Sign out" button which only renders after authClient.useSession()
- * resolves with real session data — the most reliable post-hydration indicator.
+ * Navigate to a URL and wait for full React hydration.
+ * Waits for the Better Auth get-session response which fires after React hydrates
+ * and authClient.useSession() makes its first call.
  */
 const gotoAndWaitHydration = async ({ page, url }: { page: Page; url: string }) => {
+  // Register response listener BEFORE navigation to catch the early get-session call
+  const sessionResponsePromise = page
+    .waitForResponse((resp) => resp.url().includes('/api/auth/get-session'), { timeout: 25000 })
+    .catch(() => null)
   await page.goto(url)
-  await page
-    .getByRole('button', { name: /sign out/i })
-    .waitFor({ state: 'visible', timeout: 25000 })
+  await sessionResponsePromise
+}
+
+/** Opens the New Project dialog, retrying the click if needed. */
+const openNewProjectDialog = async ({ page }: { page: Page }) => {
+  const btn = page.getByRole('button', { name: /new project/i })
+  const dialog = page.getByRole('dialog')
+  await btn.click()
+  const opened = await dialog
+    .waitFor({ state: 'visible', timeout: 8000 })
+    .then(() => true)
+    .catch(() => false)
+  if (opened) return
+  // Retry once with a short pause to let React finish pending state updates
+  await page.waitForTimeout(500)
+  await btn.click()
+  await dialog.waitFor({ state: 'visible', timeout: 8000 })
 }
 
 /** Creates a new project and navigates to its detail page. */
 const createAndGoToProject = async ({ page, name }: { page: Page; name: string }) => {
   await gotoAndWaitHydration({ page, url: '/projects' })
-  // Click after hydration — React event handlers are now attached
-  await page.getByRole('button', { name: /new project/i }).click()
-  // Wait for Radix Dialog to open
-  await page.getByRole('dialog').waitFor({ state: 'visible' })
+  await openNewProjectDialog({ page })
   await page.getByRole('textbox').first().fill(name)
   await page.getByRole('button', { name: /^create$/i }).click()
   await expect(page.getByText(name)).toBeVisible()
@@ -35,8 +50,7 @@ test.describe('Projects', () => {
   test('creates a new project', async ({ page }) => {
     const projectName = `Create Test ${Date.now()}`
     await gotoAndWaitHydration({ page, url: '/projects' })
-    await page.getByRole('button', { name: /new project/i }).click()
-    await page.getByRole('dialog').waitFor({ state: 'visible' })
+    await openNewProjectDialog({ page })
     await page.getByRole('textbox').first().fill(projectName)
     await page.getByRole('button', { name: /^create$/i }).click()
     await expect(page.getByText(projectName)).toBeVisible()

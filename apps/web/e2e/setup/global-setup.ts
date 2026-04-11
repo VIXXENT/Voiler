@@ -62,9 +62,33 @@ const globalSetup = async () => {
     throw new Error(`E2E setup failed: could not authenticate with ${email}`)
   }
 
-  // Visit /projects to let the app hydrate with the session
+  // Visit /projects and wait for networkidle to ensure full hydration
   await page.goto(`${APP_URL}/projects`)
-  await page.waitForLoadState('domcontentloaded')
+  await page.waitForLoadState('networkidle')
+
+  // If impersonation is active (leftover from prior test run), stop it via
+  // the browser so Better Auth can properly clear the session server-side
+  const stopBtn = page.getByRole('button', { name: /stop impersonating/i })
+  if (await stopBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    console.log('[global-setup] Stopping active impersonation session...')
+    await stopBtn.click()
+    await page.waitForLoadState('networkidle')
+    // Re-navigate to /projects to get fresh non-impersonation state
+    await page.goto(`${APP_URL}/projects`)
+    await page.waitForLoadState('networkidle')
+    console.log('[global-setup] After stop-impersonation URL:', page.url())
+    // Verify no longer impersonating
+    const stillImpersonating = await page
+      .getByRole('button', { name: /stop impersonating/i })
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
+    console.log('[global-setup] Still impersonating:', stillImpersonating)
+  }
+
+  // Log context cookies for diagnosis
+  const savedCookies = await context.cookies()
+  console.log('[global-setup] Saved cookies count:', savedCookies.length)
+  console.log('[global-setup] Cookie names:', savedCookies.map((c) => c.name).join(', '))
 
   // Save full browser storage state (cookies + localStorage)
   await context.storageState({ path: 'e2e/.auth/user.json' })
