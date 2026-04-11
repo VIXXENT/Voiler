@@ -1,14 +1,22 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
+/** Wait for React hydration via auth session request that fires post-hydration. */
+const waitForHydration = async ({ page }: { page: Page }) => {
+  await page
+    .waitForResponse((resp) => resp.url().includes('/api/auth/get-session'), { timeout: 20000 })
+    .catch(() => null)
+}
+
 /** Creates a new project and navigates to its detail page. */
 const createAndGoToProject = async ({ page, name }: { page: Page; name: string }) => {
   await page.goto('/projects')
-  await page.waitForSelector('button', { timeout: 15000 }).catch(() => null)
-  await page.getByRole('button', { name: /new project/i }).click({ timeout: 10000 })
-  await page.getByLabel(/name/i).fill(name)
+  await waitForHydration({ page })
+  await page.getByRole('button', { name: /new project/i }).click()
+  await page.getByRole('dialog').waitFor({ state: 'visible' })
+  await page.getByRole('textbox').first().fill(name)
   await page.getByRole('button', { name: /^create$/i }).click()
-  await expect(page.getByText(name)).toBeVisible({ timeout: 10000 })
+  await expect(page.getByText(name)).toBeVisible()
   await page.getByText(name).click()
 }
 
@@ -18,7 +26,8 @@ test.describe('Tasks', () => {
     await createAndGoToProject({ page, name: projectName })
 
     await page.getByRole('button', { name: /new task/i }).click()
-    await page.getByLabel(/title/i).fill('My First Task')
+    await page.getByRole('dialog').waitFor({ state: 'visible' })
+    await page.getByRole('textbox').first().fill('My First Task')
     await page.getByRole('button', { name: /^create$/i }).click()
 
     await expect(page.getByText('My First Task')).toBeVisible()
@@ -31,7 +40,8 @@ test.describe('Tasks', () => {
 
     // Create a task
     await page.getByRole('button', { name: /new task/i }).click()
-    await page.getByLabel(/title/i).fill('Transition Task')
+    await page.getByRole('dialog').waitFor({ state: 'visible' })
+    await page.getByRole('textbox').first().fill('Transition Task')
     await page.getByRole('button', { name: /^create$/i }).click()
 
     // Transition to in_progress via dropdown/actions menu
@@ -54,7 +64,8 @@ test.describe('Tasks', () => {
 
     // Create a task with description
     await page.getByRole('button', { name: /new task/i }).click()
-    await page.getByLabel(/title/i).fill('Detailed Task')
+    await page.getByRole('dialog').waitFor({ state: 'visible' })
+    await page.getByRole('textbox').first().fill('Detailed Task')
 
     const descriptionField = page.getByLabel(/description/i)
     if (await descriptionField.isVisible()) {
