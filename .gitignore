@@ -51,3 +51,5 @@ apps/web/e2e/.auth/user.json
 playwright-transform-cache-*
 playwright_chromium*
 e2e/.auth/user.json
+.org.chromium.*
+.claude/scheduled_tasks.lock
