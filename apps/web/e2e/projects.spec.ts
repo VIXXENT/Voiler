@@ -66,7 +66,8 @@ test.describe('Projects', () => {
     await createAndGoToProject({ page, name: projectName })
     await expect(page.getByRole('link', { name: /tasks/i })).toBeVisible()
     await expect(page.getByRole('link', { name: /members/i })).toBeVisible()
-    await expect(page.getByRole('link', { name: /settings/i })).toBeVisible()
+    // Use href-scoped selector — sidebar also has a "Settings" link
+    await expect(page.locator('a[href*="/projects/"][href$="/settings"]')).toBeVisible()
   })
 
   test('shows empty state when no tasks', async ({ page }) => {
