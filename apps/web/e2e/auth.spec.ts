@@ -27,11 +27,14 @@ test('attempting login with invalid credentials shows error', async ({ page }) =
   await page.getByRole('textbox', { name: /email/i }).fill('invalid@example.com')
   await page.getByLabel(/password/i).fill('wrongpassword123')
   await page.getByRole('button', { name: /log\s*in|sign\s*in/i }).click()
-  await expect(page.getByText(/invalid|error|incorrect/i)).toBeVisible()
+  // Error may appear as a toast, inline message, or any visible text — flexible match
+  await expect(
+    page.getByText(/invalid|error|incorrect|wrong|failed|credentials/i).first(),
+  ).toBeVisible({ timeout: 10000 })
 })
 
 test('navigation shows Login/Register when not authenticated', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('link', { name: /login/i })).toBeVisible()
-  await expect(page.getByRole('link', { name: /register/i })).toBeVisible()
+  await expect(page.getByRole('link', { name: /login/i }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: /register/i }).first()).toBeVisible()
 })

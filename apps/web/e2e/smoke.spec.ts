@@ -10,8 +10,8 @@ test('landing page loads and shows app name', async ({ page }) => {
 
 test('navigation links are present when not authenticated', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('link', { name: /login/i })).toBeVisible()
-  await expect(page.getByRole('link', { name: /register/i })).toBeVisible()
+  await expect(page.getByRole('link', { name: /login/i }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: /register/i }).first()).toBeVisible()
 })
 
 test('health endpoint returns ok', async ({ request }) => {

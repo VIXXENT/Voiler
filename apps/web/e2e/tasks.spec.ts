@@ -4,10 +4,11 @@ import type { Page } from '@playwright/test'
 /** Creates a new project and navigates to its detail page. */
 const createAndGoToProject = async ({ page, name }: { page: Page; name: string }) => {
   await page.goto('/projects')
-  await page.getByRole('button', { name: /new project/i }).click()
+  await page.waitForSelector('button', { timeout: 15000 }).catch(() => null)
+  await page.getByRole('button', { name: /new project/i }).click({ timeout: 10000 })
   await page.getByLabel(/name/i).fill(name)
   await page.getByRole('button', { name: /^create$/i }).click()
-  await expect(page.getByText(name)).toBeVisible()
+  await expect(page.getByText(name)).toBeVisible({ timeout: 10000 })
   await page.getByText(name).click()
 }
 

@@ -16,8 +16,8 @@ const authViaApi = async (params: {
     data: params.body,
     headers: {
       'Content-Type': 'application/json',
-      'Origin': APP_URL,
-      'Referer': APP_URL,
+      Origin: APP_URL,
+      Referer: APP_URL,
     },
   })
   if (!response.ok()) {
@@ -25,7 +25,8 @@ const authViaApi = async (params: {
     console.warn(`Auth ${params.endpoint} failed (${response.status()}): ${body}`)
     return null
   }
-  const cookies = response.headersArray()
+  const cookies = response
+    .headersArray()
     .filter((h) => h.name.toLowerCase() === 'set-cookie')
     .map((h) => h.value)
   return cookies.length > 0 ? cookies : null
