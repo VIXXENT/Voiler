@@ -33,7 +33,7 @@ const authViaApi = async (params: {
 
 /** Global setup: register or login a test user and save auth state. */
 const globalSetup = async () => {
-  const email = process.env['E2E_TEST_EMAIL'] ?? 'test@taskforge.e2e'
+  const email = process.env['E2E_TEST_EMAIL'] ?? 'test-e2e@example.com'
   const password = process.env['E2E_TEST_PASSWORD'] ?? 'TestPassword123!'
 
   const browser = await chromium.launch()
