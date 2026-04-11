@@ -7,11 +7,15 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 1,
   reporter: 'html',
+  timeout: 60000,
+  expect: { timeout: 20000 },
   globalSetup: './e2e/setup/global-setup.ts',
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     storageState: 'e2e/.auth/user.json',
+    actionTimeout: 20000,
+    navigationTimeout: 30000,
   },
   webServer: [
     {

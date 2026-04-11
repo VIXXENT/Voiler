@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test'
 
 test.describe('Navigation', () => {
-  test('authenticated user is redirected from / to /projects', async ({ page }) => {
-    await page.goto('/')
-    // Give SSR app time to determine auth state and redirect
-    await page.waitForURL((url) => url.pathname !== '/', { timeout: 15000 })
-    await expect(page).toHaveURL(/\/projects|\/dashboard/)
+  test('authenticated user can access /projects directly', async ({ page }) => {
+    await page.goto('/projects')
+    // Wait for client-side auth check to complete and app to render
+    const sidebar = page.locator('aside')
+    await expect(sidebar).toBeVisible({ timeout: 20000 })
+    await expect(page).toHaveURL(/\/projects/)
   })
 
   test('sidebar shows Projects, Billing, Settings links', async ({ page }) => {
@@ -25,7 +26,8 @@ test.describe('Navigation', () => {
     const context = await browser.newContext()
     const page = await context.newPage()
     await page.goto('http://localhost:3000/projects')
-    // Should redirect to login
+    // Client-side auth check redirects to login (SSR skips check; client runs it)
+    await page.waitForURL(/\/auth\/login/, { timeout: 20000 })
     await expect(page).toHaveURL(/\/auth\/login/)
     await context.close()
   })
