@@ -4,7 +4,7 @@ const API_URL = 'http://localhost:4000'
 const APP_URL = 'http://localhost:3000'
 
 /**
- * Call Better Auth API directly (faster + reliable vs UI automation).
+ * Call Better Auth API directly — faster and more reliable than UI automation.
  * Returns the Set-Cookie headers on success, null on failure.
  */
 const authViaApi = async (params: {
@@ -32,7 +32,7 @@ const authViaApi = async (params: {
   return cookies.length > 0 ? cookies : null
 }
 
-/** Global setup: register or login a test user and save auth state. */
+/** Global setup: register or login the test user and save auth state. */
 const globalSetup = async () => {
   const email = process.env['E2E_TEST_EMAIL'] ?? 'test-e2e@example.com'
   const password = process.env['E2E_TEST_PASSWORD'] ?? 'TestPassword123!'
@@ -41,14 +41,13 @@ const globalSetup = async () => {
   const context = await browser.newContext({ baseURL: APP_URL })
   const page = await context.newPage()
 
-  // Try register first via direct API call
+  // Try register first; fall back to login if account exists
   let cookies = await authViaApi({
     request: context.request,
     endpoint: '/api/auth/sign-up/email',
     body: { email, password, name: 'Test User' },
   })
 
-  // Account likely exists — try login
   if (!cookies) {
     cookies = await authViaApi({
       request: context.request,
@@ -62,33 +61,13 @@ const globalSetup = async () => {
     throw new Error(`E2E setup failed: could not authenticate with ${email}`)
   }
 
-  // Visit /projects and wait for networkidle to ensure full hydration
+  // Register get-session listener BEFORE navigation to catch the early response
+  const sessionReady = page
+    .waitForResponse((resp) => resp.url().includes('/api/auth/get-session'), { timeout: 25000 })
+    .catch(() => null)
+
   await page.goto(`${APP_URL}/projects`)
-  await page.waitForLoadState('networkidle')
-
-  // If impersonation is active (leftover from prior test run), stop it via
-  // the browser so Better Auth can properly clear the session server-side
-  const stopBtn = page.getByRole('button', { name: /stop impersonating/i })
-  if (await stopBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-    console.log('[global-setup] Stopping active impersonation session...')
-    await stopBtn.click()
-    await page.waitForLoadState('networkidle')
-    // Re-navigate to /projects to get fresh non-impersonation state
-    await page.goto(`${APP_URL}/projects`)
-    await page.waitForLoadState('networkidle')
-    console.log('[global-setup] After stop-impersonation URL:', page.url())
-    // Verify no longer impersonating
-    const stillImpersonating = await page
-      .getByRole('button', { name: /stop impersonating/i })
-      .isVisible({ timeout: 2000 })
-      .catch(() => false)
-    console.log('[global-setup] Still impersonating:', stillImpersonating)
-  }
-
-  // Log context cookies for diagnosis
-  const savedCookies = await context.cookies()
-  console.log('[global-setup] Saved cookies count:', savedCookies.length)
-  console.log('[global-setup] Cookie names:', savedCookies.map((c) => c.name).join(', '))
+  await sessionReady
 
   // Save full browser storage state (cookies + localStorage)
   await context.storageState({ path: 'e2e/.auth/user.json' })
