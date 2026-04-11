@@ -3,6 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin } from 'better-auth/plugins/admin'
 
 import type { DbClient } from '../db/index.js'
+import * as schema from '../db/schema.js'
 
 /**
  * Parameters for creating the Better Auth instance.
@@ -42,7 +43,7 @@ const createAuth = (params: CreateAuthParams) => {
   const isProduction: boolean = process.env.NODE_ENV === 'production'
 
   const auth = betterAuth({
-    database: drizzleAdapter(db, { provider: 'pg' }),
+    database: drizzleAdapter(db, { provider: 'pg', schema }),
     secret,
     trustedOrigins,
     session: {
