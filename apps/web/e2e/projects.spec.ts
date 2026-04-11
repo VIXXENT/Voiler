@@ -38,19 +38,11 @@ const createAndGoToProject = async ({ page, name }: { page: Page; name: string }
   await page.getByRole('button', { name: /^create$/i }).click()
   // Dialog closes when mutation succeeds
   await page.getByRole('dialog').waitFor({ state: 'detached', timeout: 15000 })
-  // Click project card and wait for SPA navigation to detail page
-  await page.getByText(name).first().click()
-  await page.waitForURL(/\/projects\/.+/, { timeout: 10000 })
-  // If ErrorBoundary shows "Failed to fetch" (tRPC/auth race on SPA nav), reload once
-  if (
-    await page
-      .getByText('Something went wrong')
-      .isVisible({ timeout: 3000 })
-      .catch(() => false)
-  ) {
-    await page.reload()
-    await page.waitForURL(/\/projects\/.+/, { timeout: 10000 })
-  }
+  // Get the project card link href and do a full page.goto (not SPA click)
+  // SPA navigation to project detail triggers tRPC query abort race — goto avoids this
+  const projectCard = page.locator(`a[href*="/projects/"]`).filter({ hasText: name }).first()
+  const href = await projectCard.getAttribute('href')
+  await page.goto(href ?? '/projects')
   // Wait for detail page tabs to confirm page is loaded
   await page.getByRole('link', { name: /tasks/i }).waitFor({ state: 'visible' })
 }
