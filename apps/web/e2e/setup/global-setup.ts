@@ -14,9 +14,17 @@ const authViaApi = async (params: {
 }): Promise<string[] | null> => {
   const response = await params.request.post(`${API_URL}${params.endpoint}`, {
     data: params.body,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Origin': APP_URL,
+      'Referer': APP_URL,
+    },
   })
-  if (!response.ok()) { return null }
+  if (!response.ok()) {
+    const body = await response.text().catch(() => '')
+    console.warn(`Auth ${params.endpoint} failed (${response.status()}): ${body}`)
+    return null
+  }
   const cookies = response.headersArray()
     .filter((h) => h.name.toLowerCase() === 'set-cookie')
     .map((h) => h.value)
