@@ -16,7 +16,7 @@ const ImpersonationBanner = () => {
     session.data?.session as Record<string, unknown> | undefined
   )?.impersonatedBy as string | undefined
 
-  if (impersonatedBy === undefined) {
+  if (!impersonatedBy) {
     return null
   }
 

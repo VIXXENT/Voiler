@@ -23,7 +23,7 @@ const DashboardPage = () => {
         </p>
       </div>
 
-      <RoleGate role="user">
+      <RoleGate role="admin">
         <section>
           <h2 className="mb-4 text-lg font-semibold text-gray-800">Users</h2>
           <UserList />

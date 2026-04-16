@@ -14,6 +14,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -29,6 +30,12 @@ const AuthForm = ({ mode }: AuthFormProps) => {
   ): Promise<void> => {
     e.preventDefault()
     setError(null)
+
+    if (!isLogin && password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
     setLoading(true)
 
     if (isLogin) {
@@ -54,7 +61,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
       }
     }
 
-    await navigate({ to: '/dashboard' })
+    await navigate({ to: '/projects' })
   }
 
   return (
@@ -114,6 +121,27 @@ const AuthForm = ({ mode }: AuthFormProps) => {
             placeholder="********"
           />
         </div>
+        {!isLogin && (
+          <div>
+            <label
+              htmlFor="confirmPassword"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value)
+              }}
+              required
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="********"
+            />
+          </div>
+        )}
         <button
           type="submit"
           disabled={loading}
