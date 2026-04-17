@@ -10,7 +10,9 @@
     "lint": "eslint src/",
     "generate": "vite build --mode development",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "qa:crawl": "tsx e2e/qa/crawler/crawl.ts",
+    "qa:analyze": "tsx e2e/qa/crawler/analyze.ts"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",

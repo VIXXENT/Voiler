@@ -53,3 +53,8 @@ playwright_chromium*
 e2e/.auth/user.json
 .org.chromium.*
 .claude/scheduled_tasks.lock
+
+# QA crawler outputs (specs, state schema, and findings schema are kept in git)
+apps/web/e2e/qa/screenshots/
+apps/web/e2e/qa/reports/
+apps/web/e2e/qa/findings/*.json
