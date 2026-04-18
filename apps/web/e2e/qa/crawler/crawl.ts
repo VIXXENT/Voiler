@@ -206,19 +206,28 @@ class TelemetryCollector {
   /** Attach Playwright page listeners. Call once after page creation. */
   attach({ page }: { page: Page }) {
     page.on('console', (msg) => {
+      // msg.stackTrace() removed in Playwright 1.44+; use msg.location() for the origin frame
       const stackFrames: StackFrame[] =
         msg.type() === 'error'
-          ? msg.stackTrace().map((f) => ({
-              url: f.url,
-              lineNumber: f.lineNumber,
-              columnNumber: f.columnNumber,
-              origin:
-                f.url.includes('localhost') || f.url.includes('/src/')
-                  ? 'app'
-                  : f.url.startsWith('http')
-                    ? 'vendor'
-                    : 'unknown',
-            }))
+          ? (() => {
+              const loc = msg.location()
+              if (!loc?.url) {
+                return []
+              }
+              return [
+                {
+                  url: loc.url,
+                  lineNumber: loc.lineNumber,
+                  columnNumber: loc.columnNumber,
+                  origin:
+                    loc.url.includes('localhost') || loc.url.includes('/src/')
+                      ? ('app' as const)
+                      : loc.url.startsWith('http')
+                        ? ('vendor' as const)
+                        : ('unknown' as const),
+                },
+              ]
+            })()
           : []
       this.consoleLogs.push({
         type: msg.type() as ConsoleLog['type'],
@@ -508,11 +517,12 @@ const recordStep = async ({
     })
     .catch(() => null)
 
-  await page.accessibility
-    .snapshot()
-    .then((tree) => {
-      if (tree) {
-        fs.writeFileSync(a11yPath, JSON.stringify(tree, null, 2))
+  // page.accessibility is deprecated in Playwright v1.44+; use ariaSnapshot instead
+  await page
+    .ariaSnapshot()
+    .then((yaml) => {
+      if (yaml) {
+        fs.writeFileSync(a11yPath, yaml)
         a11yRelative = `screenshots/${a11yName}`
       }
     })
@@ -666,6 +676,7 @@ const flowRegistration = async ({
   await gotoHydrated({ page, url: `${APP_URL}/projects` })
   await page
     .getByRole('button', { name: /sign out/i })
+    .first()
     .waitFor({ state: 'visible', timeout: 15000 })
 
   const userId = await getUserId({ request: context.request })
@@ -698,20 +709,24 @@ const flowRegistration = async ({
   return { email, password, userId: userId ?? '' }
 }
 
-/** Flow: Login page visit (visual only — session is already active). */
+/** Flow: Login page visit — uses a fresh incognito context to avoid redirect issues. */
 const flowLoginVisual = async ({
-  page,
+  browser,
   steps,
   telemetrySteps,
   collector,
   email,
 }: {
-  page: Page
+  browser: Browser
   steps: StepRecord[]
   telemetrySteps: StepTelemetry[]
   collector: TelemetryCollector
   email: string
 }) => {
+  // Use a clean context (no session cookies) so /auth/login renders without redirect
+  const freshCtx = await browser.newContext()
+  const page = freshCtx.newPage ? await freshCtx.newPage() : freshCtx.pages()[0]
+  collector.attach({ page })
   const unauthAuth: StepAuth = { email: null, role: null, isImpersonating: false }
   await page.goto(`${APP_URL}/auth/login`)
   await page.waitForLoadState('domcontentloaded')
@@ -750,6 +765,7 @@ const flowLoginVisual = async ({
   })
 
   void email // referenced to track auth context switch later
+  await freshCtx.close()
 }
 
 /** Flow: Projects list — empty state. */
@@ -769,6 +785,7 @@ const flowProjectsEmpty = async ({
   await gotoHydrated({ page, url: `${APP_URL}/projects` })
   await page
     .getByRole('button', { name: /sign out/i })
+    .first()
     .waitFor({ state: 'visible', timeout: 15000 })
   await recordStep({
     page,
@@ -809,6 +826,7 @@ const flowCreateProject = async ({
   await gotoHydrated({ page, url: `${APP_URL}/projects` })
   await page
     .getByRole('button', { name: /sign out/i })
+    .first()
     .waitFor({ state: 'visible', timeout: 15000 })
 
   // Open dialog
@@ -1222,6 +1240,7 @@ const flowNavigation = async ({
   await gotoHydrated({ page, url: `${APP_URL}/projects` })
   await page
     .getByRole('button', { name: /sign out/i })
+    .first()
     .waitFor({ state: 'visible', timeout: 15000 })
   await recordStep({
     page,
@@ -1258,6 +1277,7 @@ const flowNavigation = async ({
   await gotoHydrated({ page, url: `${APP_URL}/projects` })
   await page
     .getByRole('button', { name: /sign out/i })
+    .first()
     .waitFor({ state: 'visible', timeout: 15000 })
   await sidebar.getByRole('link', { name: /settings/i }).click()
   await page.waitForLoadState('domcontentloaded')
@@ -1294,9 +1314,13 @@ const flowSignOut = async ({
   await gotoHydrated({ page, url: `${APP_URL}/projects` })
   await page
     .getByRole('button', { name: /sign out/i })
+    .first()
     .waitFor({ state: 'visible', timeout: 15000 })
 
-  await page.getByRole('button', { name: /sign out/i }).click()
+  await page
+    .getByRole('button', { name: /sign out/i })
+    .first()
+    .click()
   await page.waitForTimeout(1000)
   await recordStep({
     page,
@@ -1444,7 +1468,7 @@ const main = async () => {
 
     const authCtx: StepAuth = { email, role: 'owner', isImpersonating: false }
 
-    await flowLoginVisual({ page, steps, telemetrySteps, collector, email })
+    await flowLoginVisual({ browser: browser!, steps, telemetrySteps, collector, email })
 
     // Navigate back to app (restore session)
     await gotoHydrated({ page, url: `${APP_URL}/projects` })
