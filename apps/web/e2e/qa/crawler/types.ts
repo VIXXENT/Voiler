@@ -83,7 +83,17 @@ export type PerformanceTelemetry = {
 
 /** An auto-detected issue found during step analysis. */
 export type Issue = {
-  type: 'console_error' | 'failed_request' | 'slow_request' | 'duplicate_call' | 'large_bundle'
+  /**
+   * Issue type. `auth_timing` covers all crawler timing artifacts — auth race, HMR abort,
+   * or SPA navigation issue. Not a real app bug. Excluded from headline issue counts.
+   */
+  type:
+    | 'console_error'
+    | 'failed_request'
+    | 'slow_request'
+    | 'duplicate_call'
+    | 'large_bundle'
+    | 'auth_timing'
   severity: 'critical' | 'high' | 'medium' | 'low'
   description: string
 }

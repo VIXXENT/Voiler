@@ -1,6 +1,121 @@
 {
-  "accounts": [],
-  "projects": [],
-  "tasks": [],
-  "lastUpdated": null
+  "accounts": [
+    {
+      "email": "qa-1776504380404@taskforge-qa.test",
+      "password": "QaPass_1776504380404!",
+      "userId": "a6xwR9QNZA5NuvEGb0AsnMTkisHmaTGl",
+      "role": "owner",
+      "notes": "Created in run qa-run-1776504380313"
+    },
+    {
+      "email": "qa-1776504407728@taskforge-qa.test",
+      "password": "QaPass_1776504407728!",
+      "userId": "lHpBuCc8B0ego3c2XlgBEiYASDimwZBk",
+      "role": "owner",
+      "notes": "Created in run qa-run-1776504407638"
+    },
+    {
+      "email": "qa-1776504470244@taskforge-qa.test",
+      "password": "QaPass_1776504470244!",
+      "userId": "mb4kVuF3p8uufLQhChYPhyjO2HxHkTQW",
+      "role": "owner",
+      "notes": "Created in run qa-run-1776504470155"
+    },
+    {
+      "email": "qa-1776504513113@taskforge-qa.test",
+      "password": "QaPass_1776504513113!",
+      "userId": "hSJSVxDbc6D3LLkB0KsICXlxsV2o1hpn",
+      "role": "owner",
+      "notes": "Created in run qa-run-1776504513023"
+    },
+    {
+      "email": "qa-1776504536971@taskforge-qa.test",
+      "password": "QaPass_1776504536971!",
+      "userId": "NdjlRb4W2Q4NGmTPZsiEOFShs0srUlIG",
+      "role": "owner",
+      "notes": "Created in run qa-run-1776504536881"
+    },
+    {
+      "email": "qa-1776504733200@taskforge-qa.test",
+      "password": "QaPass_1776504733200!",
+      "userId": "0aasu8Mdpup29t4PnAcnAfZYH3Gy6keu",
+      "role": "owner",
+      "notes": "Created in run qa-run-1776504733110"
+    },
+    {
+      "email": "qa-1776505397490@taskforge-qa.test",
+      "password": "QaPass_1776505397490!",
+      "userId": "OXLjfA4NO50PzQAamucLjANnplTOfmTf",
+      "role": "owner",
+      "notes": "Created in run qa-run-1776505397097"
+    },
+    {
+      "email": "qa-1776505556722@taskforge-qa.test",
+      "password": "QaPass_1776505556722!",
+      "userId": "c5odDJWGpJYRwPxAXxVK2HuP59CNADyQ",
+      "role": "owner",
+      "notes": "Created in run qa-run-1776505556631"
+    }
+  ],
+  "projects": [
+    {
+      "id": "7d7db410-84cf-4c58-8c2f-e0b91921b2f6",
+      "name": "QA Project 1776504539748",
+      "ownerId": "NdjlRb4W2Q4NGmTPZsiEOFShs0srUlIG",
+      "createdInRun": "qa-run-1776504536881",
+      "notes": ""
+    },
+    {
+      "id": "3644604a-246e-4b41-8f01-98d6293dd955",
+      "name": "QA Project 1776504735977",
+      "ownerId": "0aasu8Mdpup29t4PnAcnAfZYH3Gy6keu",
+      "createdInRun": "qa-run-1776504733110",
+      "notes": ""
+    },
+    {
+      "id": "931cd191-1e21-4689-a13f-7f41aceb41c4",
+      "name": "QA Project 1776505401514",
+      "ownerId": "OXLjfA4NO50PzQAamucLjANnplTOfmTf",
+      "createdInRun": "qa-run-1776505397097",
+      "notes": ""
+    },
+    {
+      "id": "434d9ed0-0872-40be-9b43-a4ab0f35c8bc",
+      "name": "QA Project 1776505560664",
+      "ownerId": "c5odDJWGpJYRwPxAXxVK2HuP59CNADyQ",
+      "createdInRun": "qa-run-1776505556631",
+      "notes": ""
+    }
+  ],
+  "tasks": [
+    {
+      "id": "",
+      "title": "QA Crawl Task",
+      "projectId": "7d7db410-84cf-4c58-8c2f-e0b91921b2f6",
+      "status": "todo",
+      "createdInRun": "qa-run-1776504536881"
+    },
+    {
+      "id": "",
+      "title": "QA Crawl Task",
+      "projectId": "3644604a-246e-4b41-8f01-98d6293dd955",
+      "status": "todo",
+      "createdInRun": "qa-run-1776504733110"
+    },
+    {
+      "id": "",
+      "title": "QA Crawl Task",
+      "projectId": "931cd191-1e21-4689-a13f-7f41aceb41c4",
+      "status": "todo",
+      "createdInRun": "qa-run-1776505397097"
+    },
+    {
+      "id": "",
+      "title": "QA Crawl Task",
+      "projectId": "434d9ed0-0872-40be-9b43-a4ab0f35c8bc",
+      "status": "todo",
+      "createdInRun": "qa-run-1776505556631"
+    }
+  ],
+  "lastUpdated": "2026-04-18T09:46:03.522Z"
 }

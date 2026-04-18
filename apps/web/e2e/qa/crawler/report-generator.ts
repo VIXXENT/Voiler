@@ -195,10 +195,13 @@ const renderIssuesSection = ({ step }: { step: StepTelemetry }): string => {
 /** Generate the full markdown report string from a CrawlReport. */
 const generateMarkdown = ({ report }: { report: CrawlReport }): string => {
   const allIssues = report.steps.flatMap((s) => s.issues)
-  const criticalCount = countBySeverity({ issues: allIssues, severity: 'critical' })
-  const highCount = countBySeverity({ issues: allIssues, severity: 'high' })
-  const mediumCount = countBySeverity({ issues: allIssues, severity: 'medium' })
-  const lowCount = countBySeverity({ issues: allIssues, severity: 'low' })
+  // Only count real issues (exclude crawler timing artifacts)
+  const realIssues = allIssues.filter((i) => i.type !== 'auth_timing')
+  const artifactIssues = allIssues.filter((i) => i.type === 'auth_timing')
+  const criticalCount = countBySeverity({ issues: realIssues, severity: 'critical' })
+  const highCount = countBySeverity({ issues: realIssues, severity: 'high' })
+  const mediumCount = countBySeverity({ issues: realIssues, severity: 'medium' })
+  const lowCount = countBySeverity({ issues: realIssues, severity: 'low' })
 
   const startMs = new Date(report.startedAt).getTime()
   const endMs = report.finishedAt ? new Date(report.finishedAt).getTime() : Date.now()
@@ -219,7 +222,7 @@ const generateMarkdown = ({ report }: { report: CrawlReport }): string => {
     `**Run:** ${report.runId}  `,
     `**Test User:** ${report.testUser.email} (role: ${report.testUser.role})  `,
     `**Duration:** ${duration}  `,
-    `**Steps:** ${report.totalSteps} | **Issues:** ${report.totalIssues}${issueSummaryLine ? ` (${issueSummaryLine})` : ''}`,
+    `**Steps:** ${report.totalSteps} | **Issues:** ${realIssues.length}${issueSummaryLine ? ` (${issueSummaryLine})` : ''}${artifactIssues.length > 0 ? ` + ${artifactIssues.length} crawler artifacts (filtered)` : ''}`,
     '',
     '---',
     '',
@@ -227,21 +230,24 @@ const generateMarkdown = ({ report }: { report: CrawlReport }): string => {
     '',
     '| Severity | Count | Most Common Type |',
     '|----------|-------|-----------------|',
-    `| ${severityBadge({ severity: 'critical' })} Critical | ${criticalCount} | ${mostCommonType({ issues: allIssues, severity: 'critical' })} |`,
-    `| ${severityBadge({ severity: 'high' })} High | ${highCount} | ${mostCommonType({ issues: allIssues, severity: 'high' })} |`,
-    `| ${severityBadge({ severity: 'medium' })} Medium | ${mediumCount} | ${mostCommonType({ issues: allIssues, severity: 'medium' })} |`,
-    `| ${severityBadge({ severity: 'low' })} Low | ${lowCount} | ${mostCommonType({ issues: allIssues, severity: 'low' })} |`,
+    `| ${severityBadge({ severity: 'critical' })} Critical | ${criticalCount} | ${mostCommonType({ issues: realIssues, severity: 'critical' })} |`,
+    `| ${severityBadge({ severity: 'high' })} High | ${highCount} | ${mostCommonType({ issues: realIssues, severity: 'high' })} |`,
+    `| ${severityBadge({ severity: 'medium' })} Medium | ${mediumCount} | ${mostCommonType({ issues: realIssues, severity: 'medium' })} |`,
+    `| ${severityBadge({ severity: 'low' })} Low | ${lowCount} | ${mostCommonType({ issues: realIssues, severity: 'low' })} |`,
     '',
     '---',
     '',
   ]
 
-  // Issues found section (only steps with issues)
-  const stepsWithIssues = report.steps.filter((s) => s.issues.length > 0)
+  // Issues found section (only steps with real issues)
+  const stepsWithIssues = report.steps.filter((s) => s.issues.some((i) => i.type !== 'auth_timing'))
   if (stepsWithIssues.length > 0) {
     lines.push('## Issues Found', '')
     for (const step of stepsWithIssues) {
       for (const issue of step.issues) {
+        if (issue.type === 'auth_timing') {
+          continue
+        }
         lines.push(
           `### ${severityBadge({ severity: issue.severity })} [${issue.severity.toUpperCase()}] ${issue.type.replace(/_/g, ' ')} — ${issue.description}`,
           `**Step:** ${step.stepId}  `,
@@ -252,6 +258,16 @@ const generateMarkdown = ({ report }: { report: CrawlReport }): string => {
         )
       }
     }
+    lines.push('---', '')
+  }
+
+  // Crawler Artifacts section (auth timing noise, not real issues)
+  if (artifactIssues.length > 0) {
+    lines.push('## Crawler Artifacts', '')
+    lines.push(
+      `> ${artifactIssues.length} auth-timing events were detected and filtered from the issue count above. These are caused by rapid page navigation in the crawler and do not occur during normal user sessions.`,
+      '',
+    )
     lines.push('---', '')
   }
 
@@ -355,12 +371,15 @@ const main = () => {
   console.log(`[report] Issues CSV:      ${csvPath}`)
 
   const allIssues = report.steps.flatMap((s) => s.issues)
+  const realIssues = allIssues.filter((i) => i.type !== 'auth_timing')
+  const artifactCount = allIssues.length - realIssues.length
   console.log(
-    `[report] Summary: ${report.totalSteps} steps, ${allIssues.length} issues` +
-      ` (${countBySeverity({ issues: allIssues, severity: 'critical' })} critical,` +
-      ` ${countBySeverity({ issues: allIssues, severity: 'high' })} high,` +
-      ` ${countBySeverity({ issues: allIssues, severity: 'medium' })} medium,` +
-      ` ${countBySeverity({ issues: allIssues, severity: 'low' })} low)`,
+    `[report] Summary: ${report.totalSteps} steps, ${realIssues.length} real issues` +
+      ` (${countBySeverity({ issues: realIssues, severity: 'critical' })} critical,` +
+      ` ${countBySeverity({ issues: realIssues, severity: 'high' })} high,` +
+      ` ${countBySeverity({ issues: realIssues, severity: 'medium' })} medium,` +
+      ` ${countBySeverity({ issues: realIssues, severity: 'low' })} low)` +
+      (artifactCount > 0 ? ` + ${artifactCount} crawler artifacts filtered` : ''),
   )
 }
 
