@@ -11,6 +11,7 @@ import type {
   NetworkEvent,
   PerformanceTelemetry,
   ResourceTiming,
+  StackFrame,
   StepAuth,
   StepMeta,
   StepRecord,
@@ -35,6 +36,9 @@ const STATE_PATH = path.join(QA_DIR, 'state', 'test-state.json')
 
 const runTimestamp = new Date().toISOString().replace(/[:.]/g, '-')
 const runId = `qa-run-${Date.now()}`
+
+/** Max bytes captured for request/response JSON bodies. Bodies larger than this are truncated. */
+const BODY_CAPTURE_LIMIT_BYTES = 10_240 // 10 KB
 
 // ---------------------------------------------------------------------------
 // TelemetryCollector
@@ -202,15 +206,73 @@ class TelemetryCollector {
   /** Attach Playwright page listeners. Call once after page creation. */
   attach({ page }: { page: Page }) {
     page.on('console', (msg) => {
+      const stackFrames: StackFrame[] =
+        msg.type() === 'error'
+          ? msg.stackTrace().map((f) => ({
+              url: f.url,
+              lineNumber: f.lineNumber,
+              columnNumber: f.columnNumber,
+              origin:
+                f.url.includes('localhost') || f.url.includes('/src/')
+                  ? 'app'
+                  : f.url.startsWith('http')
+                    ? 'vendor'
+                    : 'unknown',
+            }))
+          : []
       this.consoleLogs.push({
         type: msg.type() as ConsoleLog['type'],
         text: msg.text(),
         timestampMs: Date.now() - this.stepStartMs,
+        stackFrames,
+      })
+    })
+
+    // Uncaught JS exceptions — most informative for debugging
+    page.on('pageerror', (err) => {
+      const frames: StackFrame[] = (err.stack ?? '')
+        .split('\n')
+        .slice(1) // skip first line (message)
+        .map((line) => {
+          const match = /at .+ \((.+):(\d+):(\d+)\)/.exec(line) ?? /at (.+):(\d+):(\d+)/.exec(line)
+          if (!match) {
+            return null
+          }
+          const [, url, ln, col] = match
+          return {
+            url: url ?? '',
+            lineNumber: parseInt(ln ?? '0', 10),
+            columnNumber: parseInt(col ?? '0', 10),
+            origin:
+              (url ?? '').includes('localhost') || (url ?? '').includes('/src/')
+                ? ('app' as const)
+                : (url ?? '').startsWith('http')
+                  ? ('vendor' as const)
+                  : ('unknown' as const),
+          }
+        })
+        .filter((f): f is StackFrame => f !== null)
+      this.consoleLogs.push({
+        type: 'error',
+        text: `[UNCAUGHT] ${err.message}`,
+        timestampMs: Date.now() - this.stepStartMs,
+        stackFrames: frames,
       })
     })
 
     page.on('request', (req) => {
       const key = req.url() + req.method()
+      const isApiCall = req.resourceType() === 'fetch' || req.resourceType() === 'xhr'
+      const postBuf = isApiCall ? req.postDataBuffer() : null
+      const requestBodyPreview = postBuf
+        ? (() => {
+            const raw = postBuf.toString('utf-8')
+            if (raw.length > BODY_CAPTURE_LIMIT_BYTES) {
+              return raw.slice(0, BODY_CAPTURE_LIMIT_BYTES) + ' [TRUNCATED]'
+            }
+            return raw
+          })()
+        : null
       this.networkMap.set(key, {
         id: key,
         url: req.url(),
@@ -223,12 +285,10 @@ class TelemetryCollector {
         failureText: null,
         durationMs: 0,
         responseHeaders: {},
-        // Only capture body for fetch/xhr
-        requestBodySize:
-          req.resourceType() === 'fetch' || req.resourceType() === 'xhr'
-            ? (req.postDataBuffer()?.length ?? 0)
-            : 0,
+        requestBodySize: postBuf?.length ?? 0,
         responseBodySize: 0,
+        requestBodyPreview,
+        responseBodyPreview: null,
       })
     })
 
@@ -241,8 +301,23 @@ class TelemetryCollector {
       event.status = resp.status()
       event.responseHeaders = Object.fromEntries(Object.entries(resp.headers()))
       event.durationMs = Date.now() - this.stepStartMs - event.startTimestampMs
-      // Only buffer response body for fetch/xhr
-      if (event.resourceType === 'fetch' || event.resourceType === 'xhr') {
+      // Only capture body for fetch/xhr with JSON content-type
+      const isApiCall = event.resourceType === 'fetch' || event.resourceType === 'xhr'
+      const contentType = resp.headers()['content-type'] ?? ''
+      const isJson = contentType.includes('application/json')
+      if (isApiCall && isJson) {
+        resp
+          .body()
+          .then((buf) => {
+            event.responseBodySize = buf.length
+            const raw = buf.toString('utf-8')
+            event.responseBodyPreview =
+              raw.length > BODY_CAPTURE_LIMIT_BYTES
+                ? raw.slice(0, BODY_CAPTURE_LIMIT_BYTES) + ' [TRUNCATED]'
+                : raw
+          })
+          .catch(() => null)
+      } else if (isApiCall) {
         resp
           .body()
           .then((buf) => {

@@ -2,11 +2,22 @@
 // QA Crawler — Shared Types
 // ---------------------------------------------------------------------------
 
+/** A single stack frame from a console error or uncaught exception. */
+export type StackFrame = {
+  url: string
+  lineNumber: number
+  columnNumber: number
+  /** Derived label: 'app' if url contains localhost/src, 'vendor' otherwise */
+  origin: 'app' | 'vendor' | 'unknown'
+}
+
 /** A single console log entry captured during a step. */
 export type ConsoleLog = {
   type: 'error' | 'warning' | 'info' | 'log' | 'debug'
   text: string
   timestampMs: number
+  /** Available for 'error' type entries and uncaught page errors. */
+  stackFrames: StackFrame[]
 }
 
 /** A single network request/response event captured during a step. */
@@ -22,6 +33,14 @@ export type NetworkEvent = {
   responseHeaders: Record<string, string>
   requestBodySize: number
   responseBodySize: number
+  /**
+   * JSON body for fetch/xhr responses with content-type: application/json.
+   * Capped at BODY_CAPTURE_LIMIT_BYTES. null if not captured or non-JSON.
+   * If truncated, body ends with the sentinel string "[TRUNCATED]".
+   */
+  responseBodyPreview: string | null
+  /** Same cap applies. null for non-JSON or GET requests with no body. */
+  requestBodyPreview: string | null
   durationMs: number
   isFailed: boolean
   failureText: string | null

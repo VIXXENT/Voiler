@@ -84,12 +84,27 @@ const severityBadge = ({ severity }: { severity: Issue['severity'] }): string =>
   return badges[severity]
 }
 
-/** Render the console section for one step. */
+/** Render the console section for one step, including stack frames for errors. */
 const renderConsoleSection = ({ step }: { step: StepTelemetry }): string => {
   if (step.consoleLogs.length === 0) {
     return '*(no console output)*\n'
   }
-  const lines = step.consoleLogs.map((l) => `- \`[${l.type.toUpperCase()}]\` ${l.text}`).join('\n')
+  const lines = step.consoleLogs
+    .map((l) => {
+      const badge = `\`[${l.type.toUpperCase()}]\``
+      const base = `- ${badge} ${l.text}`
+      if (l.stackFrames.length === 0) {
+        return base
+      }
+      const frames = l.stackFrames
+        .map((f) => {
+          const origin = f.origin === 'app' ? '🔴 app' : f.origin === 'vendor' ? '⚪ vendor' : '❓'
+          return `  - ${origin} \`${f.url}:${f.lineNumber}:${f.columnNumber}\``
+        })
+        .join('\n')
+      return `${base}\n${frames}`
+    })
+    .join('\n')
   return lines + '\n'
 }
 
@@ -98,16 +113,33 @@ const renderNetworkSection = ({ step }: { step: StepTelemetry }): string => {
   if (step.network.length === 0) {
     return '*(no network activity)*\n'
   }
-  const header = `| # | Method | Endpoint | Status | Duration |\n|---|--------|----------|--------|----------|\n`
+  const header = `| # | Method | Endpoint | Status | Duration | Body |\n|---|--------|----------|--------|----------|------|\n`
   const rows = step.network
     .map((req, i) => {
       const endpoint = req.url.replace(/^https?:\/\/[^/]+/, '')
-      const status = req.isFailed ? 'FAILED' : (req.status?.toString() ?? '—')
+      const status = req.isFailed ? '**FAILED**' : (req.status?.toString() ?? '—')
       const duration = req.durationMs > 0 ? `${req.durationMs}ms` : '—'
-      return `| ${i + 1} | ${req.method} | ${endpoint} | ${status} | ${duration} |`
+      const bodySize =
+        req.responseBodySize > 0 ? `${Math.round((req.responseBodySize / 1024) * 10) / 10}KB` : '—'
+      return `| ${i + 1} | ${req.method} | ${endpoint} | ${status} | ${duration} | ${bodySize} |`
     })
     .join('\n')
-  return `**${step.network.length} calls**\n\n${header}${rows}\n`
+  // Append body previews for API calls that have them
+  const previews = step.network
+    .filter((req) => req.responseBodyPreview !== null || req.requestBodyPreview !== null)
+    .map((req, i) => {
+      const endpoint = req.url.replace(/^https?:\/\/[^/]+/, '')
+      const parts: string[] = [`\n**Call ${i + 1} body preview** — \`${req.method} ${endpoint}\``]
+      if (req.requestBodyPreview) {
+        parts.push(`*Request:*\n\`\`\`json\n${req.requestBodyPreview}\n\`\`\``)
+      }
+      if (req.responseBodyPreview) {
+        parts.push(`*Response:*\n\`\`\`json\n${req.responseBodyPreview}\n\`\`\``)
+      }
+      return parts.join('\n')
+    })
+    .join('\n')
+  return `**${step.network.length} calls**\n\n${header}${rows}\n${previews}\n`
 }
 
 /** Render the storage section for one step. */
