@@ -63,11 +63,18 @@ const Sidebar = () => {
 
       <div className="flex items-center gap-3 px-3 py-3">
         <Avatar className="h-8 w-8">
-          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+          {/* suppressHydrationWarning: initials differ SSR (no session) vs client (session loaded) */}
+          <AvatarFallback className="text-xs" suppressHydrationWarning>
+            {initials}
+          </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-gray-900">{userName}</p>
-          <p className="truncate text-xs text-gray-500">{userEmail}</p>
+          <p className="truncate text-sm font-medium text-gray-900" suppressHydrationWarning>
+            {userName}
+          </p>
+          <p className="truncate text-xs text-gray-500" suppressHydrationWarning>
+            {userEmail}
+          </p>
         </div>
         <Button
           variant="ghost"

@@ -1206,7 +1206,7 @@ const flowBilling = async ({
   collector: TelemetryCollector
   auth: StepAuth
 }) => {
-  await gotoHydrated({ page, url: `${APP_URL}/billing` })
+  await gotoHydrated({ page, url: `${APP_URL}/settings/billing` })
   await page.waitForTimeout(500)
   await recordStep({
     page,
