@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "qa:crawl": "tsx e2e/qa/crawler/crawl.ts",
-    "qa:analyze": "tsx e2e/qa/crawler/analyze.ts"
+    "qa:analyze": "tsx e2e/qa/crawler/analyze.ts",
+    "qa:report": "tsx e2e/qa/crawler/report-generator.ts"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
