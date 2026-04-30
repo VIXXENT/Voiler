@@ -46,6 +46,17 @@ Historical specs and plans live in `docs/superpowers/`.
 - **JSDoc** on all exported functions -- see [docs/code-standards.md]
 - **Chat in Spanish**, code in English -- see [docs/code-standards.md]
 
+## Planning Workflow
+
+Two global skills gate the path from idea to plan. Use them in order.
+
+1. **New web project or high-level idea?** Invoke `product-discovery` (`~/.claude/skills/product-discovery/`) first. Runs problem framing, JTBD, deep competitive research, a Competitive Gate (10x Rule + Porter -- PROCEED / PIVOT / EXTEND / KILL), value proposition, hypothesis mapping, commercial-viability check (always evaluated), and a Lean Canvas coherence check.
+2. **Feature on the existing codebase** (or handoff from `product-discovery`): invoke `product-ideation` (`~/.claude/skills/product-ideation/`). Runs Review Gate (KILL / SKIP / SHRINK), 7-dimension feasibility, and **boilerplate curation** (decides which new pieces belong in Voiler vs. the specific app).
+3. **Only after both skills complete**, hand off to `superpowers:writing-plans`. If boilerplate curation produced boilerplate-worthy pieces, emit two plans (app + boilerplate).
+
+- **Architectural decisions**: capture each as an ADR under `docs/adr/` using `0000-template.md`. One file per decision, numbered sequentially. If a decision affects both the app and the boilerplate, emit one ADR per context.
+- **Skill utility review**: reassess both skills after 30 days using the signals documented in each file.
+
 ## Setup
 
 ```bash
